@@ -1,6 +1,6 @@
 This is a multifilament coil optimization code developed by Luquant Singh and Thomas Kruger at the University of Wisconsin, HSX Laboratory.
 
-Input files: wout, .focus, .input 
+Input files: wout, .focus, .input, .alpha 
 wout file is used to load in boundary and axis
 .focus file gives coil centroid locations, total number of coils, currents, lengths, mode amplitudes
 .input file sets all variables and options, of course
@@ -11,6 +11,10 @@ main method found in multi.c file
 First step is optimizing for alphas and leaving coil aspect ratio and centroids constant
 optimizing for more parameters coming after summer, unless we are productive
 
+Initial optimization method will be either steepest descent (which is garbage) or some easy to impliment trust region method that does not require backtracking like Conjugate gradient (I think this is the right one)
+
 Before PPPL goals:
 produce the alpha = 0 filaments
 plot the filaments with python script
+
+I will provide compiling instructions once I have time to do something 
