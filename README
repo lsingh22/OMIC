@@ -17,4 +17,5 @@ Before PPPL goals:
 produce the alpha = 0 filaments
 plot the filaments with python script
 
-I will provide compiling instructions once I have time to do something 
+To compile run "gcc multi.c -o xmulti -lm"
+We will worry about linking other files when they are completed
