@@ -1,0 +1,1 @@
+#This file should take the coil centroids and alphas, construct XYZ points of edge of build (different than function that makes XYZ of multifilaments), and plot finite build as well as |B| on boundary
