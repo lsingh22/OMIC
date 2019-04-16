@@ -1,0 +1,14 @@
+ # Total number of coils
+            2
+ #-----------------           1 ---------------------------
+ #NFalpha    Alphafree
+  4          0
+ #Alpha Fourier harmonics ( alphac; alphas; )
+  0.0 0.0 0.0 0.0
+  0.0 0.0 0.0 0.0
+ #-----------------           2 ---------------------------
+ #NFalpha    Alphafree
+  6          0
+ #Alpha Fourier harmonics ( alphac; alphas; )
+  0.0 0.0 0.0 0.0 0.0 0.0
+  0.0 0.0 0.0 0.0 0.0 0.0

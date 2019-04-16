@@ -1,0 +1,25 @@
+ IsSymmetric    =        0             start with no symmetry then add on stellarator symmetry
+ Nteta          =        256           
+ Nzeta          =        256           
+ radFil         =        4             number of radial filaments
+ torFil         =        4             number of toroidal filaments, needs to be even
+ case_optimize  =        1
+ optimizeAlpha  =        1
+ optimizeEps    =        0
+ optimizeCent   =        0
+ optimizeCurr   =        0
+ IsNormWeight   =        1
+ weight_bnorm   =        100.000D+00
+ weight_tflux   =        0.000D+00
+ weight_ttlen   =        100.000D+00
+ weight_ccsep   =        0.000D+00
+
+ CG_maxiter     =        10
+ CG_xtol        =        1.000D-10
+ CG_wolfe_c1    =        1.000D-04
+ CG_wolfe_c2    =        0.9
+
+ TN_maxiter     =        0
+ TN_xtol        =        1.000D-08
+ TN_reorder     =        0
+ TN_cr          =        0.1
