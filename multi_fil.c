@@ -7,4 +7,4 @@
 //
 //Find closest axis point to coil center (defined by n=0 mode)
 //
-//Use this point to  
+//Use point, gram schmidt, idk look at equation 

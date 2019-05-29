@@ -4,14 +4,17 @@
 #include <string.h>
 
 int main(int argc, char **argv) {
-   
-   //Check to see if correct number of inputs, exit if not
-   //Only input should be name of files. ex. "../multi wout_hsxt.nc hsx.multi12_00"
-   //Or define these in input file, probably better idea
-   //
+   if( argc != 1 ){
+      printf("Wrong number of inputs!\n");
+      return 1;
+   }
+   if( argc != 2){
+      printf("Luquant can debug in c now!\n");
+      return 2;
+   }
    //Allocate pointers and call function to load wout file, load_wout.c
    //
-   //Allocate pointers and call function to load .input file, load_input.c_
+   //Allocate pointers and call function to load .input file, load_input.c
    //
    //Allocate pointers and call function to load .focus file, load_focus.c
    //

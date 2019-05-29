@@ -4,11 +4,15 @@
  radFil         =        4             number of radial filaments
  torFil         =        4             number of toroidal filaments, needs to be even
  case_optimize  =        1
- optimizeAlpha  =        1
- optimizeEps    =        0
+ optimizeAlpha  =        1             maybe onyl in .alpha 
+ optimizeEps    =        0             coil aspect ratio
  optimizeCent   =        0
  optimizeCurr   =        0
  IsNormWeight   =        1
+
+ woutFile       =        'wout_hsxt.nc'
+ name           =        'hsx.multi12_00'
+
  weight_bnorm   =        100.000D+00
  weight_tflux   =        0.000D+00
  weight_ttlen   =        100.000D+00
