@@ -19,7 +19,6 @@ produce the alpha = 0 filaments
 plot the filaments, and finite build with python script
 
 To compile with gcc: "gcc multi.c -o xmulti -lm"
-To compile with hdf5: "h5cc my_script.c -o executable_name -lm"
-To compile with netcdf: 
+To compile with netcdf: " gcc load_wout.c -I$NETCDF_HOME/include -L$NETCDF_HOME/lib -lnetcdf -lm -o xread
 
 We will worry about linking other files when they are completed
