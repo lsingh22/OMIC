@@ -1,5 +1,3 @@
-//This module loads .focus file information
-
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
@@ -7,76 +5,115 @@
 #include <netcdf.h>
 #include <stdlib.h>
 
-//Inputs: path_to_focus_file
-
 int main(int argc, char **argv) {
-	char ch;
-	char* fname;
-	double var;
-	FILE *fp;
-	
-	//printf("%lu\n", sizeof(argv[1]));
-	fname = argv[1];
-	//fname = "example/hsx.multi12_00.focus";
-	fp = fopen(fname, "r");
 
-	if (fp == NULL) {
-		perror("Error opening file -- exiting. \n");
-		exit(1);
-	}
-	
-char* line = NULL;
-size_t len = 0;
-int count = 0;
-char* data;
-int* n;
-int* m;
-int i,j,k,Ncoil;
+//NOTE: Due to bug in FOCUS, this script is not completely general yet -- NFcoil needs to be fixed.
 
-//Read in total coil number
-
-getline(&line, &len, fp);
-//printf("%c\n", *(line+1));
-getline(&line, &len, fp);
-
-data = strtok(line," ");
-Ncoil = atoi(data); //second line is Ncoil
-
-while(fgets(line, sizeof(line), fp) != NULL) {
-	if (line[1] == '#') continue;
-	else data = strtok(line," ");
-	     printf("%s", data);
-}
+//Using /home/luquants/focusruns/boxport/hsx.bp_00/focus_hsx.bp_00.h5 as a test case.
 
 
+// Read the input .nc file//
 
-//For each coil read current, length, FS mode amps, and centroid locations
-
-/*
-while( getline(&line, &len, fp) != -1) {
-       if( count == 1 ){
-          data = strtok(line," ");
-          N = atoi(data);
-          n = (int *) malloc(N*sizeof(int));
-          m = (int *) malloc(N*sizeof(int));
-       }
-       if( count > 3 && count <= 62 ){
-          data = strtok(line," ");
-          *(n+count-4) = atoi(data);
-          data = strtok(NULL," ");
-          *(m+count-4) = atoi(data);
-          data = strtok(NULL," ");
-          *(rmnc+count-4) = atof(data);
-          data = strtok(NULL," ");
-          data = strtok(NULL," ");
-          data = strtok(NULL," ");
-          *(zmns+count-4) = atof(data);
-       }
-       count++;
-   }
-   fclose(fp);
-
+//      char* file;
+//      file = "/home/luquants/multi/dev/test.nc"; 
+/*      
+        if (argc == 1){
+                file = "/home/luquants/multi/dev/test.nc";      
+                }
+        else{
+                printf("Wrong number of inputs! \n");           
+                }
 */
-return 0;
+
+//Define and allocate pointers// 
+
+   FILE* fp;
+   char* line = NULL;
+   size_t len = 0;
+   int count = 0;
+   char* data;
+   int* n;
+   int* m;
+   int i,j,N;
+   int sum = 0;
+
+   int ncid, varid;
+   int* Ncoils;
+   int* Nfp;
+   int* isSym;
+   //TODO: int* NFcoil;
+   int NFcoil[11] = { 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
+
+   Ncoils = (int *) malloc(sizeof(int));
+//   NFcoil = (int *) malloc(sizeof(int));   
+   Nfp = (int *) malloc(sizeof(int));
+   isSym = (int *) malloc(sizeof(int));
+
+   //TODO: Notify CZ about NFcoil bug
+
+   nc_open("dev/test.nc", NC_NOWRITE, &ncid);
+   nc_inq_varid(ncid, "Ncoils", &varid);
+   nc_get_var_int(ncid, varid, Ncoils);
+   nc_inq_varid(ncid, "Nfp", &varid);
+   nc_get_var_int(ncid, varid, Nfp);
+   nc_inq_varid(ncid, "IsSymmetric", &varid);
+   nc_get_var_int(ncid, varid, isSym);
+
+   //printf("%d\n", *Nfp);
+   //printf("%d\n", *isSym);
+
+
+   //TODO: Fix the NFcoil storage after bug is fixed
+   //nc_inq_varid(ncid, "NFcoil", &varid);
+   //nc_get_var_int(ncid, varid, NFcoil);
+
+   //Determine the total number of FS amplitudes// 
+   for (i =0; i < (*Ncoils);i++){
+        sum = sum + NFcoil[i];
 }
+
+   //Store currents and FS harmonics for each coil//
+
+   double* coildata;
+   double* centroids;
+   double* coilamps;
+   double* currents;
+
+   coildata = (double *) malloc(59*101*sizeof(double));
+   centroids = (double *) malloc((*Ncoils)*3*sizeof(double));
+   coilamps = (double *) malloc(sum*6*sizeof(double));
+   currents = (double *) malloc((*Ncoils)*sizeof(double));
+   nc_inq_varid(ncid, "coilspace", &varid);
+   nc_get_var_double(ncid, varid, coildata);
+   nc_close(ncid);
+
+   int ind = 0;
+   int ind_arr[*Ncoils];
+
+   for(i=0;i<(*Ncoils);i++){
+        if (i==0){
+                currents[i] = coildata[ind];}
+        else{
+                currents[i] = coildata[ind-1];
+        }
+
+        for(j=0;j<6*(NFcoil[i]+1)-3;j++){
+                        coilamps[ind + j] = coildata[ind + j + i + 1 ];
+                        printf("%f   %d\n",coilamps[ind+j],ind+j);
+                }
+                ind_arr[i] = ind;
+                //printf("%d\n",ind_arr[i]);
+                ind = ind + ((NFcoil[i])*6+3);
+        }
+
+   //Store centroids from coilamps array//
+
+
+   for(i=0;i<(*Ncoils);i++){
+        centroids[i*3 + 1] = coilamps[ind_arr[i]];
+        centroids[i*3 + 2] = coilamps[ind_arr[i] + 2*(NFcoil[i] + 1)-1];
+        centroids[i*3 + 3] = coilamps[ind_arr[i] + 4*(NFcoil[i] + 1)-2];
+        printf("%f  %f  %f\n", centroids[i*3 + 1], centroids[i*3 + 2], centroids[i*3 + 3]);
+
+   }
 
