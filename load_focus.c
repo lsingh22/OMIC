@@ -4,13 +4,16 @@
 #include <omp.h>
 #include <netcdf.h>
 #include <stdlib.h>
-
+#include <math.h>
 int main(int argc, char **argv) {
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////  START LOAD_FOCUS.C ////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 //NOTE: Due to bug in FOCUS, this script is not completely general yet -- NFcoil needs to be fixed.
 
 //Using /home/luquants/focusruns/boxport/hsx.bp_00/focus_hsx.bp_00.h5 as a test case.
-
 
 // Read the input .nc file//
 
@@ -27,6 +30,13 @@ int main(int argc, char **argv) {
 
 //Define and allocate pointers// 
 
+//Decide what to print out
+   int print_sfil, print_mfil;
+   print_sfil = 0; //print out single filament file if 1
+   print_mfil = 1; //print out multifilament file if 1
+
+
+
    FILE* fp;
    char* line = NULL;
    size_t len = 0;
@@ -34,7 +44,7 @@ int main(int argc, char **argv) {
    char* data;
    int* n;
    int* m;
-   int i,j,N;
+   int i,j,k,N;
    int sum = 0;
 
    int ncid, varid;
@@ -42,7 +52,7 @@ int main(int argc, char **argv) {
    int* Nfp;
    int* isSym;
    //TODO: int* NFcoil;
-   int NFcoil[11] = { 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
+   int NFcoil[11] = { 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 };
 
    Ncoils = (int *) malloc(sizeof(int));
 //   NFcoil = (int *) malloc(sizeof(int));   
@@ -59,25 +69,22 @@ int main(int argc, char **argv) {
    nc_inq_varid(ncid, "IsSymmetric", &varid);
    nc_get_var_int(ncid, varid, isSym);
 
-   //printf("%d\n", *Nfp);
-   //printf("%d\n", *isSym);
-
-
    //TODO: Fix the NFcoil storage after bug is fixed
    //nc_inq_varid(ncid, "NFcoil", &varid);
    //nc_get_var_int(ncid, varid, NFcoil);
 
    //Determine the total number of FS amplitudes// 
    for (i =0; i < (*Ncoils);i++){
-        sum = sum + NFcoil[i];
-}
+        sum = sum + NFcoil[i] +3;
+   }
 
    //Store currents and FS harmonics for each coil//
 
    double* coildata;
    double* centroids;
    double* coilamps;
-   double* currents;
+   double* currents;  
+   
 
    coildata = (double *) malloc(59*101*sizeof(double));
    centroids = (double *) malloc((*Ncoils)*3*sizeof(double));
@@ -91,29 +98,255 @@ int main(int argc, char **argv) {
    int ind_arr[*Ncoils];
 
    for(i=0;i<(*Ncoils);i++){
-        if (i==0){
-                currents[i] = coildata[ind];}
-        else{
-                currents[i] = coildata[ind-1];
-        }
-
-        for(j=0;j<6*(NFcoil[i]+1)-3;j++){
-                        coilamps[ind + j] = coildata[ind + j + i + 1 ];
-                        printf("%f   %d\n",coilamps[ind+j],ind+j);
-                }
-                ind_arr[i] = ind;
-                //printf("%d\n",ind_arr[i]);
-                ind = ind + ((NFcoil[i])*6+3);
-        }
-
+      if (i==0) 
+      {
+        *(currents + i) = coildata[ind];
+      }
+      else
+      {
+        *(currents + i) = coildata[ind+i];
+      }
+      for(j=0;j<6*(NFcoil[i]+1)-3;j++){
+         *(coilamps + ind + j) = coildata[ind + j + i + 1 ];
+      }
+      ind_arr[i] = ind;
+      ind = ind + ((NFcoil[i])*6+3);
+   }
    //Store centroids from coilamps array//
-
 
    for(i=0;i<(*Ncoils);i++){
         centroids[i*3 + 1] = coilamps[ind_arr[i]];
         centroids[i*3 + 2] = coilamps[ind_arr[i] + 2*(NFcoil[i] + 1)-1];
         centroids[i*3 + 3] = coilamps[ind_arr[i] + 4*(NFcoil[i] + 1)-2];
-        printf("%f  %f  %f\n", centroids[i*3 + 1], centroids[i*3 + 2], centroids[i*3 + 3]);
+        //printf("%f  %f  %f\n", centroids[i*3 + 1], centroids[i*3 + 2], centroids[i*3 + 3]);
 
    }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////  START SINGLE_FIL.C /////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//Function that constructs single filament from modes 
+//Input should be pointer to vector that has modes for each coil
+//Output should be pointer to XYZ points
+
+   
+   int Nseg = 512;
+   double pi = M_PI;
+   double theta; //parameterizes each coil via Fourier Series
+   double x,y,z,x0,y0,z0;
+   double* sfilx; 
+   double* sfily;
+   double* sfilz;
+  
+   //printf("%d\n",(*Ncoils)*Nseg*sizeof(double));
+   sfilx = (double *) malloc((*Ncoils)*Nseg*sizeof(double)); 
+   sfily = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   sfilz = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   
+   //Calculate the xyz for the single filament
+   if(print_mfil == 1 | print_sfil == 1)
+   {
+      printf(" periods 1\n begin filament\n mirror NIL\n");
+   }
+   //printf("%f\n",currents[0]);
+   for(i=0;i<(*Ncoils);i++){
+      x0=0;y0=0;z0=0;
+      for(j=0;j<Nseg;j++){
+         theta = ((2*pi)/Nseg)*j;
+	 x=0;y=0;z=0;
+         for(k=0;k<NFcoil[i]+1;k++){ //add the cosine components
+           x = x + coilamps[ ind_arr[i] + k ]*cos(k*theta);
+           y = y + coilamps[ ind_arr[i] + k + 2*NFcoil[i] + 1 ]*cos(k*theta);
+           z = z + coilamps[ ind_arr[i] + k + 4*NFcoil[i] + 2 ]*cos(k*theta);                
+         }
+         for(k=1;k<NFcoil[i]+1;k++){ //add the sine components
+           x = x + coilamps[ ind_arr[i] +   NFcoil[i] + 0 + k ]*sin(k*theta);
+           y = y + coilamps[ ind_arr[i] + 3*NFcoil[i] + 1 + k ]*sin(k*theta);
+           z = z + coilamps[ ind_arr[i] + 5*NFcoil[i] + 2 + k ]*sin(k*theta);
+         }
+         *(sfilx + i*Nseg + j ) = x;
+	 *(sfily + i*Nseg + j ) = y;
+         *(sfilz + i*Nseg + j ) = z;
+         if( j == 0 ) 
+         {
+	    x0 = x;
+	    y0 = y;
+            z0 = z;
+	 }
+         if( print_sfil == 1 )
+	 {
+            if( j == Nseg - 1 )
+            {
+               printf(" %.15f  %.15f  %.15f  %.8f \n",x,y,z,coildata[ind_arr[i]+i]);
+               printf(" %.15f  %.15f  %.15f  %.8f Mod 1\n",x0,y0,z0,coildata[ind_arr[i]+i]);
+            }else{
+               printf(" %.15f  %.15f  %.15f  %.8f\n",x,y,z,coildata[ind_arr[i]+i]);
+            }
+         }  
+      } 
+   }
+   if (print_sfil == 1)
+   {
+      printf("end\n"); 
+   }
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////  START MULTI_FIL.C //////////////////////////////////////////////////////// 
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+//This function will take the modes that define the centroid of the coils and will take the alpha vectors and the axis information
+//This code will construct the XYZ points for the multifilaments and will return these XYZ points so that they can be plotted
+//
+//Use centroid and gram schmidt process to define local coordinate frame
+//From local coordinate frame construct finite build from specified dimensions
+
+   double hwid = 0.025; //normal half length
+   double hlen = 0.035; //binormal half length
+   double norm;
+
+   double* tx; tx = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* ty; ty = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* tz; tz = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* nx; nx = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* ny; ny = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* nz; nz = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* bx; bx = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* by; by = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* bz; bz = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* alpha; alpha = (double *) malloc((*Ncoils)*Nseg*sizeof(double));  
+
+  //Assume a rectangular cross section for now
+   double* mfilx; mfilx = (double *) malloc((*Ncoils)*Nseg*5*sizeof(double));
+   double* mfily; mfily = (double *) malloc((*Ncoils)*Nseg*5*sizeof(double));
+   double* mfilz; mfilz = (double *) malloc((*Ncoils)*Nseg*5*sizeof(double));
+
+ 
+   //Use FS representation to calculate the unit tangent vector at each point on coil 
+   //TODO:Hardcode alpha for now; for laziness, set two extra sin/cos weighting parameters
+   double a,b,c,d;
+   a = 1;
+   b = 1;
+   c = 1;
+   d = 1;
+   for(i=0;i<(*Ncoils);i++){
+      x0=0;y0=0;z0=0;
+      for(j=0;j<Nseg;j++){
+         theta = ((2*pi)/Nseg)*j;
+         x=0;y=0;z=0;norm=0;
+         *(alpha + i*Nseg + j) = a*sin(c*theta) + b*sin(d*theta);
+         for(k=0;k<NFcoil[i]+1;k++){ //add the cosine components
+           x = x - k*coilamps[ ind_arr[i] + k ]*sin(k*theta);
+           y = y - k*coilamps[ ind_arr[i] + k + 2*NFcoil[i] + 1 ]*sin(k*theta);
+           z = z - k*coilamps[ ind_arr[i] + k + 4*NFcoil[i] + 2 ]*sin(k*theta);
+         }
+         for(k=1;k<NFcoil[i]+1;k++){ //add the sine components
+           x = x + k*coilamps[ ind_arr[i] +   NFcoil[i] + 0 + k ]*cos(k*theta);
+           y = y + k*coilamps[ ind_arr[i] + 3*NFcoil[i] + 1 + k ]*cos(k*theta);
+           z = z + k*coilamps[ ind_arr[i] + 5*NFcoil[i] + 2 + k ]*cos(k*theta);
+         }
+         norm = sqrt(x*x + y*y + z*z);
+         *(tx + i*Nseg + j ) = x/norm;
+         *(ty + i*Nseg + j ) = y/norm;
+         *(tz + i*Nseg + j ) = z/norm;
+         if( j == 0 )
+         {
+            x0 = x/norm;
+            y0 = y/norm;
+            z0 = z/norm;
+         }
+         if( j == Nseg - 1 )
+         {
+            //printf(" %.15f  %.15f  %.15f \n",x/norm,y/norm,z/norm);
+            //printf(" %.15f  %.15f  %.15f Mod 1\n",x0,y0,z0);
+         }else{
+            //printf(" %.15f  %.15f  %.15f  \n",x/norm,y/norm,z/norm);
+         }
+      }
+   }
+   //Carry out the calculation of build directions, rotation of build directions, and finally xyz for the finite build and mfils 
+   double dot;
+   double sum1 = 0;
+   double sum2 = 0;
+   double sum3 = 0;
+   for(i=0;i<(*Ncoils)*Nseg;i++){
+      x=0;y=0;z=0;
+      dot = *(sfilx + i) * *(tx + i) + *(sfily + i) * *(ty + i) + *(sfilz + i) * *(tz + i);
+      x = *(sfilx + i) - dot* *(tx + i);
+      y = *(sfily + i) - dot* *(ty + i);
+      z = *(sfilz + i) - dot* *(tz + i);
+      norm = sqrt(x*x + y*y + z*z);
+      *(nx+i) = x/norm;
+      *(ny+i) = y/norm;
+      *(nz+i) = z/norm;
+      *(bx+i) = *(ty+i) * *(nz+i) - *(tz+i) * *(ny+i);
+      *(by+i) = *(tz+i) * *(nx+i) - *(tx+i) * *(nz+i);
+      *(bz+i) = *(tx+i) * *(ny+i) - *(ty+i) * *(nx+i);
+      //printf("Normal vector: %f %f %f\n",*(nx+ i),*(ny+i),*(nz+i));
+      //printf("Binormal vector: %f %f %f\n",*(bx+ i),*(by+i),*(bz+i));
+      //sum1 = sum1 + *(nx +i )* *(tx + i) + *(ny +i )* *(ty + i) + *(nz +i )* *(tz + i);   
+      //sum2 = sum2 + *(bx +i )* *(tx + i) + *(by +i )* *(ty + i) + *(bz +i )* *(tz + i);  
+      //sum3 = sum3 + *(bx +i )* *(nx + i) + *(by +i )* *(ny + i) + *(bz +i )* *(nz + i);
+   
+   //Rotate the normal and binormal vectors by an angle alpha about the tangent vector
+      *(nx+i) = *(nx+i)*cos(*(alpha+i)) + *(bx+i)*sin(*(alpha+i));
+      *(ny+i) = *(ny+i)*cos(*(alpha+i)) + *(by+i)*sin(*(alpha+i));
+      *(nz+i) = *(nz+i)*cos(*(alpha+i)) + *(bz+i)*sin(*(alpha+i));
+
+      *(bx+i) = -*(nx+i)*sin(*(alpha+i)) + *(bx+i)*cos(*(alpha+i));
+      *(by+i) = -*(ny+i)*sin(*(alpha+i)) + *(by+i)*cos(*(alpha+i));
+      *(bz+i) = -*(nz+i)*sin(*(alpha+i)) + *(bz+i)*cos(*(alpha+i));
+      //sum1 = sum1 + *(nx +i )* *(tx + i) + *(ny +i )* *(ty + i) + *(nz +i )* *(tz + i);
+      //sum2 = sum2 + *(bx +i )* *(tx + i) + *(by +i )* *(ty + i) + *(bz +i )* *(tz + i);
+      //sum3 = sum3 + *(bx +i )* *(nx + i) + *(by +i )* *(ny + i) + *(bz +i )* *(nz + i);
+
+   //Using specified half length and width, determine rectangular winding pack xyz points 
+      for(j=0;j<5;j++){
+         *(mfilx + 5*i) = *(sfilx+i) + hwid * *(nx+i) + hlen * *(bx+i);
+         *(mfilx + 5*i + 1) = *(sfilx+i) - hwid * *(nx+i) + hlen * *(bx+i);
+         *(mfilx + 5*i + 2) = *(sfilx+i) - hwid * *(nx+i) - hlen * *(bx+i);
+         *(mfilx + 5*i + 3) = *(sfilx+i) + hwid * *(nx+i) - hlen * *(bx+i);
+         *(mfilx + 5*i + 4) = *(sfilx+i) + hwid * *(nx+i) + hlen * *(bx+i);
+
+         *(mfily + 5*i) = *(sfily+i) + hwid * *(ny+i) + hlen * *(by+i);
+         *(mfily + 5*i + 1) = *(sfily+i) - hwid * *(ny+i) + hlen * *(by+i);
+         *(mfily + 5*i + 2) = *(sfily+i) - hwid * *(ny+i) - hlen * *(by+i);
+         *(mfily + 5*i + 3) = *(sfily+i) + hwid * *(ny+i) - hlen * *(by+i);
+         *(mfily + 5*i + 4) = *(sfily+i) + hwid * *(ny+i) + hlen * *(by+i);
+
+         *(mfilz + 5*i) = *(sfilz+i) + hwid * *(nz+i) + hlen * *(bz+i);
+         *(mfilz + 5*i + 1) = *(sfilz+i) - hwid * *(nz+i) + hlen * *(bz+i);
+         *(mfilz + 5*i + 2) = *(sfilz+i) - hwid * *(nz+i) - hlen * *(bz+i);
+         *(mfilz + 5*i + 3) = *(sfilz+i) + hwid * *(nz+i) - hlen * *(bz+i);
+         *(mfilz + 5*i + 4) = *(sfilz+i) + hwid * *(nz+i) + hlen * *(bz+i);
+	 
+	 //printf("%f %f %f",mfilx,mfily,mfilz);
+      }    
+   }
+   //printf("Sums are: %f %f %f\n",sum1,sum2,sum3);
+   if (print_mfil == 1){
+      for(i=0;i<(*Ncoils);i++){
+         for(j=0;j<(Nseg*5);j++){
+            if( j == Nseg*5 - 1)
+            {
+               printf(" %.15f  %.15f  %.15f  %.8f \n",*(mfilx+i*Nseg*5+j),*(mfily+i*Nseg*5+j),*(mfilz+i*Nseg*5+j),coildata[0]);
+               for(k=0;k<4;k++){ //repeat the first five points to close the loop
+                  printf(" %.15f  %.15f  %.15f  %.8f \n",*(mfilx+i*Nseg*5+k),*(mfily+i*Nseg*5+k),*(mfilz+i*Nseg*5+k),coildata[0]);
+               }
+               printf(" %.15f  %.15f  %.15f  %.8f Mod 1\n",*(mfilx+i*Nseg*5+4),*(mfily+i*Nseg*5+4),*(mfilz+i*Nseg*5+4),coildata[0]);
+            }else{
+	       printf(" %.15f  %.15f  %.15f  %.8f \n",*(mfilx+i*Nseg*5+j),*(mfily+i*Nseg*5+j),*(mfilz+i*Nseg*5+j),coildata[0]);
+            }
+         }
+      }
+   } 
+
+   if(print_mfil == 1){
+      printf("end\n");
+   }
+
+
+
+}
 
