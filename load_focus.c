@@ -31,10 +31,10 @@ int main(int argc, char **argv) {
 //Define and allocate pointers// 
 
 //Decide what to print out
-   int print_sfil, print_mfil;
+   int print_sfil, print_mfil, print_vect;
    print_sfil = 0; //print out single filament file if 1
    print_mfil = 1; //print out multifilament file if 1
-
+   print_vect = 1; //print out normal and binormal vectors
 
 
    FILE* fp;
@@ -52,8 +52,10 @@ int main(int argc, char **argv) {
    int* Nfp;
    int* isSym;
    //TODO: int* NFcoil;
-   int NFcoil[11] = { 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 };
-
+   //int NFcoil[11] = { 4, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 };
+ 
+   //int NFcoil[48] = { 5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5,5};
+   int NFcoil[48] = { 16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16,16};
    Ncoils = (int *) malloc(sizeof(int));
 //   NFcoil = (int *) malloc(sizeof(int));   
    Nfp = (int *) malloc(sizeof(int));
@@ -61,7 +63,7 @@ int main(int argc, char **argv) {
 
    //TODO: Notify CZ about NFcoil bug
 
-   nc_open("dev/test.nc", NC_NOWRITE, &ncid);
+   nc_open("example/focus_hsx.m12_07.nc", NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "Ncoils", &varid);
    nc_get_var_int(ncid, varid, Ncoils);
    nc_inq_varid(ncid, "Nfp", &varid);
@@ -115,9 +117,9 @@ int main(int argc, char **argv) {
    //Store centroids from coilamps array//
 
    for(i=0;i<(*Ncoils);i++){
-        centroids[i*3 + 1] = coilamps[ind_arr[i]];
-        centroids[i*3 + 2] = coilamps[ind_arr[i] + 2*(NFcoil[i] + 1)-1];
-        centroids[i*3 + 3] = coilamps[ind_arr[i] + 4*(NFcoil[i] + 1)-2];
+        centroids[i*3 + 0] = coilamps[ind_arr[i]];
+        centroids[i*3 + 1] = coilamps[ind_arr[i] + 2*(NFcoil[i] + 1)-1];
+        centroids[i*3 + 2] = coilamps[ind_arr[i] + 4*(NFcoil[i] + 1)-2];
         //printf("%f  %f  %f\n", centroids[i*3 + 1], centroids[i*3 + 2], centroids[i*3 + 3]);
 
    }
@@ -131,7 +133,7 @@ int main(int argc, char **argv) {
 //Output should be pointer to XYZ points
 
    
-   int Nseg = 512;
+   int Nseg = 256;
    double pi = M_PI;
    double theta; //parameterizes each coil via Fourier Series
    double x,y,z,x0,y0,z0;
@@ -186,10 +188,12 @@ int main(int argc, char **argv) {
          }  
       } 
    }
-   if (print_sfil == 1)
+      if(print_sfil == 1)
    {
-      printf("end\n"); 
+      printf("end\n");
    }
+
+   
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,8 +206,8 @@ int main(int argc, char **argv) {
 //Use centroid and gram schmidt process to define local coordinate frame
 //From local coordinate frame construct finite build from specified dimensions
 
-   double hwid = 0.025; //normal half length
-   double hlen = 0.035; //binormal half length
+   double hwid = 0.060; //normal half length
+   double hlen = 0.030; //binormal half length
    double norm;
 
    double* tx; tx = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
@@ -215,6 +219,13 @@ int main(int argc, char **argv) {
    double* bx; bx = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
    double* by; by = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
    double* bz; bz = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* nxa; nxa = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* nya; nya = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* nza; nza = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* bxa; bxa = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* bya; bya = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   double* bza; bza = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+
    double* alpha; alpha = (double *) malloc((*Ncoils)*Nseg*sizeof(double));  
 
   //Assume a rectangular cross section for now
@@ -226,8 +237,8 @@ int main(int argc, char **argv) {
    //Use FS representation to calculate the unit tangent vector at each point on coil 
    //TODO:Hardcode alpha for now; for laziness, set two extra sin/cos weighting parameters
    double a,b,c,d;
-   a = 1;
-   b = 1;
+   a = 0;
+   b = 0;
    c = 1;
    d = 1;
    for(i=0;i<(*Ncoils);i++){
@@ -235,7 +246,7 @@ int main(int argc, char **argv) {
       for(j=0;j<Nseg;j++){
          theta = ((2*pi)/Nseg)*j;
          x=0;y=0;z=0;norm=0;
-         *(alpha + i*Nseg + j) = a*sin(c*theta) + b*sin(d*theta);
+         *(alpha + i*Nseg + j) = 0.0;//a*sin(c*theta) + b*sin(d*theta);
          for(k=0;k<NFcoil[i]+1;k++){ //add the cosine components
            x = x - k*coilamps[ ind_arr[i] + k ]*sin(k*theta);
            y = y - k*coilamps[ ind_arr[i] + k + 2*NFcoil[i] + 1 ]*sin(k*theta);
@@ -270,12 +281,31 @@ int main(int argc, char **argv) {
    double sum1 = 0;
    double sum2 = 0;
    double sum3 = 0;
+   double* sfilxa;
+   double* sfilya;
+   double* sfilza;
+
+   //printf("%d\n",(*Ncoils)*Nseg*sizeof(double));
+   sfilxa = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   sfilya = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+   sfilza = (double *) malloc((*Ncoils)*Nseg*sizeof(double));
+
+   //Store the vector pointing from coil centroid to point on coil for each coil
+   for(i=0;i<(*Ncoils);i++){
+      for(j=0;j<Nseg;j++){
+         *(sfilxa + i*Nseg + j ) = *(sfilx + i*Nseg + j ) - *(centroids + i*3 + 0);
+         *(sfilya + i*Nseg + j ) = *(sfily + i*Nseg + j ) - *(centroids + i*3 + 1);
+         *(sfilza + i*Nseg + j ) = *(sfilz + i*Nseg + j ) - *(centroids + i*3 + 2);
+	 //printf("%f %f %f\n", *(sfilxa + i*Nseg + j ), *(sfilya + i*Nseg + j ), *(sfilza + i*Nseg + j ));
+      }
+   }
+
    for(i=0;i<(*Ncoils)*Nseg;i++){
       x=0;y=0;z=0;
-      dot = *(sfilx + i) * *(tx + i) + *(sfily + i) * *(ty + i) + *(sfilz + i) * *(tz + i);
-      x = *(sfilx + i) - dot* *(tx + i);
-      y = *(sfily + i) - dot* *(ty + i);
-      z = *(sfilz + i) - dot* *(tz + i);
+      dot = *(sfilxa + i) * *(tx + i) + *(sfilya + i) * *(ty + i) + *(sfilza + i) * *(tz + i);
+      x = *(sfilxa + i) - dot* *(tx + i);
+      y = *(sfilya + i) - dot* *(ty + i);
+      z = *(sfilza + i) - dot* *(tz + i);
       norm = sqrt(x*x + y*y + z*z);
       *(nx+i) = x/norm;
       *(ny+i) = y/norm;
@@ -285,46 +315,47 @@ int main(int argc, char **argv) {
       *(bz+i) = *(tx+i) * *(ny+i) - *(ty+i) * *(nx+i);
       //printf("Normal vector: %f %f %f\n",*(nx+ i),*(ny+i),*(nz+i));
       //printf("Binormal vector: %f %f %f\n",*(bx+ i),*(by+i),*(bz+i));
-      //sum1 = sum1 + *(nx +i )* *(tx + i) + *(ny +i )* *(ty + i) + *(nz +i )* *(tz + i);   
-      //sum2 = sum2 + *(bx +i )* *(tx + i) + *(by +i )* *(ty + i) + *(bz +i )* *(tz + i);  
-      //sum3 = sum3 + *(bx +i )* *(nx + i) + *(by +i )* *(ny + i) + *(bz +i )* *(nz + i);
-   
-   //Rotate the normal and binormal vectors by an angle alpha about the tangent vector
-      *(nx+i) = *(nx+i)*cos(*(alpha+i)) + *(bx+i)*sin(*(alpha+i));
-      *(ny+i) = *(ny+i)*cos(*(alpha+i)) + *(by+i)*sin(*(alpha+i));
-      *(nz+i) = *(nz+i)*cos(*(alpha+i)) + *(bz+i)*sin(*(alpha+i));
+      sum1 = sum1 + *(nx +i )* *(tx + i) + *(ny +i )* *(ty + i) + *(nz +i )* *(tz + i);   
+      sum2 = sum2 + *(bx +i )* *(tx + i) + *(by +i )* *(ty + i) + *(bz +i )* *(tz + i);  
+      sum3 = sum3 + *(bx +i )* *(nx + i) + *(by +i )* *(ny + i) + *(bz +i )* *(nz + i);
+      printf("Sums are: %f %f %f\n",sum1,sum2,sum3);
 
-      *(bx+i) = -*(nx+i)*sin(*(alpha+i)) + *(bx+i)*cos(*(alpha+i));
-      *(by+i) = -*(ny+i)*sin(*(alpha+i)) + *(by+i)*cos(*(alpha+i));
-      *(bz+i) = -*(nz+i)*sin(*(alpha+i)) + *(bz+i)*cos(*(alpha+i));
+   //Rotate the normal and binormal vectors by an angle alpha about the tangent vector
+      *(nxa+i) = *(nx+i)*cos(*(alpha+i)) + *(bx+i)*sin(*(alpha+i));
+      *(nya+i) = *(ny+i)*cos(*(alpha+i)) + *(by+i)*sin(*(alpha+i));
+      *(nza+i) = *(nz+i)*cos(*(alpha+i)) + *(bz+i)*sin(*(alpha+i));
+
+      *(bxa+i) = -*(nx+i)*sin(*(alpha+i)) + *(bx+i)*cos(*(alpha+i));
+      *(bya+i) = -*(ny+i)*sin(*(alpha+i)) + *(by+i)*cos(*(alpha+i));
+      *(bza+i) = -*(nz+i)*sin(*(alpha+i)) + *(bz+i)*cos(*(alpha+i));
       //sum1 = sum1 + *(nx +i )* *(tx + i) + *(ny +i )* *(ty + i) + *(nz +i )* *(tz + i);
       //sum2 = sum2 + *(bx +i )* *(tx + i) + *(by +i )* *(ty + i) + *(bz +i )* *(tz + i);
-      //sum3 = sum3 + *(bx +i )* *(nx + i) + *(by +i )* *(ny + i) + *(bz +i )* *(nz + i);
+      //sum3 = sum3 + *(bx +i )* *(nx + i) + *(by +i )* *(ny + i) + *(bz +i )* *(nz + i);  
 
-   //Using specified half length and width, determine rectangular winding pack xyz points 
+     //Using specified half length and width, determine rectangular winding pack xyz points 
       for(j=0;j<5;j++){
          *(mfilx + 5*i) = *(sfilx+i) + hwid * *(nx+i) + hlen * *(bx+i);
-         *(mfilx + 5*i + 1) = *(sfilx+i) - hwid * *(nx+i) + hlen * *(bx+i);
-         *(mfilx + 5*i + 2) = *(sfilx+i) - hwid * *(nx+i) - hlen * *(bx+i);
-         *(mfilx + 5*i + 3) = *(sfilx+i) + hwid * *(nx+i) - hlen * *(bx+i);
-         *(mfilx + 5*i + 4) = *(sfilx+i) + hwid * *(nx+i) + hlen * *(bx+i);
+         *(mfilx + 5*i + 1) = *(sfilx+i) - hwid * *(nxa+i) + hlen * *(bxa+i);
+         *(mfilx + 5*i + 2) = *(sfilx+i) - hwid * *(nxa+i) - hlen * *(bxa+i);
+         *(mfilx + 5*i + 3) = *(sfilx+i) + hwid * *(nxa+i) - hlen * *(bxa+i);
+         *(mfilx + 5*i + 4) = *(sfilx+i) + hwid * *(nxa+i) + hlen * *(bxa+i);
 
          *(mfily + 5*i) = *(sfily+i) + hwid * *(ny+i) + hlen * *(by+i);
-         *(mfily + 5*i + 1) = *(sfily+i) - hwid * *(ny+i) + hlen * *(by+i);
-         *(mfily + 5*i + 2) = *(sfily+i) - hwid * *(ny+i) - hlen * *(by+i);
-         *(mfily + 5*i + 3) = *(sfily+i) + hwid * *(ny+i) - hlen * *(by+i);
-         *(mfily + 5*i + 4) = *(sfily+i) + hwid * *(ny+i) + hlen * *(by+i);
+         *(mfily + 5*i + 1) = *(sfily+i) - hwid * *(nya+i) + hlen * *(bya+i);
+         *(mfily + 5*i + 2) = *(sfily+i) - hwid * *(nya+i) - hlen * *(bya+i);
+         *(mfily + 5*i + 3) = *(sfily+i) + hwid * *(nya+i) - hlen * *(bya+i);
+         *(mfily + 5*i + 4) = *(sfily+i) + hwid * *(nya+i) + hlen * *(bya+i);
 
          *(mfilz + 5*i) = *(sfilz+i) + hwid * *(nz+i) + hlen * *(bz+i);
-         *(mfilz + 5*i + 1) = *(sfilz+i) - hwid * *(nz+i) + hlen * *(bz+i);
-         *(mfilz + 5*i + 2) = *(sfilz+i) - hwid * *(nz+i) - hlen * *(bz+i);
-         *(mfilz + 5*i + 3) = *(sfilz+i) + hwid * *(nz+i) - hlen * *(bz+i);
-         *(mfilz + 5*i + 4) = *(sfilz+i) + hwid * *(nz+i) + hlen * *(bz+i);
+         *(mfilz + 5*i + 1) = *(sfilz+i) - hwid * *(nza+i) + hlen * *(bza+i);
+         *(mfilz + 5*i + 2) = *(sfilz+i) - hwid * *(nza+i) - hlen * *(bza+i);
+         *(mfilz + 5*i + 3) = *(sfilz+i) + hwid * *(nza+i) - hlen * *(bza+i);
+         *(mfilz + 5*i + 4) = *(sfilz+i) + hwid * *(nza+i) + hlen * *(bza+i);
 	 
 	 //printf("%f %f %f",mfilx,mfily,mfilz);
       }    
    }
-   //printf("Sums are: %f %f %f\n",sum1,sum2,sum3);
+   printf("Sums are: %f %f %f\n",sum1,sum2,sum3);
    if (print_mfil == 1){
       for(i=0;i<(*Ncoils);i++){
          for(j=0;j<(Nseg*5);j++){
@@ -340,11 +371,57 @@ int main(int argc, char **argv) {
             }
          }
       }
+      if (print_vect == 1)
+      {
+         printf("end\n\n\n\n");
+      }else{
+         printf("end\n");
+      }
    } 
 
-   if(print_mfil == 1){
-      printf("end\n");
+
+   //Print the normal and binormal vectors for diagnosing issues and visualization//
+   //For now, this writes two new files stored locally in multi runs directory
+   if(print_vect == 1)
+   {
+      FILE* fn;
+      fn = fopen("/home/luquants/multi/runs/norm.txt","w");
+      fprintf(fn," periods 1\n begin filament\n mirror NIL\n"); //TODO: For use with T.Kruger's PlotCoils, to be updated
+      for(i=0;i<(*Ncoils);i++){
+         for(j=0;j<Nseg;j++){
+            if( j == Nseg - 1 )
+            {
+               fprintf(fn," %.15f  %.15f  %.15f \n", *(nx + i*Nseg+j), *(ny + i*Nseg+j), *(nz + i*Nseg+j));
+               fprintf(fn," %.15f  %.15f  %.15f Mod 1\n", *(nx + i*Nseg), *(ny + i*Nseg), *(nz + i*Nseg));
+            }else{
+               fprintf(fn," %.15f  %.15f  %.15f  \n", *(nx + i*Nseg+j), *(ny + i*Nseg+j), *(nz + i*Nseg+j)); 
+            }
+         }
+      }
+      fprintf(fn,"end\n"); //TODO: See above TODO
+      fclose(fn);
+  
+
+      FILE* fb;
+      fb = fopen("/home/luquants/multi/runs/binorm.txt","w");
+      fprintf(fb," periods 1\n begin filament\n mirror NIL\n"); //TODO: For use with T.Kruger's PlotCoils, to be updated
+      for(i=0;i<(*Ncoils);i++){
+         for(j=0;j<Nseg;j++){
+            if( j == Nseg - 1 )
+            {
+               fprintf(fb," %.15f  %.15f  %.15f \n", *(bx + i*Nseg+j), *(by + i*Nseg+j), *(bz + i*Nseg+j));
+               fprintf(fb," %.15f  %.15f  %.15f Mod 1\n", *(bx + i*Nseg), *(by + i*Nseg), *(bz + i*Nseg));
+            }else{
+               fprintf(fb," %.15f  %.15f  %.15f  \n", *(bx + i*Nseg+j), *(by + i*Nseg+j), *(bz + i*Nseg+j)); 
+            }
+         }
+      }
+      fprintf(fb,"end"); //TODO: See above TODO
+      fclose(fb);
    }
+ 
+
+
 
 
 
