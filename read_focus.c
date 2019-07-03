@@ -12,6 +12,6 @@ void ReadFocus(char* output_file){
    
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "Ncoils", &varid);
-
-
+   nc_get_var_int(ncid, varid, &Ncoils);
+   nc_close(ncid);
 }

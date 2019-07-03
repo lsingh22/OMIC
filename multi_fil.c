@@ -11,7 +11,7 @@ int main(int argc, char **argv) {
    SetInputs();
    ReadFocus(focus_output);
    printf("%s\n", focus_output);
-   printf("%d\n", Nseg);
+   printf("%d\n", Ncoils);
 /* 
    ReadInputs();
    ReadFocus();

@@ -12,7 +12,7 @@ void SetInputs(void){
    hwid = 0.060;
    hlen = 0.030;
    Nturns = 0;
-   focus_output = "/home/luquants/multi/example/focus_hsx.m12_07.nc";
+   focus_output = "./example/focus_hsx.m12_07.nc";
 }
 
 

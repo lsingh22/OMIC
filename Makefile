@@ -1,4 +1,7 @@
-PROGRAM = fun
+# at PPPL, these modules are needed
+# module load gcc szip hdf hdf5-serial curl netcdf-c
+
+PROGRAM = multi
 
 FILES.c = read_namelist.c multi_fil.c read_focus.c
 
@@ -28,7 +31,7 @@ WFLAGS  = ${WFLAG1} ${WFLAG2} #${WFLAG3} ${WFLAG4} ${WFLAG5}
 
 UFLAGS  = # Set on command line only
 
-NETCDF_HOME = /usr
+NETCDF_HOME = ${NETCDF_C_HOME}
 
 NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf 
 
