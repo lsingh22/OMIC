@@ -1,0 +1,61 @@
+PROGRAM = fun
+
+FILES.c = read_namelist.c multi_fil.c read_focus.c
+
+FILES.h = read_namelist.h read_focus.h globals.h
+
+FILES.o = ${FILES.c:.c=.o}
+
+CC      = gcc
+
+SFLAGS  = -std=c11
+
+GFLAGS  = -g
+
+OFLAGS  = -O3
+
+WFLAG1  = -Wall
+
+WFLAG2  = -Wextra
+
+WFLAG3  = -Werror
+
+WFLAG4  = -Wstrict-prototypes
+
+WFLAG5  = -Wmissing-prototypes
+
+WFLAGS  = ${WFLAG1} ${WFLAG2} #${WFLAG3} ${WFLAG4} ${WFLAG5}
+
+UFLAGS  = # Set on command line only
+
+NETCDF_HOME = /usr
+
+NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf 
+
+CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS}
+
+LDFLAGS =
+
+LDLIBS  =
+
+all:    ${PROGRAM}
+
+${PROGRAM}: ${FILES.o}
+	${CC} -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS} ${NETCDF} $^
+
+read_namelist.o: read_namelist.c globals.h read_namelist.h
+	${CC} -c $< -o $@
+multi_fil.o: multi_fil.c read_namelist.h 
+	${CC} -c $< -o $@
+read_focus.o: read_focus.c read_focus.h globals.h
+	${CC} ${NETCDF} -c $< -o $@
+# If it exists, prog1.dSYM is a directory on macOS
+
+DEBRIS = a.out core *~ *.dSYM
+
+RM_FR  = rm -fr
+
+
+
+clean:
+	${RM_FR} ${FILES.o} ${PROGRAM} ${DEBRIS}
