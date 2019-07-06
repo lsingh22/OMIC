@@ -2,12 +2,13 @@
 
 #include "read_namelist.h"
 
+// GLOBALS SCOPED IN SOURCE FILE
 double hwid;
 double hlen;
 double Nturns;
 char* focus_output;
 
-//This function updates the globals in globals.h
+// UPDATES GLOBALS TO USER INPUT
 void SetInputs(void){
    hwid = 0.060;
    hlen = 0.030;
@@ -19,7 +20,6 @@ void SetInputs(void){
 //TODO: Implement F90-like namelist 
 
 /*
-//This function reads the input file and updates the globals in globals.h
 void SetDefault(char *namelist){
   namelist = argv;
  }

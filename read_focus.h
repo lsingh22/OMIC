@@ -4,6 +4,8 @@
 #include "globals.h"
 #include <netcdf.h>
 
-extern void ReadFocus(char* output_file);
+extern void ReadFocusInts(char* output_file);
+extern void ReadFocusArrays(char* output_file);
+
 
 #endif

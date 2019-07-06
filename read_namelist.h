@@ -3,7 +3,7 @@
 
 #include "globals.h"
 
-//extern void SetDefault(char *namelist);
+//extern void SetDefault(char *namelist); when namelist is implemented
 
 extern void SetInputs(void);
 
