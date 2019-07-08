@@ -11,6 +11,7 @@ extern char* focus_output;
 extern char* namelist;
 // Store global variables
 
+extern int DEBUG;
 extern int Ncoils;
 extern int Nfp;
 extern int isSym;
@@ -21,7 +22,9 @@ extern int Npol;
 extern int Nteta;
 extern int Nzeta;
 extern double* coilamps;
-extern double* centroids;  //TODO: Once sfils are allowed to vary, make this COM instead according to Stuart
+extern double* cx;  //TODO: Once sfils are allowed to vary, make this COM instead according to Stuart
+extern double* cy;
+extern double* cz;
 extern double* coilspace;
 extern size_t size_coilspace;
 extern size_t size_surf;
@@ -46,6 +49,18 @@ extern double* fbz;
 extern double* sfilx;
 extern double* sfily; 
 extern double* sfilz;
+
+extern double* Bsfilx;
+extern double* Bsfily; 
+extern double* Bsfilz;
+extern double* Bsfiln;
+
+extern double* Bmfilx;
+extern double* Bmfily; 
+extern double* Bmfilz;
+extern double* Bmfiln;
+
+
 
 extern double hwid; //normal half length 0.060
 extern double hlen; //binormal half length 0.030

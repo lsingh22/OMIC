@@ -2,9 +2,8 @@
 #define _SINGLE_FIL_H
 #include "globals.h"
 
-
-
-
+void UnpackSingleFilaments(void);
+void WriteSingleFilaments(void);
 
 #endif
-~         
+         

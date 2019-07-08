@@ -3,9 +3,9 @@
 
 PROGRAM = multi
 
-FILES.c = read_namelist.c multi.c read_focus.c
+FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c
 
-FILES.h = read_namelist.h read_focus.h globals.h
+FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c globals.h bfield.h
 
 FILES.o = ${FILES.c:.c=.o}
 
@@ -52,9 +52,12 @@ multi.o: multi.c read_namelist.h
 	${CC} -c $< -o $@
 read_focus.o: read_focus.c read_focus.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
-
-
-
+single_fil.o: single_fil.c single_fil.h globals.h
+	${CC} ${NETCDF} -c $< -o $@
+multi_fil.o: multi_fil.c multi_fil.h globals.h
+	${CC} ${NETCDF} -c $< -o $@
+bfield.o: bfield.c bfield.h globals.h
+	${CC} ${NETCDF} -c $< -o $@
 # If it exists, prog1.dSYM is a directory on macOS
 
 DEBRIS = a.out core *~ *.dSYM

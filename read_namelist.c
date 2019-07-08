@@ -6,6 +6,7 @@
 double hwid;
 double hlen;
 double Nturns;
+int DEBUG;
 char* focus_output;
 
 // UPDATES GLOBALS TO USER INPUT
@@ -14,6 +15,7 @@ void SetInputs(void){
    hlen = 0.030;
    Nturns = 0;
    focus_output = "./example/focus_hsx.m12_07.nc";
+   DEBUG = 1;
 }
 
 

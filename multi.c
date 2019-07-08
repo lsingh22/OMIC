@@ -3,6 +3,7 @@
 #include <string.h>
 #include "read_namelist.h"  
 #include "read_focus.h"
+#include "single_fil.h"
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv) {
@@ -10,23 +11,32 @@ int main(int argc, char **argv) {
    SetInputs();
    ReadFocusInts(focus_output);
    ReadFocusArrays(focus_output);
- 
-//DEBUG 
-/*
-   // printf("%f\n", coilspace[1]);
-   printf("%f\n", coilspace[1]);
-   printf("%f\n", xsurf[16383]);
-   printf("%f\n", ysurf[16383]);
-   printf("%f\n", zsurf[16383]);
-   printf("%f\n", nsurfx[16383]);
-   printf("%f\n", nsurfy[16383]);
-   printf("%f\n", nsurfz[16383]);
-   printf("%f\n", fbn[16383]);
-   printf("%f\n", fbx[16383]);
-   printf("%f\n", fby[16383]);
-   printf("%f\n", fbz[16383]);
+   UnpackSingleFilaments();
+  // CalculateLocalBasis();
+  // ConstructMultifilaments();
     
-*/
+//DEBUG 
+
+   // printf("%f\n", coilspace[1]);
+   if ( DEBUG == 1)
+   {
+   
+      printf("The first entry of coilspace is:   %f\n", coilspace[0]);
+      printf("The last entry of xsurf is:   %f\n", xsurf[16383]);
+      printf("The first entry of ysurf is:   %f\n", ysurf[16383]);
+      printf("The first entry of zsurf is:   %f\n", zsurf[0]);
+      printf("The first entry of nx is:   %f\n", nsurfx[0]);
+      printf("The last entry of ny is:   %f\n", nsurfy[16383]);
+      printf("The first entry of Bn is:   %f\n", fbn[0]);
+      printf("The second entry of Bx is:   %f\n", fbx[1]);
+      printf("The first x coordinate of the first coil is:   %f\n", sfilx[0]);
+      printf("The current of the third coil is:   %f\n", currents[2]);
+      printf("The centroid of the first coil is:   %f   %f   %f\n", cx[0],cy[0],cz[0]);
+   
+      WriteSingleFilaments();
+
+
+   }
 /* 
    ReadInputs();
    ReadFocus();
