@@ -22,14 +22,16 @@ extern int Npol;
 extern int Nteta;
 extern int Nzeta;
 extern double* coilamps;
+int* ind_arr;
 extern double* cx;  //TODO: Once sfils are allowed to vary, make this COM instead according to Stuart
 extern double* cy;
 extern double* cz;
 extern double* coilspace;
+extern double* coilamps;
 extern size_t size_coilspace;
 extern size_t size_surf;
 extern double* currents;
-extern double* alphas;
+extern double* alp;
 extern int Nseg;
 extern double Nturns;
 
@@ -61,9 +63,10 @@ extern double* Bmfilz;
 extern double* Bmfiln;
 
 
-
-extern double hwid; //normal half length 0.060
-extern double hlen; //binormal half length 0.030
+extern int Nradfil;
+extern int Ntorfil;
+extern double wid; //normal half length 0.060
+extern double len; //binormal half length 0.030
 
 extern double* tx;
 extern double* ty;

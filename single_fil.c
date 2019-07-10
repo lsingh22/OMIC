@@ -19,13 +19,13 @@ double* cz;
 double* sfilx;
 double* sfily;
 double* sfilz;
-
-
+double* coilamps;
+int* ind_arr;
 
 void UnpackSingleFilaments(void){
 
    int ind = 0;
-   int ind_arr[Ncoils];
+   ind_arr = malloc(Ncoils*sizeof(int));
    int i,j,k;
    double x,y,z;
    double theta; //TODO: insert theta directly to improve speed
@@ -35,7 +35,7 @@ void UnpackSingleFilaments(void){
    cy = (double*) malloc(Ncoils*sizeof(double));
    cz = (double*) malloc(Ncoils*sizeof(double));
 
-   double* coilamps; coilamps = malloc(Ncoils*(NFcoil+3)*6*sizeof(double));
+   coilamps = malloc(Ncoils*(NFcoil+3)*6*sizeof(double));
    
    for(i=0;i<Ncoils;i++){
       if (i==0) 

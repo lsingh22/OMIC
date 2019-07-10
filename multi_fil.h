@@ -3,7 +3,10 @@
 #include "globals.h"
 
 void CalculateBuildDirections(void);
+void WriteBuildDirections(void);
+void CalculateMultiFilaments(void);
 void WriteMultiFilaments(void);
+void CalculateFiniteBuild(void);
 void WriteFiniteBuild(void);
 
 #endif

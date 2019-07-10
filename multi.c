@@ -4,6 +4,7 @@
 #include "read_namelist.h"  
 #include "read_focus.h"
 #include "single_fil.h"
+#include "multi_fil.h"
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv) {
@@ -12,10 +13,11 @@ int main(int argc, char **argv) {
    ReadFocusInts(focus_output);
    ReadFocusArrays(focus_output);
    UnpackSingleFilaments();
-  // CalculateLocalBasis();
-  // ConstructMultifilaments();
-    
-//DEBUG 
+   CalculateBuildDirections();
+   CalculateMultiFilaments();
+   WriteMultiFilaments(); 
+   printf("%f\n", mfilx[93]);
+//EBUG 
 
    // printf("%f\n", coilspace[1]);
    if ( DEBUG == 1)
