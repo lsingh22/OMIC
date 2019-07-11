@@ -2,7 +2,7 @@
 
 #include "read_focus.h"
 #include <stdlib.h>
-
+#include <stdio.h>
 // GLOBALS SCOPED IN SOURCE FILE
 
 int Nseg;
@@ -60,16 +60,16 @@ void ReadFocusArrays(char* output_file){
    
    int ncid, varid, dimid;
    coilspace = (double*) malloc(size_coilspace*sizeof(double));   
-   xsurf = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   ysurf = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   zsurf = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   nsurfx = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   nsurfy = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   nsurfz = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   fbx = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   fby = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   fbz = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
-   fbn = (double*) malloc(size_surf*sizeof(double)*size_surf*sizeof(double)); 
+   xsurf = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   ysurf = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   zsurf = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   nsurfx = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   nsurfy = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   nsurfz = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   fbx = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   fby = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   fbz = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   fbn = (double*) malloc(size_surf*size_surf*sizeof(double)); 
      
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "coilspace", &varid);
@@ -100,8 +100,16 @@ void ReadFocusArrays(char* output_file){
    nc_close(ncid);
 }
 
+void WriteBoundary(void){
+  
+   int i,j;
+   FILE* fb;
+   fb = fopen("./outputfiles/boundary.out","w");
 
-
+   for(i=0;i<size_surf*size_surf;i++){
+      fprintf(fb,"%.15f %.15f %.15f \n", *(xsurf+i),*(ysurf+i) ,*(zsurf+i));         
+   }
+}
 
 
 

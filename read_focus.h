@@ -6,6 +6,6 @@
 
 extern void ReadFocusInts(char* output_file);
 extern void ReadFocusArrays(char* output_file);
-
+extern void WriteBoundary(void);
 
 #endif
