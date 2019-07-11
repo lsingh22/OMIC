@@ -17,8 +17,10 @@ void SetInputs(void){
    len = 0.060;
    Nturns = 0;
    focus_output = "./example/focus_hsx.m12_07.nc";
-   DEBUG = 1;
-   alp = (double *) malloc(Ncoils*Nseg*sizeof(double));  //set to 0 for now
+   DEBUG = 0;
+ //  alp = (double *) malloc(Ncoils*Nseg*sizeof(double));  //set to 0 for now
+   
+
    Nradfil = 3;
    Ntorfil = 2; 
 }

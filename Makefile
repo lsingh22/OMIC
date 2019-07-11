@@ -5,7 +5,7 @@ PROGRAM = multi
 
 FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c
 
-FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c globals.h bfield.h
+FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c bfield.h globals.h 
 
 FILES.o = ${FILES.c:.c=.o}
 

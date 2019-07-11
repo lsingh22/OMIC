@@ -5,9 +5,10 @@
 #include "read_focus.h"
 #include "single_fil.h"
 #include "multi_fil.h"
+#include "bfield.h"
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
-int main(int argc, char **argv) {
+int main(int argc, char **argv){
    
    SetInputs();
    ReadFocusInts(focus_output);
@@ -16,8 +17,11 @@ int main(int argc, char **argv) {
    CalculateBuildDirections();
    CalculateMultiFilaments();
    WriteMultiFilaments(); 
-   printf("%f\n", mfilx[93]);
-//EBUG 
+
+   //CalcSingleFilsB();
+   //printf("%f\n", mfilx[93]);
+  // printf("%.15f\n", Bsfilx[1]*nsurfx[1]+Bsfily[1]*nsurfy[1]+Bsfilz[1]*nsurfz[1]);
+   //printf("%f\n", fbx[128*128]); 
 
    // printf("%f\n", coilspace[1]);
    if ( DEBUG == 1)
@@ -35,7 +39,7 @@ int main(int argc, char **argv) {
       printf("The current of the third coil is:   %f\n", currents[2]);
       printf("The centroid of the first coil is:   %f   %f   %f\n", cx[0],cy[0],cz[0]);
    
-      WriteSingleFilaments();
+      //WriteSingleFilaments();
 
 
    }

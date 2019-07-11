@@ -69,7 +69,7 @@ void CalculateBuildDirections(void){
    bza = (double *) malloc((Ncoils)*Nseg*sizeof(double));
    
    int i,j,k; 
-
+   double dot;
    //Calculate unit tangent vector
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nseg;j++){
@@ -93,11 +93,6 @@ void CalculateBuildDirections(void){
       }
    }
 
-   double dot;
-   double sum1 = 0;
-   double sum2 = 0;
-   double sum3 = 0;
-
    //printf("%d\n",(*Ncoils)*Nseg*sizeof(double));
    double* sfilxa; sfilxa = (double *) malloc((Ncoils)*Nseg*sizeof(double));
    double* sfilya; sfilya = (double *) malloc((Ncoils)*Nseg*sizeof(double));
@@ -113,6 +108,8 @@ void CalculateBuildDirections(void){
       }
    }
 
+   alp = (double *) malloc(Ncoils*Nseg*sizeof(double)); 
+
    for(i=0;i<Ncoils*Nseg;i++){
       x=0;y=0;z=0;
       dot = *(sfilxa + i) * *(tx + i) + *(sfilya + i) * *(ty + i) + *(sfilza + i) * *(tz + i);
@@ -126,8 +123,8 @@ void CalculateBuildDirections(void){
       *(bx+i) = *(ty+i) * *(nz+i) - *(tz+i) * *(ny+i);
       *(by+i) = *(tz+i) * *(nx+i) - *(tx+i) * *(nz+i);
       *(bz+i) = *(tx+i) * *(ny+i) - *(ty+i) * *(nx+i);
-
    //Rotate the normal and binormal vectors by an angle alpha about the tangent vector
+      *(alp+i)=0.0;     
       *(nxa+i) = *(nx+i)*cos(*(alp+i)) + *(bx+i)*sin(*(alp+i));
       *(nya+i) = *(ny+i)*cos(*(alp+i)) + *(by+i)*sin(*(alp+i));
       *(nza+i) = *(nz+i)*cos(*(alp+i)) + *(bz+i)*sin(*(alp+i));
@@ -135,7 +132,7 @@ void CalculateBuildDirections(void){
       *(bxa+i) = -*(nx+i)*sin(*(alp+i)) + *(bx+i)*cos(*(alp+i));
       *(bya+i) = -*(ny+i)*sin(*(alp+i)) + *(by+i)*cos(*(alp+i));
       *(bza+i) = -*(nz+i)*sin(*(alp+i)) + *(bz+i)*cos(*(alp+i));
- 
+//printf("%f %f %f %f %f %f\n", *(nx+i),*(ny+i),*(nz+i),*(bx+i),*(by+i),*(alp+i)); 
    }
 }
 
@@ -152,8 +149,7 @@ void CalculateMultiFilaments(void){
    mfilx = (double*) malloc(Ncoils*Nfils*Nseg*sizeof(double));
    mfily = (double*) malloc(Ncoils*Nfils*Nseg*sizeof(double));
    mfilz = (double*) malloc(Ncoils*Nfils*Nseg*sizeof(double));
-
-  
+ 
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
@@ -165,14 +161,9 @@ void CalculateMultiFilaments(void){
          }
       }
    }
-
 }
 
 //void CalculateFiniteBuild(void){}
-
-
-
-
 
 void WriteMultiFilaments(void){
 
@@ -182,6 +173,16 @@ void WriteMultiFilaments(void){
    fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
    int Nfils = Ntorfil*Nradfil;
    
+ /*  for(i=0;i<Ncoils;i++){
+      for(j=0;j<Nfils;j++){
+         for(k=0;k<Nseg;k++){
+         printf("%.15f %.15f %.15f %.8f \n", *(mfilx+i*Nseg*Nfils+j*Nseg+k), *(mfily+i*Nseg*Nfils+j*Nseg+k), *(mfilz+i*Nseg*Nfils+j*Nseg+k), *(currents+i));
+         }
+      printf("%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*Nseg*Nfils+j*Nseg), *(mfily+i*Nseg*Nfils+j*Nseg), *(mfilz+i*Nseg*Nfils+j*Nseg), *(currents+i), i+1,j+
+1);
+      }
+   }  
+*/
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nfils;j++){
          for(k=0;k<Nseg;k++){
@@ -191,7 +192,6 @@ void WriteMultiFilaments(void){
       }
    }
    fprintf(fb,"end");
-
 }
 
 //void WriteFiniteBuild(void){}

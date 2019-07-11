@@ -16,7 +16,7 @@ extern int Ncoils;
 extern int Nfp;
 extern int isSym;
 extern int NFcoil;  // extern int* NFcoil after Focus update
-extern int Ncoils;
+
 extern int Ntor;
 extern int Npol;
 extern int Nteta;
