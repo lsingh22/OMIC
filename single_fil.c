@@ -1,5 +1,6 @@
 
 #include "single_fil.h"
+#include "bfield.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -21,6 +22,22 @@ double* sfily;
 double* sfilz;
 double* coilamps;
 int* ind_arr;
+
+double* Bsfilx;
+double* Bsfily;
+double* Bsfilz;
+double* Bsfiln;
+double* Bsfil;
+ 
+double* nsurfx;
+double* nsurfy;
+double* nsurfz;
+
+double* xsurf;
+double* ysurf;
+double* zsurf;
+
+size_t size_surf;
 
 void UnpackSingleFilaments(void){
 
@@ -60,12 +77,12 @@ void UnpackSingleFilaments(void){
         cz[i] = coilamps[ind_arr[i] + 4*(NFcoil + 1)-2];
    } 
 
-   sfilx = (double*) malloc(Ncoils*Nseg*sizeof(double));
-   sfily = (double*) malloc(Ncoils*Nseg*sizeof(double));
-   sfilz = (double*) malloc(Ncoils*Nseg*sizeof(double));
+   sfilx = (double*) malloc(Ncoils*(Nseg+1)*sizeof(double));
+   sfily = (double*) malloc(Ncoils*(Nseg+1)*sizeof(double));
+   sfilz = (double*) malloc(Ncoils*(Nseg+1)*sizeof(double));
 
-   for(i=0;i<Ncoils;i++){   //TODO: Replace theta for speed
-      for(j=0;j<Nseg;j++){
+   for(i=0;i<Ncoils;i++){   
+      for(j=0;j<Nseg+1;j++){
          theta = ((2*pi)/Nseg)*j;
 	 x=0;y=0;z=0;
          for(k=0;k<NFcoil+1;k++){ //add the cosine components
@@ -79,12 +96,69 @@ void UnpackSingleFilaments(void){
            z = z + coilamps[ ind_arr[i] + 5*NFcoil + 2 + k ]*sin(k*theta);
          }
         
-         *(sfilx + i*Nseg + j ) = x;
-	 *(sfily + i*Nseg + j ) = y;
-         *(sfilz + i*Nseg + j ) = z;
+         *(sfilx + i*(Nseg+1) + j ) = x;
+	 *(sfily + i*(Nseg+1) + j ) = y;
+         *(sfilz + i*(Nseg+1) + j ) = z;
       }
    }
 }
+
+void SingleFilField(void){
+ //TODO: Allocate arrays boiii
+   
+   Bsfilx = (double*) malloc(size_surf*size_surf*sizeof(double));
+   Bsfily = (double*) malloc(size_surf*size_surf*sizeof(double));
+   Bsfilz = (double*) malloc(size_surf*size_surf*sizeof(double));
+   Bsfiln = (double*) malloc(size_surf*size_surf*sizeof(double));
+    Bsfil = (double*) malloc(size_surf*size_surf*sizeof(double));
+
+   int i;
+  // for(i=0;i<size_surf*size_surf;i++){
+   for(i=0;i<size_surf*size_surf;i++){
+      
+      CalculateSingleField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
+                            Bsfilx+i, Bsfily+i, Bsfilz+i );    
+      *(Bsfiln+i) = *(Bsfilx+i) * *(nsurfx+i) + *(Bsfily+i) * *(nsurfy+i) + \
+                    *(Bsfilz+i) * *(nsurfz+i);  
+      *(Bsfil+i) = sqrt( pow(*(Bsfilx+i),2) + pow(*(Bsfily+i),2) + pow(*(Bsfilz+i),2) ); 
+   }
+}
+
+#define SFILB_FILE_NAME "./outputfiles/sfilB.nc"
+   
+void WriteSingleB(void){
+   //Write to NC
+   int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
+   int bxvarid, byvarid, bzvarid;
+   int dimids[2];
+   
+   nc_create(SFILB_FILE_NAME, NC_CLOBBER, &ncid); 
+   nc_def_dim(ncid, "size_surf1", size_surf, &xdimid);
+   nc_def_dim(ncid, "size_surf2", size_surf, &ydimid);
+   dimids[0] = xdimid;
+   dimids[1] = ydimid;
+   
+   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
+   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
+   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
+   nc_def_var(ncid, "B", NC_DOUBLE, 2, dimids, &bvarid);  
+   nc_def_var(ncid, "Bx", NC_DOUBLE, 2, dimids, &bxvarid);
+   nc_def_var(ncid, "By", NC_DOUBLE, 2, dimids, &byvarid);
+   nc_def_var(ncid, "Bz", NC_DOUBLE, 2, dimids, &bzvarid);  
+ 
+
+   nc_enddef(ncid);
+   nc_put_var_double(ncid, xvarid, &xsurf[0]);
+   nc_put_var_double(ncid, yvarid, &ysurf[0]);
+   nc_put_var_double(ncid, zvarid, &zsurf[0]);
+   nc_put_var_double(ncid, bvarid, &Bsfil[0]);
+   nc_put_var_double(ncid, bxvarid, &Bsfilx[0]);
+   nc_put_var_double(ncid, byvarid, &Bsfily[0]);
+   nc_put_var_double(ncid, bzvarid, &Bsfilz[0]);
+ 
+   nc_close(ncid);
+}
+
 
 void WriteSingleFilaments(void){
   
@@ -95,9 +169,9 @@ void WriteSingleFilaments(void){
 
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nseg;j++){
-         fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(sfilx+i*Nseg+j), *(sfily+i*Nseg+j), *(sfilz+i*Nseg+j), *(currents+i));         
+         fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(sfilx+i*(Nseg+1)+j), *(sfily+i*(Nseg+1)+j), *(sfilz+i*(Nseg+1)+j), *(currents+i));         
          }
-      fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*Nseg), *(sfily+i*Nseg), *(sfilz+i*Nseg), *(currents+i), i+1);         
+      fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*(Nseg+1)), *(sfily+i*(Nseg+1)), *(sfilz+i*(Nseg+1)), *(currents+i), i+1);         
    }
    fprintf(fb,"end");
 

@@ -3,6 +3,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "bfield.h"
 
 //GLOBALS SCOPED IN SOURCE FILE
 
@@ -51,28 +52,28 @@ void CalculateBuildDirections(void){
    double norm;
    double theta, x,y,z;
    double pi = M_PI;
-   tx = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   ty = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   tz = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   nx = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   ny = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   nz = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   bx = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   by = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   bz = (double *) malloc((Ncoils)*Nseg*sizeof(double));
+   tx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   ty = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   tz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   nx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   ny = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   nz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   by = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
     
-   nxa = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   nya = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   nza = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   bxa = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   bya = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   bza = (double *) malloc((Ncoils)*Nseg*sizeof(double));
+   nxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   nya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   nza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
    
    int i,j,k; 
    double dot;
    //Calculate unit tangent vector
    for(i=0;i<Ncoils;i++){
-      for(j=0;j<Nseg;j++){
+      for(j=0;j<Nseg+1;j++){
          theta = ((2*pi)/Nseg)*j;
          x=0;y=0;z=0;norm=0;
          for(k=0;k<NFcoil+1;k++){ //add the cosine components
@@ -86,31 +87,31 @@ void CalculateBuildDirections(void){
            z = z + k*coilamps[ ind_arr[i] + 5*NFcoil + 2 + k ]*cos(k*theta);
          }
          norm = sqrt(x*x + y*y + z*z);
-         *(tx + i*Nseg + j ) = x/norm;
-         *(ty + i*Nseg + j ) = y/norm;
-         *(tz + i*Nseg + j ) = z/norm;
+         *(tx + i*(Nseg+1) + j ) = x/norm;
+         *(ty + i*(Nseg+1) + j ) = y/norm;
+         *(tz + i*(Nseg+1) + j ) = z/norm;
  
       }
    }
 
    //printf("%d\n",(*Ncoils)*Nseg*sizeof(double));
-   double* sfilxa; sfilxa = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   double* sfilya; sfilya = (double *) malloc((Ncoils)*Nseg*sizeof(double));
-   double* sfilza; sfilza = (double *) malloc((Ncoils)*Nseg*sizeof(double));
+   double* sfilxa; sfilxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   double* sfilya; sfilya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   double* sfilza; sfilza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
 
    //Calculate vector pointing from coil centroid to point on coil for each coil
    for(i=0;i<Ncoils;i++){
-      for(j=0;j<Nseg;j++){
-         *(sfilxa + i*Nseg + j ) = *(sfilx + i*Nseg + j ) - *(cx + i);
-         *(sfilya + i*Nseg + j ) = *(sfily + i*Nseg + j ) - *(cy +i);
-         *(sfilza + i*Nseg + j ) = *(sfilz + i*Nseg + j ) - *(cz + i);
+      for(j=0;j<Nseg+1;j++){
+         *(sfilxa + i*(Nseg+1) + j ) = *(sfilx + i*(Nseg+1) + j ) - *(cx + i);
+         *(sfilya + i*(Nseg+1) + j ) = *(sfily + i*(Nseg+1) + j ) - *(cy +i);
+         *(sfilza + i*(Nseg+1) + j ) = *(sfilz + i*(Nseg+1) + j ) - *(cz + i);
 	 //printf("%f %f %f\n", *(sfilxa + i*Nseg + j ), *(sfilya + i*Nseg + j ), *(sfilza + i*Nseg + j ));
       }
    }
 
-   alp = (double *) malloc(Ncoils*Nseg*sizeof(double)); 
+   alp = (double *) malloc(Ncoils*(Nseg+1)*sizeof(double)); 
 
-   for(i=0;i<Ncoils*Nseg;i++){
+   for(i=0;i<Ncoils*(Nseg+1);i++){
       x=0;y=0;z=0;
       dot = *(sfilxa + i) * *(tx + i) + *(sfilya + i) * *(ty + i) + *(sfilza + i) * *(tz + i);
       x = *(sfilxa + i) - dot* *(tx + i);
@@ -146,17 +147,17 @@ void CalculateMultiFilaments(void){
    double gridwid = wid / (2*Ntorfil);
    int Nfils = Nradfil*Ntorfil;
 
-   mfilx = (double*) malloc(Ncoils*Nfils*Nseg*sizeof(double));
-   mfily = (double*) malloc(Ncoils*Nfils*Nseg*sizeof(double));
-   mfilz = (double*) malloc(Ncoils*Nfils*Nseg*sizeof(double));
+   mfilx = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
+   mfily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
+   mfilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
  
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
-            for(l=0;l<Nseg;l++){
-            *(mfilx + i*Nfils*Nseg + j*Nseg*Nradfil + k*Nseg + l) = *(sfilx +i*Nseg + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nxa + i*Nseg + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bxa + i*Nseg + l);
-            *(mfily + i*Nfils*Nseg + j*Nseg*Nradfil + k*Nseg + l) = *(sfily +i*Nseg + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nya + i*Nseg + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bya + i*Nseg + l);
-	    *(mfilz + i*Nfils*Nseg + j*Nseg*Nradfil + k*Nseg + l) = *(sfilz +i*Nseg + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nza + i*Nseg + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bza + i*Nseg + l);
+            for(l=0;l<Nseg+1;l++){
+            *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilx +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nxa + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bxa + i*(Nseg+1) + l);
+            *(mfily + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfily +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nya + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bya + i*(Nseg+1) + l);
+	    *(mfilz + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilz +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nza + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bza + i*(Nseg+1) + l);
 	    }
          }
       }
@@ -164,6 +165,13 @@ void CalculateMultiFilaments(void){
 }
 
 //void CalculateFiniteBuild(void){}
+
+void MultiField(void){
+
+
+
+
+}
 
 void WriteMultiFilaments(void){
 
@@ -186,9 +194,9 @@ void WriteMultiFilaments(void){
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nfils;j++){
          for(k=0;k<Nseg;k++){
-         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*Nseg*Nfils+j*Nseg+k), *(mfily+i*Nseg*Nfils+j*Nseg+k), *(mfilz+i*Nseg*Nfils+j*Nseg+k), *(currents+i));     
+         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*Nseg*Nfils+j*Nseg), *(mfily+i*Nseg*Nfils+j*Nseg), *(mfilz+i*Nseg*Nfils+j*Nseg), *(currents+i), i+1,j+1);         
+      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i), i+1,j+1);   
       }
    }
    fprintf(fb,"end");

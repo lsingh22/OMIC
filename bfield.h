@@ -2,10 +2,11 @@
 #define _BFIELD_H
 #include "globals.h"
 
-void CalcSingleFilsB(void);
-void CalcMultiFilsB(void);
-void DiagnoseSingleFilsB(void);
-void DiagnoseMultiFilsB(void);
+void CalculateSingleField(double x, double y, double z, \
+                          double* Bx, double* By, double* Bz);
+
+void CalculateMultiField(double x, double y, double z, \
+                          double* Bx, double* By, double* Bz);
 
 #endif
  

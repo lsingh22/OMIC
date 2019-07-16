@@ -38,8 +38,9 @@ void ReadFocusInts(char* output_file){
    nc_get_var_int(ncid, varid, &Nfp);
    nc_inq_varid(ncid, "IsSymmetric", &varid);
    nc_get_var_int(ncid, varid, &isSym);
-   nc_inq_varid(ncid, "Nseg", &varid);
-   nc_get_var_int(ncid, varid, &Nseg);
+   //nc_inq_varid(ncid, "Nseg", &varid);
+   //nc_get_var_int(ncid, varid, &Nseg);
+   Nseg = 128;
    nc_inq_varid(ncid, "NFcoil", &varid);
    nc_get_var_int(ncid, varid, &NFcoil);
    nc_inq_varid(ncid, "Nteta", &varid);
@@ -98,6 +99,7 @@ void ReadFocusArrays(char* output_file){
    nc_inq_varid(ncid, "Bz", &varid);
    nc_get_var_double(ncid, varid, fbz);
    nc_close(ncid);
+
 }
 
 void WriteBoundary(void){
@@ -111,6 +113,27 @@ void WriteBoundary(void){
    }
 }
 
+#define FILE_NAME "./outputfiles/boundary.nc"
+   
+void WriteBoundaryNC(void){
 
+   int ncid, xvarid, yvarid, zvarid, xdimid, ydimid;
+   int dimids[2];
+   
+   nc_create(FILE_NAME, NC_CLOBBER, &ncid); 
+   nc_def_dim(ncid, "size_surf1", size_surf, &xdimid);
+   nc_def_dim(ncid, "size_surf2", size_surf, &ydimid);
+   dimids[0] = xdimid;
+   dimids[1] = ydimid;
+   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
+   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
+   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
+
+   nc_enddef(ncid);
+   nc_put_var_double(ncid, xvarid, &xsurf[0]);
+   nc_put_var_double(ncid, yvarid, &ysurf[0]);
+   nc_put_var_double(ncid, zvarid, &zsurf[0]);
+   nc_close(ncid);
+}
 
 

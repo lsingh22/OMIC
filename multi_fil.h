@@ -5,6 +5,7 @@
 void CalculateBuildDirections(void);
 void WriteBuildDirections(void);
 void CalculateMultiFilaments(void);
+void MultiField(void);
 void WriteMultiFilaments(void);
 void CalculateFiniteBuild(void);
 void WriteFiniteBuild(void);

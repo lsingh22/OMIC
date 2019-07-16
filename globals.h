@@ -56,6 +56,7 @@ extern double* Bsfilx;
 extern double* Bsfily; 
 extern double* Bsfilz;
 extern double* Bsfiln;
+extern double* Bsfil;
 
 extern double* Bmfilx;
 extern double* Bmfily; 
