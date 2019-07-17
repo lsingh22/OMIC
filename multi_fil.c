@@ -13,6 +13,9 @@ int Nseg;
 int Nradfil;
 int Ntorfil;
 
+int Nzeta;
+int Nteta;
+
 double* tx;
 double* ty;
 double* tz;
@@ -34,6 +37,7 @@ double* alp;
 double* cx;
 double* cy;
 double* cz;
+
 double* sfilx;
 double* sfily;
 double* sfilz;
@@ -45,6 +49,12 @@ double* mfilz;
 double* finx;
 double* finy;
 double* finz;
+
+double* Bmfilx;
+double* Bmfily;
+double* Bmfilz;
+double* Bmfil;
+double* Bmfiln;
 
 
 void CalculateBuildDirections(void){
@@ -166,13 +176,62 @@ void CalculateMultiFilaments(void){
 
 //void CalculateFiniteBuild(void){}
 
-void MultiField(void){
+void MultiFilField(void){
+  
+   Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bmfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bmfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bmfiln = (double*) malloc(Nzeta*Nteta*sizeof(double));
+    Bmfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
 
-
-
-
+   int i;
+   
+   for(i=0;i<Nzeta*Nteta;i++){
+      
+      CalculateMultiField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
+                            Bmfilx+i, Bmfily+i, Bmfilz+i );    
+      *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
+                    *(Bmfilz+i) * *(nsurfz+i);  
+      *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
+   }
 }
 
+#define MFILB_FILE_NAME "./outputfiles/mfilB.nc"
+   
+void WriteMultiB(void){
+   //Write to NC
+   int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
+   int bxvarid, byvarid, bzvarid;
+   int dimids[2];
+   
+   nc_create(MFILB_FILE_NAME, NC_CLOBBER, &ncid); 
+   nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
+   nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
+   dimids[0] = xdimid;
+   dimids[1] = ydimid;
+   
+   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
+   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
+   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
+   nc_def_var(ncid, "B", NC_DOUBLE, 2, dimids, &bvarid);  
+   nc_def_var(ncid, "Bx", NC_DOUBLE, 2, dimids, &bxvarid);
+   nc_def_var(ncid, "By", NC_DOUBLE, 2, dimids, &byvarid);
+   nc_def_var(ncid, "Bz", NC_DOUBLE, 2, dimids, &bzvarid);  
+ 
+
+   nc_enddef(ncid);
+   nc_put_var_double(ncid, xvarid, &xsurf[0]);
+   nc_put_var_double(ncid, yvarid, &ysurf[0]);
+   nc_put_var_double(ncid, zvarid, &zsurf[0]);
+   nc_put_var_double(ncid, bvarid, &Bmfil[0]);
+   nc_put_var_double(ncid, bxvarid, &Bmfilx[0]);
+   nc_put_var_double(ncid, byvarid, &Bmfily[0]);
+   nc_put_var_double(ncid, bzvarid, &Bmfilz[0]);
+
+   nc_close(ncid);
+}
+
+ 
 void WriteMultiFilaments(void){
 
    int i,j,k;

@@ -8,6 +8,7 @@
 #include "bfield.h"
 #include <math.h>
 #include <time.h>
+
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv){
    
@@ -24,11 +25,14 @@ int main(int argc, char **argv){
    UnpackSingleFilaments();
    CalculateBuildDirections();
    CalculateMultiFilaments();
+   
    WriteMultiFilaments(); 
-   //CalcSingleFilsB();
-   WriteBoundaryNC();
    SingleFilField();
+   WriteBoundaryNC();
+   MultiFilField();
+   
    WriteSingleB();
+   WriteMultiB();
    //MultiFilamentField();
    //
    //

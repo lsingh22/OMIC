@@ -28,8 +28,8 @@ double* fbz;
 
 // READS AND STORES VARIOUS FOCUS COILSET PARAMETERS
 // DETERMINES SIZE TO ALLOCATE OUTPUT FOCUS DATA
-void ReadFocusInts(char* output_file){
-   
+void ReadFocusInts(char* output_file){  
+  
    int ncid, varid, dimid;  
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "Ncoils", &varid);
@@ -38,9 +38,6 @@ void ReadFocusInts(char* output_file){
    nc_get_var_int(ncid, varid, &Nfp);
    nc_inq_varid(ncid, "IsSymmetric", &varid);
    nc_get_var_int(ncid, varid, &isSym);
-   //nc_inq_varid(ncid, "Nseg", &varid);
-   //nc_get_var_int(ncid, varid, &Nseg);
-   Nseg = 128;
    nc_inq_varid(ncid, "NFcoil", &varid);
    nc_get_var_int(ncid, varid, &NFcoil);
    nc_inq_varid(ncid, "Nteta", &varid);
@@ -51,8 +48,8 @@ void ReadFocusInts(char* output_file){
    nc_inq_vardimid(ncid,varid,&dimid);
    nc_inq_dimlen(ncid,dimid,&size_coilspace);  
    nc_inq_varid(ncid,"xsurf",&varid);
-   nc_inq_vardimid(ncid,varid,&dimid);
-   nc_inq_dimlen(ncid,dimid,&size_surf);
+   //nc_inq_vardimid(ncid,varid,&dimid);
+   //nc_inq_dimlen(ncid,dimid,&size_surf);
    nc_close(ncid);
 }
 
@@ -61,16 +58,16 @@ void ReadFocusArrays(char* output_file){
    
    int ncid, varid, dimid;
    coilspace = (double*) malloc(size_coilspace*sizeof(double));   
-   xsurf = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   ysurf = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   zsurf = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   nsurfx = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   nsurfy = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   nsurfz = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   fbx = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   fby = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   fbz = (double*) malloc(size_surf*size_surf*sizeof(double)); 
-   fbn = (double*) malloc(size_surf*size_surf*sizeof(double)); 
+   xsurf = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   ysurf = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   zsurf = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   nsurfx = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   nsurfy = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   nsurfz = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   fbx = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   fby = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   fbz = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   fbn = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
      
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "coilspace", &varid);
@@ -108,7 +105,7 @@ void WriteBoundary(void){
    FILE* fb;
    fb = fopen("./outputfiles/boundary.out","w");
 
-   for(i=0;i<size_surf*size_surf;i++){
+   for(i=0;i<Nzeta*Nteta;i++){
       fprintf(fb,"%.15f %.15f %.15f \n", *(xsurf+i),*(ysurf+i) ,*(zsurf+i));         
    }
 }
@@ -121,8 +118,8 @@ void WriteBoundaryNC(void){
    int dimids[2];
    
    nc_create(FILE_NAME, NC_CLOBBER, &ncid); 
-   nc_def_dim(ncid, "size_surf1", size_surf, &xdimid);
-   nc_def_dim(ncid, "size_surf2", size_surf, &ydimid);
+   nc_def_dim(ncid, "size_surf1", Nzeta, &xdimid);
+   nc_def_dim(ncid, "size_surf2", Nteta, &ydimid);
    dimids[0] = xdimid;
    dimids[1] = ydimid;
    nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
