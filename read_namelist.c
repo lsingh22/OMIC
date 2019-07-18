@@ -16,7 +16,8 @@ void SetInputs(void){
    wid = 0.120;
    len = 0.060;
    Nturns = 0;
-   focus_output = "./inputfiles/focus_circular.nc";
+   //focus_output = "./inputfiles/focus_circular.nc";
+   focus_output = "./inputfiles/focus_hsx.m12_07_128.nc";
    DEBUG = 1;
  //  alp = (double *) malloc(Ncoils*Nseg*sizeof(double));  //set to 0 for now
    
