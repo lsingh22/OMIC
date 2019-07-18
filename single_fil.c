@@ -12,6 +12,10 @@ int Nseg;
 int Nfp;
 int isSym;
 int NFcoil; //TODO
+
+int Nzeta;
+int Nteta;
+
 double* coilspace;
 double* currents;
 double* cx;
@@ -37,7 +41,6 @@ double* xsurf;
 double* ysurf;
 double* zsurf;
 
-size_t size_surf;
 
 void UnpackSingleFilaments(void){
 
@@ -104,17 +107,16 @@ void UnpackSingleFilaments(void){
 }
 
 void SingleFilField(void){
- //TODO: Allocate arrays boiii
-   
-   Bsfilx = (double*) malloc(size_surf*size_surf*sizeof(double));
-   Bsfily = (double*) malloc(size_surf*size_surf*sizeof(double));
-   Bsfilz = (double*) malloc(size_surf*size_surf*sizeof(double));
-   Bsfiln = (double*) malloc(size_surf*size_surf*sizeof(double));
-    Bsfil = (double*) malloc(size_surf*size_surf*sizeof(double));
+  
+   Bsfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bsfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bsfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bsfiln = (double*) malloc(Nzeta*Nteta*sizeof(double));
+    Bsfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
 
    int i;
   // for(i=0;i<size_surf*size_surf;i++){
-   for(i=0;i<size_surf*size_surf;i++){
+   for(i=0;i<Nzeta*Nteta;i++){
       
       CalculateSingleField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
                             Bsfilx+i, Bsfily+i, Bsfilz+i );    
@@ -133,8 +135,8 @@ void WriteSingleB(void){
    int dimids[2];
    
    nc_create(SFILB_FILE_NAME, NC_CLOBBER, &ncid); 
-   nc_def_dim(ncid, "size_surf1", size_surf, &xdimid);
-   nc_def_dim(ncid, "size_surf2", size_surf, &ydimid);
+   nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
+   nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
    dimids[0] = xdimid;
    dimids[1] = ydimid;
    

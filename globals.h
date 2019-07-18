@@ -62,7 +62,7 @@ extern double* Bmfilx;
 extern double* Bmfily; 
 extern double* Bmfilz;
 extern double* Bmfiln;
-
+extern double* Bmfil;
 
 extern int Nradfil;
 extern int Ntorfil;
