@@ -44,7 +44,7 @@ LDLIBS  =
 all:    ${PROGRAM}
 
 ${PROGRAM}: ${FILES.o}
-	${CC} -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS} ${NETCDF} $^
+	${CC} -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS} $^ ${NETCDF} -lm
 
 read_namelist.o: read_namelist.c globals.h read_namelist.h
 	${CC} ${NETCDF} -c $< -o $@
