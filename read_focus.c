@@ -5,6 +5,9 @@
 #include <stdio.h>
 // GLOBALS SCOPED IN SOURCE FILE
 
+#define ERRCODE 2
+#define ERR(e) {printf("Error: %s\n", nc_strerror(e)); exit(ERRCODE);}
+
 int Nseg;
 int Ncoils;
 int Nfp;
@@ -28,9 +31,9 @@ double* fbz;
 
 // READS AND STORES VARIOUS FOCUS COILSET PARAMETERS
 // DETERMINES SIZE TO ALLOCATE OUTPUT FOCUS DATA
-void ReadFocusInts(char* output_file){  
-  
-   int ncid, varid, dimid;  
+void ReadFocusInts(char* output_file){
+   
+   int ncid, varid, dimid, retval;
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "Ncoils", &varid);
    nc_get_var_int(ncid, varid, &Ncoils);
@@ -44,13 +47,20 @@ void ReadFocusInts(char* output_file){
    nc_get_var_int(ncid, varid, &Nteta);
    nc_inq_varid(ncid, "Nzeta", &varid);
    nc_get_var_int(ncid, varid, &Nzeta);
-   nc_inq_varid(ncid,"coilspace",&varid);
-   nc_inq_vardimid(ncid,varid,&dimid);
-   nc_inq_dimlen(ncid,dimid,&size_coilspace);  
-   nc_inq_varid(ncid,"xsurf",&varid);
-   //nc_inq_vardimid(ncid,varid,&dimid);
-   //nc_inq_dimlen(ncid,dimid,&size_surf);
-   nc_close(ncid);
+   if(retval = nc_inq_varid(ncid,"coilspace",&varid))
+      ERR(retval);
+   if(retval = nc_inq_vardimid(ncid,varid,&dimid))
+      ERR(retval); 
+   if(retval = nc_inq_dimlen(ncid,dimid,&size_coilspace))
+     ERR(retval); 
+   if(retval = nc_inq_varid(ncid,"xsurf",&varid))
+     ERR(retval);
+   if(retval = nc_inq_vardimid(ncid,varid,&dimid))
+     ERR(retval);
+   if(retval = nc_inq_dimlen(ncid,dimid,&size_surf))
+     ERR(retval);
+   if(retval = nc_close(ncid))
+     ERR(retval);
 }
 
 // ALLOCATES AND STORES FOCUS DATA
