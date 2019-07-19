@@ -4,6 +4,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
+#include <omp.h>
+#include <unistd.h>
 
 // GLOBALS SCOPED IN SOURCE FILE
 
@@ -115,15 +118,27 @@ void SingleFilField(void){
     Bsfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
 
    int i;
-  // for(i=0;i<size_surf*size_surf;i++){
+
+   double timeBfield;
+   double startBfield, endBfield;
+
+   omp_set_num_threads(4);
+
+   startBfield = omp_get_wtime(); //clock();
+   // for(i=0;i<size_surf*size_surf;i++){
+   //OpenMP parallelization 
+   #pragma omp parallel for
    for(i=0;i<Nzeta*Nteta;i++){
-      
+
       CalculateSingleField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
-                            Bsfilx+i, Bsfily+i, Bsfilz+i );    
+                            Bsfilx+i, Bsfily+i, Bsfilz+i );   
+
       *(Bsfiln+i) = *(Bsfilx+i) * *(nsurfx+i) + *(Bsfily+i) * *(nsurfy+i) + \
                     *(Bsfilz+i) * *(nsurfz+i);  
       *(Bsfil+i) = sqrt( pow(*(Bsfilx+i),2) + pow(*(Bsfily+i),2) + pow(*(Bsfilz+i),2) ); 
    }
+   endBfield = omp_get_wtime(); //clock();
+   printf("\nTotal time of single fil field calculation: %f\n\n", endBfield-startBfield);//timeBfield);  
 }
 
 #define SFILB_FILE_NAME "./outputfiles/sfilB.nc"

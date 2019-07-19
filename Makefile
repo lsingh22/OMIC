@@ -35,7 +35,7 @@ NETCDF_HOME = ${NETCDF_C_HOME}
 
 NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf 
 
-CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS}
+CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp
 
 LDFLAGS =
 
@@ -44,7 +44,7 @@ LDLIBS  =
 all:    ${PROGRAM}
 
 ${PROGRAM}: ${FILES.o}
-	${CC} -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS} $^ ${NETCDF} -lm
+	${CC} -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS} $^ ${NETCDF} -lm 
 
 read_namelist.o: read_namelist.c globals.h read_namelist.h
 	${CC} ${NETCDF} -c $< -o $@
@@ -53,7 +53,7 @@ multi.o: multi.c read_namelist.h
 read_focus.o: read_focus.c read_focus.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
 single_fil.o: single_fil.c single_fil.h globals.h
-	${CC} ${NETCDF} -c $< -o $@
+	${CC} -fopenmp ${NETCDF} -c $< -o $@
 multi_fil.o: multi_fil.c multi_fil.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
 bfield.o: bfield.c bfield.h globals.h

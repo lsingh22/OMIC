@@ -14,6 +14,7 @@ int main(int argc, char **argv){
    
    double tot_time;
    clock_t start, end;
+   // At some point use higher resolution timer 
    
    start = clock();
 
@@ -26,11 +27,14 @@ int main(int argc, char **argv){
    CalculateBuildDirections();
    CalculateMultiFilaments();
    
+   //Writing might take significant time 
    WriteMultiFilaments(); 
+
    SingleFilField();
    WriteBoundaryNC();
    MultiFilField();
    
+   //Check to see if this takes majority of time 
    WriteSingleB();
    WriteMultiB();
    //MultiFilamentField();
