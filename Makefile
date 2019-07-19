@@ -33,7 +33,8 @@ UFLAGS  = # Set on command line only
 
 NETCDF_HOME = ${NETCDF_C_HOME}
 
-NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf 
+NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib
+#NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib/x86_64-linux-gnu -lnetcdf 
 
 CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp
 
@@ -44,6 +45,7 @@ LDLIBS  =
 all:    ${PROGRAM}
 
 ${PROGRAM}: ${FILES.o}
+
 	${CC} -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS} $^ ${NETCDF} -lm 
 
 read_namelist.o: read_namelist.c globals.h read_namelist.h

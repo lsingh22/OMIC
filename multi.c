@@ -19,7 +19,6 @@ int main(int argc, char **argv){
    start = clock();
 
    double bx, by, bz;   
-  
    SetInputs();
    ReadFocusInts(focus_output);
    ReadFocusArrays(focus_output);
@@ -101,5 +100,5 @@ int main(int argc, char **argv){
 
 end = clock();
 tot_time = ((double) (end-start)) / CLOCKS_PER_SEC;
-printf("\nTotal time taken is: %f\n", tot_time);  
+printf("\nTotal time taken is: %f\n", tot_time); 
 }

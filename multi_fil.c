@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "bfield.h"
+#include <omp.h>
+
+int Nthreads;
 
 //GLOBALS SCOPED IN SOURCE FILE
 
@@ -174,7 +177,6 @@ void CalculateMultiFilaments(void){
    }
 }
 
-//void CalculateFiniteBuild(void){}
 
 void MultiFilField(void){
   
@@ -186,7 +188,9 @@ void MultiFilField(void){
 
    int i;
    
-   for(i=0;i<Nzeta*Nteta;i++){
+   //omp_set_dynamic(0);
+   //omp_set_num_threads(Nthreads);   
+  for(i=0;i<Nzeta*Nteta;i++){
       
       CalculateMultiField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
                             Bmfilx+i, Bmfily+i, Bmfilz+i );    
@@ -195,6 +199,9 @@ void MultiFilField(void){
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
 }
+
+
+
 
 #define MFILB_FILE_NAME "./outputfiles/mfilB.nc"
    
@@ -240,27 +247,23 @@ void WriteMultiFilaments(void){
    fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
    int Nfils = Ntorfil*Nradfil;
    
- /*  for(i=0;i<Ncoils;i++){
-      for(j=0;j<Nfils;j++){
-         for(k=0;k<Nseg;k++){
-         printf("%.15f %.15f %.15f %.8f \n", *(mfilx+i*Nseg*Nfils+j*Nseg+k), *(mfily+i*Nseg*Nfils+j*Nseg+k), *(mfilz+i*Nseg*Nfils+j*Nseg+k), *(currents+i));
-         }
-      printf("%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*Nseg*Nfils+j*Nseg), *(mfily+i*Nseg*Nfils+j*Nseg), *(mfilz+i*Nseg*Nfils+j*Nseg), *(currents+i), i+1,j+
-1);
-      }
-   }  
-*/
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nfils;j++){
          for(k=0;k<Nseg;k++){
-         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
+         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
+                                                 *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
+                                                 *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i), i+1,j+1);   
+      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+                                                       *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i), i+1,j+1);   
       }
    }
    fprintf(fb,"end");
 }
 
+
 //void WriteFiniteBuild(void){}
+
 
 
