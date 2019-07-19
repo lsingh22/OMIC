@@ -11,6 +11,7 @@ extern char* focus_output;
 extern char* namelist;
 // Store global variables
 
+extern int Nthreads;
 extern int DEBUG;
 extern int Ncoils;
 extern int Nfp;
@@ -32,6 +33,7 @@ extern size_t size_coilspace;
 extern size_t size_surf;
 extern double* currents;
 extern double* alp;
+extern double* alpamps;
 extern int Nseg;
 extern double Nturns;
 

@@ -27,11 +27,11 @@ int main(int argc, char **argv){
    CalculateMultiFilaments();
    
    WriteMultiFilaments(); 
-   SingleFilField();
+   //SingleFilField();
    WriteBoundaryNC();
    MultiFilField();
    
-   WriteSingleB();
+   //WriteSingleB();
    WriteMultiB();
    //MultiFilamentField();
    //
