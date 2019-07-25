@@ -1,13 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
+#include <time.h>
+
 #include "read_namelist.h"  
 #include "read_focus.h"
 #include "single_fil.h"
 #include "multi_fil.h"
 #include "bfield.h"
-#include <math.h>
-#include <time.h>
+#include "alpha.h"
+#include "output.h"
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv){
@@ -17,35 +20,37 @@ int main(int argc, char **argv){
    // At some point use higher resolution timer 
    
    start = clock();
-
-   double bx, by, bz;   
-   SetInputs();
-   ReadFocusInts(focus_output);
-   ReadFocusArrays(focus_output);
-   UnpackSingleFilaments();
-   CalculateBuildDirections();
-   CalculateMultiFilaments();
    
+   printf("This is 1 \n");
+   SetInputs();
+   printf("This is 2 \n");
+   ReadFocusInts(focus_output);
+   printf("This is 3 \n");
+   ReadFocusArrays(focus_output);
+   printf("This is 4 \n");
+   UnpackSingleFilaments();
+   Init_alpha(case_alpha);
+   Unpack_alpha(1);
+   printf("This is 5 \n");
+   CalculateBuildDirections();
+   printf("This is 6 \n");
+   CalculateMultiFilaments();
+   printf("This is 7 \n");
    //Writing might take significant time 
    WriteMultiFilaments(); 
 
    SingleFilField();
-   WriteBoundaryNC();
-   MultiFilField();
+   //WriteBoundaryNC();
+//   MultiFilField();
    
    //Check to see if this takes majority of time 
-   WriteSingleB();
-   WriteMultiB();
-   //MultiFilamentField();
-   //
-   //
-   //printf("%.15f %.15f %.15f %.15f \n", Bsfilx[0],Bsfily[0],Bsfilz[0],Bsfil[0]);
+   //WriteSingleB();
+//   WriteMultiB();
    
-   //printf("%f\n", mfilx[93]);
-  // printf("%.15f\n", Bsfilx[1]*nsurfx[1]+Bsfily[1]*nsurfy[1]+Bsfilz[1]*nsurfz[1]);
-   //printf("%f\n", fbx[128*128]); 
-
-   // printf("%f\n", coilspace[1]);
+   
+   
+   
+   
    if ( DEBUG == 1)
    {
    

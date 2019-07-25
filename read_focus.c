@@ -117,7 +117,7 @@ void WriteBoundary(void){
    FILE* fb;
    fb = fopen("./outputfiles/boundary.out","w");
 
-   for(i=0;i<Nzeta*Nteta;i++){
+   for(i=0;i<Nzeta*Nteta/4;i++){
       fprintf(fb,"%.15f %.15f %.15f \n", *(xsurf+i),*(ysurf+i) ,*(zsurf+i));         
    }
 }
