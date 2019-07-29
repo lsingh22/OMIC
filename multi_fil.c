@@ -4,6 +4,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "bfield.h"
+#include <omp.h>
+
+int Nthreads;
 
 //GLOBALS SCOPED IN SOURCE FILE
 
@@ -12,6 +15,7 @@ double hlen;
 int Nseg;
 int Nradfil;
 int Ntorfil;
+int Nfp;
 
 int Nzeta;
 int Nteta;
@@ -26,12 +30,7 @@ double* bx;
 double* by; 
 double* bz; 
 
-double* nxa;
-double* nya;
-double* nza;
-double* bxa;
-double* bya;
-double* bza;
+
 double* alp;   
 
 double* cx;
@@ -71,14 +70,7 @@ void CalculateBuildDirections(void){
    bx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
    by = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
    bz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-    
-   nxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   nya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   nza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   
+      
    int i,j,k; 
    double dot;
    //Calculate unit tangent vector
@@ -119,8 +111,6 @@ void CalculateBuildDirections(void){
       }
    }
 
-   alp = (double *) malloc(Ncoils*(Nseg+1)*sizeof(double)); 
-
    for(i=0;i<Ncoils*(Nseg+1);i++){
       x=0;y=0;z=0;
       dot = *(sfilxa + i) * *(tx + i) + *(sfilya + i) * *(ty + i) + *(sfilza + i) * *(tz + i);
@@ -134,16 +124,6 @@ void CalculateBuildDirections(void){
       *(bx+i) = *(ty+i) * *(nz+i) - *(tz+i) * *(ny+i);
       *(by+i) = *(tz+i) * *(nx+i) - *(tx+i) * *(nz+i);
       *(bz+i) = *(tx+i) * *(ny+i) - *(ty+i) * *(nx+i);
-   //Rotate the normal and binormal vectors by an angle alpha about the tangent vector
-      *(alp+i)=0.0;     
-      *(nxa+i) = *(nx+i)*cos(*(alp+i)) + *(bx+i)*sin(*(alp+i));
-      *(nya+i) = *(ny+i)*cos(*(alp+i)) + *(by+i)*sin(*(alp+i));
-      *(nza+i) = *(nz+i)*cos(*(alp+i)) + *(bz+i)*sin(*(alp+i));
-
-      *(bxa+i) = -*(nx+i)*sin(*(alp+i)) + *(bx+i)*cos(*(alp+i));
-      *(bya+i) = -*(ny+i)*sin(*(alp+i)) + *(by+i)*cos(*(alp+i));
-      *(bza+i) = -*(nz+i)*sin(*(alp+i)) + *(bz+i)*cos(*(alp+i));
-//printf("%f %f %f %f %f %f\n", *(nx+i),*(ny+i),*(nz+i),*(bx+i),*(by+i),*(alp+i)); 
    }
 }
 
@@ -157,10 +137,39 @@ void CalculateMultiFilaments(void){
    double gridwid = wid / (2*Ntorfil);
    int Nfils = Nradfil*Ntorfil;
 
+   double* nxa;
+   double* nya;
+   double* nza;
+   double* bxa;
+   double* bya;
+   double* bza;
+
+   nxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   nya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   nza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   bza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   
+   //alp = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
+ 
    mfilx = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
    mfily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
    mfilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
  
+   // Rotate the local basis using alpha parameter
+
+   for(i=0;i<Ncoils*(Nseg+1);i++){
+      //*(alp+i) = 0.0;
+      *(nxa+i) = *(nx+i)*cos(*(alp+i)) + *(bx+i)*sin(*(alp+i));
+      *(nya+i) = *(ny+i)*cos(*(alp+i)) + *(by+i)*sin(*(alp+i));
+      *(nza+i) = *(nz+i)*cos(*(alp+i)) + *(bz+i)*sin(*(alp+i));
+
+      *(bxa+i) = -*(nx+i)*sin(*(alp+i)) + *(bx+i)*cos(*(alp+i));
+      *(bya+i) = -*(ny+i)*sin(*(alp+i)) + *(by+i)*cos(*(alp+i));
+      *(bza+i) = -*(nz+i)*sin(*(alp+i)) + *(bz+i)*cos(*(alp+i));
+   }
+
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
@@ -174,7 +183,6 @@ void CalculateMultiFilaments(void){
    }
 }
 
-//void CalculateFiniteBuild(void){}
 
 void MultiFilField(void){
   
@@ -185,7 +193,13 @@ void MultiFilField(void){
     Bmfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
 
    int i;
+   double timefield;
+   double startfield, endfield;
    
+   omp_set_num_threads(4);
+   startfield = omp_get_wtime();
+ 
+   #pragma omp parallel for
    for(i=0;i<Nzeta*Nteta;i++){
       
       CalculateMultiField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
@@ -194,7 +208,46 @@ void MultiFilField(void){
                     *(Bmfilz+i) * *(nsurfz+i);  
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
+   endfield = omp_get_wtime();
+   printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
+
 }
+
+//This function is to test the implementation of symmetry and will be deleted
+void MultiFilFieldSym(void){
+   
+   Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bmfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bmfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bmfiln = (double*) malloc(Nzeta*Nteta*sizeof(double));
+    Bmfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
+
+   int i;
+   double timefield;
+   double startfield, endfield;
+   int size_fp = Nzeta*Nteta / Nfp;
+   omp_set_num_threads(4);
+   startfield = omp_get_wtime();
+ 
+   #pragma omp parallel for
+   for(i=0;i<size_fp;i++){
+      
+      CalculateMultiField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
+                            Bmfilx+i, Bmfily+i, Bmfilz+i );    
+      *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
+                    *(Bmfilz+i) * *(nsurfz+i);  
+      *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
+   }
+   endfield = omp_get_wtime();
+   printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
+
+}
+
+
+
+
+
+
 
 #define MFILB_FILE_NAME "./outputfiles/mfilB.nc"
    
@@ -240,27 +293,23 @@ void WriteMultiFilaments(void){
    fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
    int Nfils = Ntorfil*Nradfil;
    
- /*  for(i=0;i<Ncoils;i++){
-      for(j=0;j<Nfils;j++){
-         for(k=0;k<Nseg;k++){
-         printf("%.15f %.15f %.15f %.8f \n", *(mfilx+i*Nseg*Nfils+j*Nseg+k), *(mfily+i*Nseg*Nfils+j*Nseg+k), *(mfilz+i*Nseg*Nfils+j*Nseg+k), *(currents+i));
-         }
-      printf("%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*Nseg*Nfils+j*Nseg), *(mfily+i*Nseg*Nfils+j*Nseg), *(mfilz+i*Nseg*Nfils+j*Nseg), *(currents+i), i+1,j+
-1);
-      }
-   }  
-*/
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nfils;j++){
          for(k=0;k<Nseg;k++){
-         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
+         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
+                                                 *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
+                                                 *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i), i+1,j+1);   
+      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+                                                       *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i), i+1,j+1);   
       }
    }
    fprintf(fb,"end");
 }
 
+
 //void WriteFiniteBuild(void){}
+
 
 

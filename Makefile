@@ -3,9 +3,9 @@
 
 PROGRAM = multi
 
-FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c
+FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c
 
-FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c bfield.h globals.h 
+FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c bfield.h globals.h alpha.h output.h
 
 FILES.o = ${FILES.c:.c=.o}
 
@@ -33,7 +33,7 @@ UFLAGS  = # Set on command line only
 
 NETCDF_HOME = ${NETCDF_C_HOME}
 
-NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf 
+NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf
 
 CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp
 
@@ -44,6 +44,7 @@ LDLIBS  =
 all:    ${PROGRAM}
 
 ${PROGRAM}: ${FILES.o}
+
 	${CC} -o $@ ${CFLAGS} ${LDFLAGS} ${LDLIBS} $^ ${NETCDF} -lm
 
 read_namelist.o: read_namelist.c globals.h read_namelist.h
@@ -53,12 +54,15 @@ multi.o: multi.c read_namelist.h
 read_focus.o: read_focus.c read_focus.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
 single_fil.o: single_fil.c single_fil.h globals.h
-	${CC} ${NETCDF} -c $< -o $@
+	${CC} -fopenmp ${NETCDF} -c $< -o $@
 multi_fil.o: multi_fil.c multi_fil.h globals.h
-	${CC} ${NETCDF} -c $< -o $@
+	${CC} -fopenmp ${NETCDF} -c $< -o $@
 bfield.o: bfield.c bfield.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
-# If it exists, prog1.dSYM is a directory on macOS
+alpha.o: alpha.c alpha.h globals.h
+	${CC} -c $< -o $@
+output.o: output.c output.h globals.h
+	${CC} -c $< -o $@
 
 DEBRIS = a.out core *~ *.dSYM
 

@@ -5,8 +5,10 @@
 #include <stdio.h>
 // GLOBALS SCOPED IN SOURCE FILE
 
+
 #define ERRCODE 2  
 #define ERR(e) {printf("Error: %s\n",nc_strerror(e)); exit(ERRCODE);}
+
 
 int Nseg;
 int Ncoils;
@@ -31,6 +33,7 @@ double* fbz;
 
 // READS AND STORES VARIOUS FOCUS COILSET PARAMETERS
 // DETERMINES SIZE TO ALLOCATE OUTPUT FOCUS DATA
+
 void ReadFocusInts(char* output_file){  
   
    int ncid, varid, dimid, retval;  
@@ -47,6 +50,7 @@ void ReadFocusInts(char* output_file){
    nc_get_var_int(ncid, varid, &Nteta);
    nc_inq_varid(ncid, "Nzeta", &varid);
    nc_get_var_int(ncid, varid, &Nzeta);
+
    if(retval=nc_inq_varid(ncid,"coilspace",&varid))
       ERR(retval);
    if(retval=nc_inq_vardimid(ncid,varid,&dimid))
@@ -113,7 +117,7 @@ void WriteBoundary(void){
    FILE* fb;
    fb = fopen("./outputfiles/boundary.out","w");
 
-   for(i=0;i<Nzeta*Nteta;i++){
+   for(i=0;i<Nzeta*Nteta/4;i++){
       fprintf(fb,"%.15f %.15f %.15f \n", *(xsurf+i),*(ysurf+i) ,*(zsurf+i));         
    }
 }

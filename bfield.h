@@ -8,5 +8,11 @@ void CalculateSingleField(double x, double y, double z, \
 void CalculateMultiField(double x, double y, double z, \
                           double* Bx, double* By, double* Bz);
 
+void CalculateMultiFieldSym(double x, double y, double z, \
+                          double* Bx, double* By, double* Bz);
+
+double cosnfp(int ip);
+double sinnfp(int ip);
+
 #endif
  
