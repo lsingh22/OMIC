@@ -4,10 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
-<<<<<<< HEAD
-=======
 #include <time.h>
->>>>>>> d8a2c2b6a3625dc3a2ed0f24e36b9bea58504c37
 #include <omp.h>
 #include <unistd.h>
 
