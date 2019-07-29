@@ -4,6 +4,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <omp.h>
+#include <unistd.h>
 
 // GLOBALS SCOPED IN SOURCE FILE
 
@@ -124,6 +126,19 @@ void SingleFilField(void){
                     *(Bsfilz+i) * *(nsurfz+i);  
       *(Bsfil+i) = sqrt( pow(*(Bsfilx+i),2) + pow(*(Bsfily+i),2) + pow(*(Bsfilz+i),2) ); 
    }
+
+
+   double startBfield;
+   double endBfield;
+   omp_set_num_threads(4);
+   startBfield = omp_get_wtime();
+   #pragma omp parallel for
+   for( i=0;i<12;i++){
+      sleep(1);
+   }
+   endBfield = omp_get_wtime();
+   printf("%f\n",endBfield-startBfield);
+
 }
 
 #define SFILB_FILE_NAME "./outputfiles/sfilB.nc"
