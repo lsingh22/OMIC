@@ -209,7 +209,7 @@ void MultiFilField(void){
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
    endfield = omp_get_wtime();
-   printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
+   //printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
 
 }
 
@@ -235,7 +235,7 @@ void MultiFilFieldSym(void){
       CalculateMultiField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
                             Bmfilx+i, Bmfily+i, Bmfilz+i );    
       *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
-                    *(Bmfilz+i) * *(nsurfz+i);  
+                    *(Bmfilz+i) * *(nsurfz+i);  // Need to add in area element
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
    endfield = omp_get_wtime();

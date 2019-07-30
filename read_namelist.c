@@ -27,16 +27,16 @@ void SetInputs(void){
 //   wid = 0.120;
 //   len = 0.060;
    case_alpha = 1;
-   NFalpha = 4;
+   NFalpha = 1;
    alp_const = 0.001;
    Nseg = 128;
    wid = 0.120;
    len = 0.060;
    Nturns = 0;
-   Nthreads = 4;
+   Nthreads = 6;
    DEBUG = 1; 
   
-   Nradfil = 3;
+   Nradfil = 2;
    Ntorfil = 2;
 
    //unpack_alpha(case_alpha);

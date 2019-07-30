@@ -117,6 +117,11 @@ extern double* finx;
 extern double* finy;
 extern double* finz;
 
+// Derivatives (only field rn)
+
+extern double* derivs;
+extern double* descent_dir;
+
 
 ///// BENCHMARKING VARIABLES /////
 

@@ -25,6 +25,7 @@ void Init_alpha( int option){
    int i;
 
    alpampsinit = (double*) malloc( size_alpamp*sizeof(double) );
+   alpamps = (double*) malloc( size_alpamp*sizeof(double) );
    
    if(option == 0)
    {
@@ -38,7 +39,8 @@ void Init_alpha( int option){
       for(i=0;i<size_alpamp;i++)
       {   
         *(alpampsinit+i) = alp_const;
-        printf("%.8f\n", *(alpampsinit+i));
+        //printf("%.8f\n", *(alpampsinit+i));
+	*(alpamps+i) = 0.0; //alp_const;
       }
    }
    else if(option == 2)
