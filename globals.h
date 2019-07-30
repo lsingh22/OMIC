@@ -28,6 +28,7 @@ extern double* zsurf;
 extern double* nsurfx;
 extern double* nsurfy;
 extern double* nsurfz;
+extern double* nsurfn; //Jacocbian
 
 ///// SINGLE FILAMENT COIL DATA /////
 

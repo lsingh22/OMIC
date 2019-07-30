@@ -26,6 +26,7 @@ double* zsurf;
 double* nsurfx;
 double* nsurfy;
 double* nsurfz;
+double* nsurfn;
 double* fbn;
 double* fbx;
 double* fby;
@@ -76,11 +77,12 @@ void ReadFocusArrays(char* output_file){
    nsurfx = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    nsurfy = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    nsurfz = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
+   nsurfn = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    fbx = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    fby = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    fbz = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
-   fbn = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
-     
+   fbn = (double*) malloc(Nteta*Nzeta*sizeof(double));   
+      
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "coilspace", &varid);
    nc_get_var_double(ncid, varid, coilspace);
@@ -98,6 +100,8 @@ void ReadFocusArrays(char* output_file){
    nc_get_var_double(ncid, varid, nsurfy);
    nc_inq_varid(ncid, "nz", &varid);
    nc_get_var_double(ncid, varid, nsurfz);
+   nc_inq_varid(ncid, "nn", &varid);
+   nc_get_var_double(ncid, varid, nsurfn);
 
    nc_inq_varid(ncid, "Bn", &varid);
    nc_get_var_double(ncid, varid, fbn);

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "bfield.h"
 #include <omp.h>
+#include "alpha.h"
 
 int Nthreads;
 
@@ -129,7 +130,10 @@ void CalculateBuildDirections(void){
 
 
 void CalculateMultiFilaments(void){
-
+   
+   Unpack_alpha();
+   CalculateBuildDirections();
+   
    int i,j,k,l;
    //Set a length and width scale for placing the filements
    //len and wid are the true length and width of the finite build
@@ -184,6 +188,7 @@ void CalculateMultiFilaments(void){
 }
 
 
+/*
 void MultiFilField(void){
   
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -212,7 +217,7 @@ void MultiFilField(void){
    //printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
 
 }
-
+*/
 
 void MultiFilFieldSym(void){
    
@@ -228,7 +233,7 @@ void MultiFilFieldSym(void){
    int size_fp = Nzeta*Nteta / Nfp;
    
    //Use the maximum threads available minus 1
-   omp_set_num_threads(32);
+   omp_set_num_threads(Nthreads);
    startfield = omp_get_wtime();
  
    #pragma omp parallel for
@@ -244,6 +249,7 @@ void MultiFilFieldSym(void){
    for(ip=1;ip<Nfp;ip++){
       for(i=0;i<size_fp;i++){
          *(Bmfil + ip*size_fp+i) = *(Bmfil+i);       
+         *(Bmfiln + ip*size_fp+i) = *(Bmfiln+i);       
       }
    }
 
@@ -261,7 +267,7 @@ void MultiFilFieldSym(void){
 void WriteMultiB(void){
    //Write to NC
    int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
-   int bxvarid, byvarid, bzvarid;
+   int bxvarid, byvarid, bzvarid, bnvarid;
    int dimids[2];
    
    nc_create(MFILB_FILE_NAME, NC_CLOBBER, &ncid); 
@@ -277,7 +283,7 @@ void WriteMultiB(void){
    nc_def_var(ncid, "Bx", NC_DOUBLE, 2, dimids, &bxvarid);
    nc_def_var(ncid, "By", NC_DOUBLE, 2, dimids, &byvarid);
    nc_def_var(ncid, "Bz", NC_DOUBLE, 2, dimids, &bzvarid);  
- 
+   nc_def_var(ncid, "Bn", NC_DOUBLE, 2, dimids, &bnvarid);
 
    nc_enddef(ncid);
    nc_put_var_double(ncid, xvarid, &xsurf[0]);
@@ -287,6 +293,7 @@ void WriteMultiB(void){
    nc_put_var_double(ncid, bxvarid, &Bmfilx[0]);
    nc_put_var_double(ncid, byvarid, &Bmfily[0]);
    nc_put_var_double(ncid, bzvarid, &Bmfilz[0]);
+   nc_put_var_double(ncid, bnvarid, &Bmfiln[0]);
 
    nc_close(ncid);
 }

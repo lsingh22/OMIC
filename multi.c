@@ -33,9 +33,6 @@ int main(int argc, char **argv){
    //printf("This is 4 \n");
    UnpackSingleFilaments();
    Init_alpha(case_alpha);
-   Unpack_alpha(1);
-   //printf("This is 5 \n");
-   CalculateBuildDirections();
    //printf("This is 6 \n");
    CalculateMultiFilaments();
 
@@ -55,11 +52,11 @@ int main(int argc, char **argv){
 
    //SingleFilField();
    //WriteBoundaryNC();
-   MultiFilFieldSym();
+   //MultiFilFieldSym();
    
    //Check to see if this takes majority of time 
    //WriteSingleB();
-   WriteMultiB();
+   //WriteMultiB();
    
 
  

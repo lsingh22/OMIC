@@ -13,6 +13,8 @@ double* derivs;
 double* alpamps;
 double* derivs;
 double* descent_dir;
+double* nsurfn;
+
 
 int case_alpha;
 int Ncoils;
@@ -22,11 +24,32 @@ double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
+double CostFunction(int case_opt){
+
+int size_fp = Nteta*Nzeta / Nfp;
+int i;
+double feval = 0.0;
+
+   if(case_opt==0)
+   {
+      CalculateMultiFilaments();
+      MultiFilFieldSym();
+      
+      for(i=0;i<size_fp;i++){
+         feval += (0.5)*pow(*(Bmfiln+i),2)*(*(nsurfn+i));   
+      } 
+   }
+ 
+   //TODO: Add in other options later (length, cc, cp)
+}
+
+
 void Central_diff( void ){
 
- //  int iCoils = Ncoils / Nfp;
-   int iCoils = Ncoils;
-   int size_alpamp = iCoils*(2*NFalpha+1); // Maybe make this a global  
+   int iCoils = Ncoils / Nfp;
+   //int iCoils = Ncoils;
+   int size_alpamp = iCoils*(2*NFalpha+1);   
+   int size_fp = Nteta*Nzeta / Nfp;
    int i,j;
 
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
@@ -36,35 +59,22 @@ void Central_diff( void ){
    double plus_bn;
    double init_bn = 0.0;
 
-   MultiFilField(); // Calculates B dot n for the multifilaments might not be needed here 
-   for(i=0;i<Nzeta*Nteta;i++){
-      init_bn += sqrt( (*(Bmfiln+i)) * (*(Bmfiln+i)) ); // Maybe make this global
-   }
+   //MultiFilFieldSym(); // Calculates B dot n for the multifilaments might not be needed here 
+   init_bn = CostFunction(0);
+
    for(i=0;i<size_alpamp;i++){
 
       minus_bn = 0.0;
       plus_bn = 0.0;
       // Move alpha positive and redo x,y,z coil calc
-      *(alpamps+i) += h;
-      Unpack_alpha( 0 );
-      CalculateBuildDirections();
-      CalculateMultiFilaments();
-      MultiFilField();
-      for(j=0;j<Nzeta*Nteta;j++){
-         plus_bn += sqrt( (*(Bmfiln+j)) * (*(Bmfiln+j)) );
-      }
-
-      *(alpamps+i) -= 2*h;
-      Unpack_alpha( 0 );
-      CalculateBuildDirections();
-      CalculateMultiFilaments();
-      MultiFilField();
-      for(j=0;j<Nzeta*Nteta;j++){
-         minus_bn += sqrt( (*(Bmfiln+j)) * (*(Bmfiln+j)) );
-      }
       
       *(alpamps+i) += h;
+      plus_bn = CostFunction(0);
 
+      *(alpamps+i) -= 2*h;
+      minus_bn = CostFunction(0);  
+
+      *(alpamps+i) += h;
       *(derivs+i) = (plus_bn-minus_bn)/(2*h);
    }
 }
@@ -72,35 +82,35 @@ void Central_diff( void ){
 
 void Steepest_descent( void ){
    
-   //int iCoils = Ncoils / Nfp;
-   int iCoils = Ncoils;
+   int iCoils = Ncoils / Nfp;
+   //int iCoils = Ncoils;
    int size_alpamp = iCoils*(2*NFalpha+1);  
    descent_dir = (double*) malloc( size_alpamp*sizeof(double) );
    int i,j;
 
    for(i=0;i<size_alpamp;i++){
-      *(descent_dir+i) = -1.0*(*(derivs+i));
-   }
-   
+      *(descent_dir+i) = -1.0 * (*(derivs+i));
+   }   
+
 }
 
 void Forward_track( void ){
 
-   int iCoils = Ncoils;
+   //int iCoils = Ncoils;
+   int iCoils = Ncoils / Nfp;
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
-
+   
    double step = .0000001; // There is small error, I fix later
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;
 
-   for(i=0;i<Nzeta*Nteta;i++){
-      init_bn += sqrt( (*(Bmfiln+i)) * (*(Bmfiln+i)) );
-   }
+   init_bn = CostFunction(0);
    hold_bn = init_bn;
    search_bn = 0.0;
-   int k = 0;
+   
+   int k=0;
    while( hold_bn - search_bn > 0.0 ){
       if(k==0){
          search_bn = init_bn;
@@ -108,18 +118,13 @@ void Forward_track( void ){
       hold_bn = search_bn;
       search_bn = 0.0;
       printf("Step size is %f\n", 1000.0*step);
+      
       for(j=0;j<size_alpamp;j++){
 	 printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
          *(alpamps+j) += step*(*(descent_dir+j));
       }
 
-      Unpack_alpha( 0 );
-      CalculateBuildDirections();
-      CalculateMultiFilaments();
-      MultiFilField();
-      for(j=0;j<Nzeta*Nteta;j++){
-         search_bn += sqrt( (*(Bmfiln+j)) * (*(Bmfiln+j)) );
-      }
+      search_bn = CostFunction(0);
       printf("Total field error, tracking iter: %f   %d\n",search_bn,k);
       step = step*2.0;
       k++;
@@ -128,10 +133,8 @@ void Forward_track( void ){
    for(j=0;j<size_alpamp;j++){
       *(alpamps+j) -= step*(*(descent_dir+j))/2.0;
    }
-   Unpack_alpha( 0 );  //Dont think this is neccessary
-   CalculateBuildDirections();
    CalculateMultiFilaments();
-   MultiFilField();
+   MultiFilFieldSym();
 
 }
 

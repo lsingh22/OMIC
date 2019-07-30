@@ -189,7 +189,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    bzz = 0.0;
 
    
-   // Parallelization taken straight from FOCUS
+   // Symmetry calculation taken straight from FOCUS
    for(ip=1;ip<Nfp+1;ip++){   
       //Find periodic point
       xx =  x*cosnfp(ip) + y*sinnfp(ip);

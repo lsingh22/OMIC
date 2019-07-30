@@ -17,7 +17,7 @@ double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
-void Init_alpha( int option){
+void Init_alpha( int option ){
 
  //  int iCoils = Ncoils / Nfp;
    int iCoils = Ncoils;
@@ -31,7 +31,7 @@ void Init_alpha( int option){
    {
       for(i=0;i<size_alpamp;i++)
       {   
-         *(alpampsinit+i) = 0.0;
+         *(alpamps+i) = 0.0;
       }
    }
    else if(option == 1)
@@ -53,8 +53,7 @@ void Init_alpha( int option){
    }
 }
 
-
-void Unpack_alpha( int isInit){
+void Unpack_alpha( void ){
    
    //int iCoils = Ncoils / Nfp;
    int iCoils = Ncoils;
@@ -65,47 +64,21 @@ void Unpack_alpha( int isInit){
    double pi = M_PI;
     
    alp = (double*) malloc(iCoils*(Nseg+1)*sizeof(double));
-   
-   if(isInit == 0) // Optimization branch
-   {
-      for(i=0;i<iCoils;i++){
-         for(j=0;j<Nseg+1;j++){
-            theta = ((2*pi)/Nseg)*j;
-            a = 0;
-            for(k=0;k<NFalpha+1;k++){
-               a = a + alpamps[ (2*NFalpha+1)*i + k ]*cos(k*theta);
-            }
-            for(k=1;k<NFalpha+1;k++){
-               a = a + alpamps[ (2*NFalpha+1)*i + NFalpha + k ]*sin(k*theta);
-            }
 
-            *(alp +i*(Nseg+1) + j ) = a;
+   for(i=0;i<iCoils;i++){
+      for(j=0;j<Nseg+1;j++){
+         theta = ((2*pi)/Nseg)*j;
+         a = 0;
+         for(k=0;k<NFalpha+1;k++){
+            a = a + alpamps[ (2*NFalpha+1)*i + k ]*cos(k*theta);
          }
-      }     
-   }
-   else if(isInit == 1) // Initialization branch
-   {
- 
-      for(i=0;i<iCoils;i++){
-         for(j=0;j<Nseg+1;j++){
-            theta = ((2*pi)/Nseg)*j;
-            a = 0;
-            for(k=0;k<NFalpha+1;k++){
-               a = a + alpampsinit[ (2*NFalpha+1)*i + k ]*cos(k*theta);
-            }
-            for(k=1;k<NFalpha+1;k++){
-               a = a + alpampsinit[ (2*NFalpha+1)*i + NFalpha + k ]*sin(k*theta);
-            }
-
-            *(alp +i*(Nseg+1) + j ) = a;
+         for(k=1;k<NFalpha+1;k++){
+            a = a + alpamps[ (2*NFalpha+1)*i + NFalpha + k ]*sin(k*theta);
          }
-      } 
+            *(alp +i*(Nseg+1) + j ) = a;
+      }
    }
-   else
-   {
-      //Throw error
-   }
-
 }
+
 
 

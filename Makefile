@@ -62,8 +62,8 @@ bfield.o: bfield.c bfield.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
 alpha.o: alpha.c alpha.h globals.h
 	${CC} -c $< -o $@
-output.o: output.c output.h globals.h
-	${CC} -c $< -o $@
+#output.o: output.c output.h globals.h
+#	${CC} -c $< -o $@
 solvers.o: solvers.c solvers.h globals.h
 	${CC} -c $< -o $@
 
