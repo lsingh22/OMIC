@@ -213,7 +213,7 @@ void MultiFilField(void){
 
 }
 
-//This function is to test the implementation of symmetry and will be deleted
+
 void MultiFilFieldSym(void){
    
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -222,31 +222,38 @@ void MultiFilFieldSym(void){
    Bmfiln = (double*) malloc(Nzeta*Nteta*sizeof(double));
     Bmfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
 
-   int i;
+   int i,ip;
    double timefield;
    double startfield, endfield;
    int size_fp = Nzeta*Nteta / Nfp;
-   omp_set_num_threads(4);
+   
+   //Use the maximum threads available minus 1
+   omp_set_num_threads(32);
    startfield = omp_get_wtime();
  
    #pragma omp parallel for
    for(i=0;i<size_fp;i++){
       
-      CalculateMultiField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
+      CalculateMultiFieldSym( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
                             Bmfilx+i, Bmfily+i, Bmfilz+i );    
       *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
                     *(Bmfilz+i) * *(nsurfz+i);  
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
+   
+   for(ip=1;ip<Nfp;ip++){
+      for(i=0;i<size_fp;i++){
+         *(Bmfil + ip*size_fp+i) = *(Bmfil+i);       
+      }
+   }
+
+
    endfield = omp_get_wtime();
+   
+   //Map the field to all periods
    printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
 
 }
-
-
-
-
-
 
 
 #define MFILB_FILE_NAME "./outputfiles/mfilB.nc"

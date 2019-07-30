@@ -20,34 +20,37 @@ int main(int argc, char **argv){
    // At some point use higher resolution timer 
    
    start = clock();
-   
-   printf("This is 1 \n");
+
+  
+ 
+   //printf("This is 1 \n");
    SetInputs();
-   printf("This is 2 \n");
+   //printf("This is 2 \n");
    ReadFocusInts(focus_output);
-   printf("This is 3 \n");
+   //printf("This is 3 \n");
    ReadFocusArrays(focus_output);
-   printf("This is 4 \n");
+   //printf("This is 4 \n");
    UnpackSingleFilaments();
    Init_alpha(case_alpha);
    Unpack_alpha(1);
-   printf("This is 5 \n");
+   //printf("This is 5 \n");
    CalculateBuildDirections();
-   printf("This is 6 \n");
+   //printf("This is 6 \n");
    CalculateMultiFilaments();
-   printf("This is 7 \n");
+   //printf("This is 7 \n");
    //Writing might take significant time 
    WriteMultiFilaments(); 
 
-   SingleFilField();
+   //SingleFilField();
    //WriteBoundaryNC();
-//   MultiFilField();
+   MultiFilFieldSym();
    
    //Check to see if this takes majority of time 
    //WriteSingleB();
-//   WriteMultiB();
+   WriteMultiB();
    
-   
+
+ 
    
    
    
