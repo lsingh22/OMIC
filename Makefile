@@ -3,9 +3,10 @@
 
 PROGRAM = multi
 
-FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c optimize.c
 
-FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c bfield.h globals.h alpha.h output.h optimize.h
+FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
+
+FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c bfield.h globals.h alpha.h output.h solvers.h
 
 FILES.o = ${FILES.c:.c=.o}
 
@@ -35,8 +36,6 @@ NETCDF_HOME = ${NETCDF_C_HOME}
 
 NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf
 
-#NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib/x86_64-linux-gnu -lnetcdf 
-
 CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp
 
 LDFLAGS =
@@ -65,7 +64,7 @@ alpha.o: alpha.c alpha.h globals.h
 	${CC} -c $< -o $@
 output.o: output.c output.h globals.h
 	${CC} -c $< -o $@
-optimize.o: optimize.c optimize.h globals.h
+solvers.o: solvers.c solvers.h globals.h
 	${CC} -c $< -o $@
 
 DEBRIS = a.out core *~ *.dSYM

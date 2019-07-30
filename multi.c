@@ -11,6 +11,7 @@
 #include "bfield.h"
 #include "alpha.h"
 #include "output.h"
+#include "solvers.h"
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv){
@@ -37,8 +38,19 @@ int main(int argc, char **argv){
    CalculateBuildDirections();
    //printf("This is 6 \n");
    CalculateMultiFilaments();
-   //printf("This is 7 \n");
-   //Writing might take significant time 
+
+   printf("This is 7 \n");
+   int iter = 5;
+   for(int i=0;i<iter;i++){
+      Central_diff();
+      printf("This is 8 \n");
+      Steepest_descent();
+      printf("This is 9 \n");
+      Forward_track();
+      printf("Done with iteration: %d\n",i);
+   }
+   printf("This is 10 \n");
+ 
    WriteMultiFilaments(); 
 
    //SingleFilField();
