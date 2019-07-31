@@ -33,7 +33,7 @@ void SetInputs(void){
    wid = 0.120;
    len = 0.060;
    Nturns = 0;
-   Nthreads = 128;
+   Nthreads = 32;
    DEBUG = 1; 
   
    Nradfil = 2;

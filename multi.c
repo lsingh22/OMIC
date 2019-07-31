@@ -39,7 +39,7 @@ int main(int argc, char **argv){
    printf("This is 7 \n");
    int iter = 5;
    for(int i=0;i<iter;i++){
-      Central_diff();
+      Central_diff(alpamps);
       printf("This is 8 \n");
       Steepest_descent();
       printf("This is 9 \n");
@@ -54,9 +54,8 @@ int main(int argc, char **argv){
    //WriteBoundaryNC();
    //MultiFilFieldSym();
    
-   //Check to see if this takes majority of time 
    //WriteSingleB();
-   //WriteMultiB();
+   WriteMultiB();
    
 
  

@@ -24,19 +24,26 @@ double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
-double CostFunction(int case_opt){
+double CostFunction(int case_opt, double* dof){
 
+int iCoils = Ncoils / Nfp;
 int size_fp = Nteta*Nzeta / Nfp;
+int size_alpamp = iCoils*(2*NFalpha+1);
 int i;
+double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
 double feval = 0.0;
 
    if(case_opt==0)
    {
+      for(i=0;i<size_alpamp;i++)
+      {
+         *(alpamps+i) = dof[i];
+      }
       CalculateMultiFilaments();
       MultiFilFieldSym();
       
       for(i=0;i<size_fp;i++){
-         feval += (0.5)*pow(*(Bmfiln+i),2)*(*(nsurfn+i));   
+         feval += (0.5)*pow(*(Bmfiln+i),2)*(*(nsurfn+i))*dsfactor;   
       } 
    }
  
@@ -44,11 +51,11 @@ double feval = 0.0;
 }
 
 
-void Central_diff( void ){
-
+void Central_diff( double *dof ){
+   
    int iCoils = Ncoils / Nfp;
-   //int iCoils = Ncoils;
    int size_alpamp = iCoils*(2*NFalpha+1);   
+   //int iCoils = Ncoils;
    int size_fp = Nteta*Nzeta / Nfp;
    int i,j;
 
@@ -59,8 +66,14 @@ void Central_diff( void ){
    double plus_bn;
    double init_bn = 0.0;
 
+   for(i=0;i<size_alpamp;i++)
+   {
+      *(alpamps+i) = dof[i];
+   }
+
+   
    //MultiFilFieldSym(); // Calculates B dot n for the multifilaments might not be needed here 
-   init_bn = CostFunction(0);
+   init_bn = CostFunction(0,alpamps);
 
    for(i=0;i<size_alpamp;i++){
 
@@ -69,10 +82,10 @@ void Central_diff( void ){
       // Move alpha positive and redo x,y,z coil calc
       
       *(alpamps+i) += h;
-      plus_bn = CostFunction(0);
+      plus_bn = CostFunction(0,alpamps);
 
       *(alpamps+i) -= 2*h;
-      minus_bn = CostFunction(0);  
+      minus_bn = CostFunction(0,alpamps);  
 
       *(alpamps+i) += h;
       *(derivs+i) = (plus_bn-minus_bn)/(2*h);
@@ -101,12 +114,12 @@ void Forward_track( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .0000001; // There is small error, I fix later
+   double step = .0001; // There is small error, I fix later
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;
 
-   init_bn = CostFunction(0);
+   init_bn = CostFunction(0,alpamps);
    hold_bn = init_bn;
    search_bn = 0.0;
    
@@ -124,7 +137,7 @@ void Forward_track( void ){
          *(alpamps+j) += step*(*(descent_dir+j));
       }
 
-      search_bn = CostFunction(0);
+      search_bn = CostFunction(0,alpamps);
       printf("Total field error, tracking iter: %f   %d\n",search_bn,k);
       step = step*2.0;
       k++;
