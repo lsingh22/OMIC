@@ -6,7 +6,7 @@
 ///// INPUTS AND SETTINGS /////
 
 extern char* focus_output;  // The input single filament focus file
-extern char* alpha_input; // TODO: This will be in the namelist eventually
+extern char* multi_output; // TODO: This will be in the namelist eventually
 extern char* namelist; // TODO: The input namelist file
 
 extern int Nthreads; // Threads to use in OpenMP field calculation

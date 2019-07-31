@@ -1,120 +1,134 @@
-/*
-
 #include <stdio.h>
 #include "globals.h"
 
+double* xsurf;
+double* ysurf;
+double* zsurf;
 
-#define SFILB_FILE_NAME "./outputfiles/sfilB.nc"
-   
-void WriteSingleB(void){
-   //Write to NC
-   int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
-   int bxvarid, byvarid, bzvarid;
-   int dimids[2];
-   
-   nc_create(SFILB_FILE_NAME, NC_CLOBBER, &ncid); 
-   nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
-   nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
-   dimids[0] = xdimid;
-   dimids[1] = ydimid;
-   
-   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
-   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
-   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
-   nc_def_var(ncid, "B", NC_DOUBLE, 2, dimids, &bvarid);  
-   nc_def_var(ncid, "Bx", NC_DOUBLE, 2, dimids, &bxvarid);
-   nc_def_var(ncid, "By", NC_DOUBLE, 2, dimids, &byvarid);
-   nc_def_var(ncid, "Bz", NC_DOUBLE, 2, dimids, &bzvarid);  
+double* sfilx;
+double* sfily;
+double* sfilz;
  
-
-   nc_enddef(ncid);
-   nc_put_var_double(ncid, xvarid, &xsurf[0]);
-   nc_put_var_double(ncid, yvarid, &ysurf[0]);
-   nc_put_var_double(ncid, zvarid, &zsurf[0]);
-   nc_put_var_double(ncid, bvarid, &Bsfil[0]);
-   nc_put_var_double(ncid, bxvarid, &Bsfilx[0]);
-   nc_put_var_double(ncid, byvarid, &Bsfily[0]);
-   nc_put_var_double(ncid, bzvarid, &Bsfilz[0]);
+double* mfilx;
+double* mfily;
+double* mfilz;
  
-   nc_close(ncid);
-}
+double* alpamps;
 
+double* Bsfilx;
+double* Bsfily;
+double* Bsfilz;
+double* Bsfil;
+double* Bsfiln;
 
-void WriteSingleFilaments(void){
-  
-   int i,j;
-   FILE* fb;
-   fb = fopen("./outputfiles/sfil.out","w");
-   fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
+double* Bmfilx;
+double* Bmfily;
+double* Bmfilz;
+double* Bmfil;
+double* Bmfiln;
 
-   for(i=0;i<Ncoils;i++){
-      for(j=0;j<Nseg;j++){
-         fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(sfilx+i*(Nseg+1)+j), *(sfily+i*(Nseg+1)+j), *(sfilz+i*(Nseg+1)+j), *(currents+i));         
-         }
-      fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*(Nseg+1)), *(sfily+i*(Nseg+1)), *(sfilz+i*(Nseg+1)), *(currents+i), i+1);         
-   }
-   fprintf(fb,"end");
+int Nseg, Ntorfil, Nradfil, Nzeta, Nteta, Ncoils, NFalpha;
 
+#define FILE_NAME "./outputfiles/output.nc"
 
+void WriteOutputNC(void){
 
-
-
-
-
-
-
-
-
-
-
-#define MFILB_FILE_NAME "./outputfiles/mfilB.nc"
-   
-void WriteMultiB(void){
-   //Write to NC
-   int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
-   int bxvarid, byvarid, bzvarid;
-   int dimids[2];
-   
-   nc_create(MFILB_FILE_NAME, NC_CLOBBER, &ncid); 
-   nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
-   nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
-   dimids[0] = xdimid;
-   dimids[1] = ydimid;
-   
-   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
-   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
-   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
-   nc_def_var(ncid, "B", NC_DOUBLE, 2, dimids, &bvarid);  
-   nc_def_var(ncid, "Bx", NC_DOUBLE, 2, dimids, &bxvarid);
-   nc_def_var(ncid, "By", NC_DOUBLE, 2, dimids, &byvarid);
-   nc_def_var(ncid, "Bz", NC_DOUBLE, 2, dimids, &bzvarid);  
- 
-
-   nc_enddef(ncid);
-   nc_put_var_double(ncid, xvarid, &xsurf[0]);
-   nc_put_var_double(ncid, yvarid, &ysurf[0]);
-   nc_put_var_double(ncid, zvarid, &zsurf[0]);
-   nc_put_var_double(ncid, bvarid, &Bmfil[0]);
-   nc_put_var_double(ncid, bxvarid, &Bmfilx[0]);
-   nc_put_var_double(ncid, byvarid, &Bmfily[0]);
-   nc_put_var_double(ncid, bzvarid, &Bmfilz[0]);
-
-   nc_close(ncid);
-}
-
- 
-void WriteMultiFilaments(void){
-
-   int i,j,k;
-   FILE* fb;
-   fb = fopen("./outputfiles/mfil.out","w");
-   fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
+   int ncid;
+   int xvarid, yvarid, zvarid;
+   int xdimid, ydimid, coildimid, nsegdimid, nsegfildimid, p1dimid; 
+   int sxvarid, syvarid, szvarid;
+   int mxvarid, myvarid, mzvarid;
+   int alpvarid, alpampdimid;
+   int sbxvarid, sbyvarid, sbzvarid, sbvarid, sbnvarid;
+   int mbxvarid, mbyvarid, mbzvarid, mbvarid, mbnvarid;
    int Nfils = Ntorfil*Nradfil;
+   int dimids[2], sfildims[2], mfildims[2], alpdims[2];
+ 
+   Nseg = Nseg+1;
    
-   for(i=0;i<Ncoils;i++){
-      for(j=0;j<Nfils;j++){
-         for(k=0;k<Nseg;k++){
-         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
-                                                 *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
+   nc_create(FILE_NAME, NC_CLOBBER, &ncid); 
+   nc_def_dim(ncid, "phony_dim_1", 1, &p1dimid); //Just 1
+   nc_def_dim(ncid, "phony_dim_2", Nfils*Nseg, &nsegfildimid);
+   nc_def_dim(ncid, "phony_dim_3", 2*NFalpha+1, &alpampdimid);
+   nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
+   nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
+   nc_def_dim(ncid, "Nseg", Nseg, &nsegdimid);
+   nc_def_dim(ncid, "Ncoil", Ncoils, &coildimid);
+ 
+   dimids[0] = xdimid;
+   dimids[1] = ydimid;
+   
+   sfildims[0] = coildimid;
+   sfildims[1] = nsegdimid;
 
-*/
+   mfildims[0] = coildimid;
+   mfildims[1] = nsegfildimid;
+
+   alpdims[0] = coildimid;
+   alpdims[1] = alpampdimid;
+
+   //Output the surface
+   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
+   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
+   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
+
+   //Output the single filaments xyz
+   nc_def_var(ncid, "sx", NC_DOUBLE, 2, sfildims, &sxvarid); 
+   nc_def_var(ncid, "sy", NC_DOUBLE, 2, sfildims, &syvarid); 
+   nc_def_var(ncid, "sz", NC_DOUBLE, 2, sfildims, &szvarid); 
+
+   //Output the multi filaments xyz
+   nc_def_var(ncid, "mx", NC_DOUBLE, 2, mfildims, &mxvarid); 
+   nc_def_var(ncid, "my", NC_DOUBLE, 2, mfildims, &myvarid); 
+   nc_def_var(ncid, "mz", NC_DOUBLE, 2, mfildims, &mzvarid); 
+
+   //Output the alphss
+   nc_def_var(ncid, "alpha", NC_DOUBLE, 2, alpdims, &alpvarid);
+    
+   //Output the centroid single filament field
+   nc_def_var(ncid, "sB", NC_DOUBLE, 2, dimids, &sbvarid);  
+   nc_def_var(ncid, "sBx", NC_DOUBLE, 2, dimids, &sbxvarid);
+   nc_def_var(ncid, "sBy", NC_DOUBLE, 2, dimids, &sbyvarid);
+   nc_def_var(ncid, "sBz", NC_DOUBLE, 2, dimids, &sbzvarid);  
+   nc_def_var(ncid, "sBn", NC_DOUBLE, 2, dimids, &sbnvarid);  
+
+   //Output the final multi filament field
+   nc_def_var(ncid, "mB", NC_DOUBLE, 2, dimids, &mbvarid);  
+   nc_def_var(ncid, "mBx", NC_DOUBLE, 2, dimids, &mbxvarid);
+   nc_def_var(ncid, "mBy", NC_DOUBLE, 2, dimids, &mbyvarid);
+   nc_def_var(ncid, "mBz", NC_DOUBLE, 2, dimids, &mbzvarid);  
+   nc_def_var(ncid, "mBn", NC_DOUBLE, 2, dimids, &mbnvarid);  
+
+   nc_enddef(ncid);
+ 
+   nc_put_var_double(ncid, xvarid, &xsurf[0]);
+   nc_put_var_double(ncid, yvarid, &ysurf[0]);
+   nc_put_var_double(ncid, zvarid, &zsurf[0]);
+
+   nc_put_var_double(ncid, sxvarid, &sfilx[0]);
+   nc_put_var_double(ncid, syvarid, &sfily[0]);
+   nc_put_var_double(ncid, szvarid, &sfilz[0]);
+
+   nc_put_var_double(ncid, mxvarid, &mfilx[0]);
+   nc_put_var_double(ncid, myvarid, &mfily[0]);
+   nc_put_var_double(ncid, mzvarid, &mfilz[0]);
+
+   nc_put_var_double(ncid, alpvarid, &alpamps[0]);
+
+   nc_put_var_double(ncid, sbvarid,  &Bsfil[0]);
+   nc_put_var_double(ncid, sbxvarid, &Bsfilx[0]);
+   nc_put_var_double(ncid, sbyvarid, &Bsfily[0]);
+   nc_put_var_double(ncid, sbzvarid, &Bsfilz[0]);
+   nc_put_var_double(ncid, sbnvarid, &Bsfiln[0]);
+ 
+   nc_put_var_double(ncid, mbvarid,  &Bmfil[0]);
+   nc_put_var_double(ncid, mbxvarid, &Bmfilx[0]);
+   nc_put_var_double(ncid, mbyvarid, &Bmfily[0]);
+   nc_put_var_double(ncid, mbzvarid, &Bmfilz[0]);
+   nc_put_var_double(ncid, mbnvarid, &Bmfiln[0]);
+  
+   nc_close(ncid);
+}
+
+
+

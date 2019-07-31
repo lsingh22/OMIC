@@ -114,7 +114,7 @@ void Forward_track( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .0001; // There is small error, I fix later
+   double step = .000001; // There is small error, I fix later
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;
@@ -138,7 +138,7 @@ void Forward_track( void ){
       }
 
       search_bn = CostFunction(0,alpamps);
-      printf("Total field error, tracking iter: %f   %d\n",search_bn,k);
+      printf("Total field error, tracking iter: %.9f   %d\n",search_bn,k);
       step = step*2.0;
       k++;
    }

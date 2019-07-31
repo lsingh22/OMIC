@@ -6,7 +6,11 @@
 #include <stdio.h>
 // GLOBALS SCOPED IN SOURCE FILE
 
-char* alpha_input;
+#define ERRCODE 2  
+#define ERR(e) {printf("Error: %s\n",nc_strerror(e)); exit(ERRCODE);}
+
+
+char* multi_output;
 double* alpampsinit;
 double* alpamps;
 int case_alpha;
@@ -44,7 +48,14 @@ void Init_alpha( int option ){
    }
    else if(option == 2)
    {
-      //TODO: Read namelist or separate file
+      int ncid, varid, dimid,retval;
+      nc_open(multi_output, NC_NOWRITE, &ncid);
+      nc_inq_varid(ncid, "alpha", &varid);
+      nc_get_var_double(ncid, varid, alpamps);
+
+      if(retval=nc_inq_varid(ncid,"alpha",&varid))
+      ERR(retval);
+      
    }
    else
    {

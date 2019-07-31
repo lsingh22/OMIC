@@ -6,11 +6,4 @@
 
 void WriteOutputNC(void);
 
-/*
-void WriteSingleFilaments(int isInit);
-void WriteMultifilaments(int isInit);
-void WriteAlphas(isInit);
-void Write
-*/
-
 #endif
