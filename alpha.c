@@ -52,6 +52,11 @@ void Init_alpha( int option ){
       nc_open(multi_output, NC_NOWRITE, &ncid);
       nc_inq_varid(ncid, "alpha", &varid);
       nc_get_var_double(ncid, varid, alpamps);
+  
+      for(i=0;i<size_alpamp;i++)
+      {   
+        printf("%.8f\n", *(alpamps+i) );
+      } 
 
       if(retval=nc_inq_varid(ncid,"alpha",&varid))
       ERR(retval);

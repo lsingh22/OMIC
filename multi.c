@@ -21,8 +21,6 @@ int main(int argc, char **argv){
    // At some point use higher resolution timer 
    
    start = clock();
-
-  
  
    //printf("This is 1 \n");
    SetInputs();
@@ -35,9 +33,14 @@ int main(int argc, char **argv){
    Init_alpha(case_alpha);
    //printf("This is 6 \n");
    CalculateMultiFilaments();
+   
+   SingleFilField();
+   
+   MultiFilFieldSym(); 
 
-   printf("This is 7 \n");
-/*   int iter = 10;
+   //printf("This is 7 \n");
+
+   int iter = 5;
    for(int i=0;i<iter;i++){
       Central_diff(alpamps);
       printf("This is 8 \n");
@@ -46,15 +49,11 @@ int main(int argc, char **argv){
       Forward_track();
       printf("Done with iteration: %d\n",i);
    }
-   printf("This is 10 \n");
-*/
-   WriteMultiFilaments(); 
 
-   SingleFilField();
-   //WriteBoundaryNC();
-   MultiFilFieldSym();
-   
-   //WriteSingleB();
+   //printf("This is 10 \n");
+
+   //WriteMultiFilaments(); 
+
    WriteMultiB();
   
    WriteOutputNC(); 
@@ -84,36 +83,7 @@ int main(int argc, char **argv){
       WriteBoundary();
     //  WriteBoundaryNC();
    }
-/* 
-   ReadInputs();
-   ReadFocus();
-   LoadSingleFilaments();
-   LoadBoundary();
-   UnpackSingleFilaments();
-   CalculateBuildDirections();
-   WriteMultifilaments();
-   CalculateField();
-   
 
-   Debug:
-   WriteCoilFiles();
-   DiagnoseField();
-  
-   //Allocate pointers and call function to load wout file, load_wout.c
-   //
-   //Allocate pointers and call function to load .input file, load_input.c
-   //
-   //Allocate pointers and call function to load .focus file, load_focus.c
-   //
-   //Call function to produce XYZ points for single filament, single_fil.c
-   //
-   //Write python code to plot filaments, single or multi, plotFil.py
-   //
-   //Hardcode alphas to 0 and call function to produce XYZ points for multifilament, multi_fil.c
-   //
-   //write python code to plot finite build coils, plotBuild.py 
-
-*/
 
 end = clock();
 tot_time = ((double) (end-start)) / CLOCKS_PER_SEC;

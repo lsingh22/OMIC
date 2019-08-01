@@ -60,7 +60,7 @@ void Central_diff( double *dof ){
    int i,j;
 
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
-   double h = .00000001;
+   double h = .000001;
    
    double minus_bn;
    double plus_bn;
@@ -114,7 +114,7 @@ void Forward_track( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .000001; // There is small error, I fix later
+   double step = .0001; // There is small error, I fix later
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;

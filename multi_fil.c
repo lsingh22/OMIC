@@ -139,8 +139,11 @@ void CalculateMultiFilaments(void){
    //len and wid are the true length and width of the finite build
    double gridlen = len / (2*Nradfil);
    double gridwid = wid / (2*Ntorfil);
-   int Nfils = Nradfil*Ntorfil;
+   double hwid = wid / 2;
+   double hlen = len / 2;
 
+
+   int Nfils = Nradfil*Ntorfil;
    double* nxa;
    double* nya;
    double* nza;
@@ -161,6 +164,10 @@ void CalculateMultiFilaments(void){
    mfily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
    mfilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
  
+   ffilx = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
+   ffily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
+   ffilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
+   
    // Rotate the local basis using alpha parameter
 
    for(i=0;i<Ncoils*(Nseg+1);i++){
@@ -172,7 +179,28 @@ void CalculateMultiFilaments(void){
       *(bxa+i) = -*(nx+i)*sin(*(alp+i)) + *(bx+i)*cos(*(alp+i));
       *(bya+i) = -*(ny+i)*sin(*(alp+i)) + *(by+i)*cos(*(alp+i));
       *(bza+i) = -*(nz+i)*sin(*(alp+i)) + *(bz+i)*cos(*(alp+i));
+   
+      for(j=0;j<5;j++){
+         *(ffilx + 5*i) =     *(sfilx+i) + hwid * *(nxa+i) + hlen * *(bxa+i);
+         *(ffilx + 5*i + 1) = *(sfilx+i) - hwid * *(nxa+i) + hlen * *(bxa+i);
+         *(ffilx + 5*i + 2) = *(sfilx+i) - hwid * *(nxa+i) - hlen * *(bxa+i);
+         *(ffilx + 5*i + 3) = *(sfilx+i) + hwid * *(nxa+i) - hlen * *(bxa+i);
+         *(ffilx + 5*i + 4) = *(sfilx+i) + hwid * *(nxa+i) + hlen * *(bxa+i);
+
+         *(ffily + 5*i) =     *(sfily+i) + hwid * *(nya+i) + hlen * *(bya+i);
+         *(ffily + 5*i + 1) = *(sfily+i) - hwid * *(nya+i) + hlen * *(bya+i);
+         *(ffily + 5*i + 2) = *(sfily+i) - hwid * *(nya+i) - hlen * *(bya+i);
+         *(ffily + 5*i + 3) = *(sfily+i) + hwid * *(nya+i) - hlen * *(bya+i);
+         *(ffily + 5*i + 4) = *(sfily+i) + hwid * *(nya+i) + hlen * *(bya+i);
+
+         *(ffilz + 5*i)     = *(sfilz+i) + hwid * *(nza+i) + hlen * *(bza+i);
+         *(ffilz + 5*i + 1) = *(sfilz+i) - hwid * *(nza+i) + hlen * *(bza+i);
+         *(ffilz + 5*i + 2) = *(sfilz+i) - hwid * *(nza+i) - hlen * *(bza+i);
+         *(ffilz + 5*i + 3) = *(sfilz+i) + hwid * *(nza+i) - hlen * *(bza+i);
+         *(ffilz + 5*i + 4) = *(sfilz+i) + hwid * *(nza+i) + hlen * *(bza+i);	 
+      }    
    }
+   
 
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Ntorfil;j++){
@@ -257,6 +285,7 @@ void MultiFilFieldSym(void){
    endfield = omp_get_wtime();
    
    //Map the field to all periods
+   
    printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
 
 }

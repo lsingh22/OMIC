@@ -12,7 +12,11 @@ double* sfilz;
 double* mfilx;
 double* mfily;
 double* mfilz;
- 
+
+double* ffilx;
+double* ffily;
+double* ffilz;
+  
 double* alpamps;
 
 double* Bsfilx;
@@ -27,7 +31,7 @@ double* Bmfilz;
 double* Bmfil;
 double* Bmfiln;
 
-int Nseg, Ntorfil, Nradfil, Nzeta, Nteta, Ncoils, NFalpha;
+int Nseg, Ntorfil, Nradfil, Nzeta, Nteta, Ncoils, NFalpha, Nfp;
 
 #define FILE_NAME "./outputfiles/output.nc"
 
@@ -35,14 +39,15 @@ void WriteOutputNC(void){
 
    int ncid;
    int xvarid, yvarid, zvarid;
-   int xdimid, ydimid, coildimid, nsegdimid, nsegfildimid, p1dimid; 
+   int xdimid, ydimid, coildimid, symcoildimid, nsegdimid, nsegfildimid, p1dimid, ffildimid;
    int sxvarid, syvarid, szvarid;
    int mxvarid, myvarid, mzvarid;
+   int fxvarid, fyvarid, fzvarid;
    int alpvarid, alpampdimid;
    int sbxvarid, sbyvarid, sbzvarid, sbvarid, sbnvarid;
    int mbxvarid, mbyvarid, mbzvarid, mbvarid, mbnvarid;
    int Nfils = Ntorfil*Nradfil;
-   int dimids[2], sfildims[2], mfildims[2], alpdims[2];
+   int dimids[2], sfildims[2], mfildims[2], ffildims[2],  alpdims[2];
  
    Nseg = Nseg+1;
    
@@ -50,10 +55,13 @@ void WriteOutputNC(void){
    nc_def_dim(ncid, "phony_dim_1", 1, &p1dimid); //Just 1
    nc_def_dim(ncid, "phony_dim_2", Nfils*Nseg, &nsegfildimid);
    nc_def_dim(ncid, "phony_dim_3", 2*NFalpha+1, &alpampdimid);
+   nc_def_dim(ncid, "phony_dim_4", Nseg*5, &ffildimid);
+
    nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
    nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
    nc_def_dim(ncid, "Nseg", Nseg, &nsegdimid);
    nc_def_dim(ncid, "Ncoil", Ncoils, &coildimid);
+   nc_def_dim(ncid, "iCoil", (Ncoils / Nfp) , &symcoildimid);
  
    dimids[0] = xdimid;
    dimids[1] = ydimid;
@@ -64,8 +72,11 @@ void WriteOutputNC(void){
    mfildims[0] = coildimid;
    mfildims[1] = nsegfildimid;
 
-   alpdims[0] = coildimid;
+   alpdims[0] = symcoildimid;
    alpdims[1] = alpampdimid;
+
+   ffildims[0] = coildimid;
+   ffildims[1] = ffildimid;
 
    //Output the surface
    nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
@@ -81,6 +92,12 @@ void WriteOutputNC(void){
    nc_def_var(ncid, "mx", NC_DOUBLE, 2, mfildims, &mxvarid); 
    nc_def_var(ncid, "my", NC_DOUBLE, 2, mfildims, &myvarid); 
    nc_def_var(ncid, "mz", NC_DOUBLE, 2, mfildims, &mzvarid); 
+
+   //Output finite build coil surf xyz
+   nc_def_var(ncid, "fx", NC_DOUBLE, 2, ffildims, &fxvarid); 
+   nc_def_var(ncid, "fy", NC_DOUBLE, 2, ffildims, &fyvarid); 
+   nc_def_var(ncid, "fz", NC_DOUBLE, 2, ffildims, &fzvarid); 
+
 
    //Output the alphss
    nc_def_var(ncid, "alpha", NC_DOUBLE, 2, alpdims, &alpvarid);
@@ -112,6 +129,10 @@ void WriteOutputNC(void){
    nc_put_var_double(ncid, mxvarid, &mfilx[0]);
    nc_put_var_double(ncid, myvarid, &mfily[0]);
    nc_put_var_double(ncid, mzvarid, &mfilz[0]);
+
+   nc_put_var_double(ncid, fxvarid, &ffilx[0]);
+   nc_put_var_double(ncid, fyvarid, &ffily[0]);
+   nc_put_var_double(ncid, fzvarid, &ffilz[0]);
 
    nc_put_var_double(ncid, alpvarid, &alpamps[0]);
 

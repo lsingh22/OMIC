@@ -104,6 +104,12 @@ extern double* mfilx;
 extern double* mfily;
 extern double* mfilz;
 
+// Finite build surface xyz points
+
+extern double* ffilx;
+extern double* ffily;
+extern double* ffilz;
+
 // Multi-Filament magnetics
 
 extern double* Bmfilx;
