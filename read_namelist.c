@@ -23,18 +23,19 @@ void SetInputs(void){
   
    //focus_output = "./inputfiles/focus_circular_01.nc";
    focus_output = "./inputfiles/focus_hsx.m12_07.nc";
- 
+   multi_output = "./outputfiles/output.nc";
+
 //   wid = 0.120;
 //   len = 0.060;
-   case_alpha = 1;
-   NFalpha = 4;
+   case_alpha = 2;
+   NFalpha = 2;
    alp_const = 0.001;
    Nseg = 128;
    wid = 0.120;
    len = 0.060;
    Nturns = 0;
-   Nthreads = 6;
-   DEBUG = 1; 
+   Nthreads = 64;
+   DEBUG = 0; 
   
    Nradfil = 4;
    Ntorfil = 2;

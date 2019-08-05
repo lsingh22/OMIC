@@ -6,7 +6,7 @@
 ///// INPUTS AND SETTINGS /////
 
 extern char* focus_output;  // The input single filament focus file
-extern char* alpha_input; // TODO: This will be in the namelist eventually
+extern char* multi_output; // TODO: This will be in the namelist eventually
 extern char* namelist; // TODO: The input namelist file
 
 extern int Nthreads; // Threads to use in OpenMP field calculation
@@ -28,6 +28,7 @@ extern double* zsurf;
 extern double* nsurfx;
 extern double* nsurfy;
 extern double* nsurfz;
+extern double* nsurfn; //Jacocbian
 
 ///// SINGLE FILAMENT COIL DATA /////
 
@@ -102,6 +103,12 @@ extern double* alp; // Stores the real space alpha values for calculating multif
 extern double* mfilx;
 extern double* mfily;
 extern double* mfilz;
+
+// Finite build surface xyz points
+
+extern double* ffilx;
+extern double* ffily;
+extern double* ffilz;
 
 // Multi-Filament magnetics
 

@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "bfield.h"
 #include <omp.h>
+#include "alpha.h"
 
 int Nthreads;
 
@@ -129,14 +130,20 @@ void CalculateBuildDirections(void){
 
 
 void CalculateMultiFilaments(void){
-
+   
+   Unpack_alpha();
+   CalculateBuildDirections();
+   
    int i,j,k,l;
    //Set a length and width scale for placing the filements
    //len and wid are the true length and width of the finite build
    double gridlen = len / (2*Nradfil);
    double gridwid = wid / (2*Ntorfil);
-   int Nfils = Nradfil*Ntorfil;
+   double hwid = wid / 2;
+   double hlen = len / 2;
 
+
+   int Nfils = Nradfil*Ntorfil;
    double* nxa;
    double* nya;
    double* nza;
@@ -157,6 +164,10 @@ void CalculateMultiFilaments(void){
    mfily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
    mfilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
  
+   ffilx = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
+   ffily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
+   ffilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
+   
    // Rotate the local basis using alpha parameter
 
    for(i=0;i<Ncoils*(Nseg+1);i++){
@@ -168,7 +179,28 @@ void CalculateMultiFilaments(void){
       *(bxa+i) = -*(nx+i)*sin(*(alp+i)) + *(bx+i)*cos(*(alp+i));
       *(bya+i) = -*(ny+i)*sin(*(alp+i)) + *(by+i)*cos(*(alp+i));
       *(bza+i) = -*(nz+i)*sin(*(alp+i)) + *(bz+i)*cos(*(alp+i));
+   
+      for(j=0;j<5;j++){
+         *(ffilx + 5*i) =     *(sfilx+i) + hwid * *(nxa+i) + hlen * *(bxa+i);
+         *(ffilx + 5*i + 1) = *(sfilx+i) - hwid * *(nxa+i) + hlen * *(bxa+i);
+         *(ffilx + 5*i + 2) = *(sfilx+i) - hwid * *(nxa+i) - hlen * *(bxa+i);
+         *(ffilx + 5*i + 3) = *(sfilx+i) + hwid * *(nxa+i) - hlen * *(bxa+i);
+         *(ffilx + 5*i + 4) = *(sfilx+i) + hwid * *(nxa+i) + hlen * *(bxa+i);
+
+         *(ffily + 5*i) =     *(sfily+i) + hwid * *(nya+i) + hlen * *(bya+i);
+         *(ffily + 5*i + 1) = *(sfily+i) - hwid * *(nya+i) + hlen * *(bya+i);
+         *(ffily + 5*i + 2) = *(sfily+i) - hwid * *(nya+i) - hlen * *(bya+i);
+         *(ffily + 5*i + 3) = *(sfily+i) + hwid * *(nya+i) - hlen * *(bya+i);
+         *(ffily + 5*i + 4) = *(sfily+i) + hwid * *(nya+i) + hlen * *(bya+i);
+
+         *(ffilz + 5*i)     = *(sfilz+i) + hwid * *(nza+i) + hlen * *(bza+i);
+         *(ffilz + 5*i + 1) = *(sfilz+i) - hwid * *(nza+i) + hlen * *(bza+i);
+         *(ffilz + 5*i + 2) = *(sfilz+i) - hwid * *(nza+i) - hlen * *(bza+i);
+         *(ffilz + 5*i + 3) = *(sfilz+i) + hwid * *(nza+i) - hlen * *(bza+i);
+         *(ffilz + 5*i + 4) = *(sfilz+i) + hwid * *(nza+i) + hlen * *(bza+i);	 
+      }    
    }
+   
 
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Ntorfil;j++){
@@ -184,6 +216,7 @@ void CalculateMultiFilaments(void){
 }
 
 
+/*
 void MultiFilField(void){
   
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -212,8 +245,8 @@ void MultiFilField(void){
    //printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
 
 }
+*/
 
-//This function is to test the implementation of symmetry and will be deleted
 void MultiFilFieldSym(void){
    
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -222,31 +255,40 @@ void MultiFilFieldSym(void){
    Bmfiln = (double*) malloc(Nzeta*Nteta*sizeof(double));
     Bmfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
 
-   int i;
+   int i,ip;
    double timefield;
    double startfield, endfield;
    int size_fp = Nzeta*Nteta / Nfp;
-   omp_set_num_threads(4);
+   
+   //Use the maximum threads available minus 1
+   omp_set_num_threads(Nthreads);
    startfield = omp_get_wtime();
  
    #pragma omp parallel for
    for(i=0;i<size_fp;i++){
       
-      CalculateMultiField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
+      CalculateMultiFieldSym( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
                             Bmfilx+i, Bmfily+i, Bmfilz+i );    
       *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
                     *(Bmfilz+i) * *(nsurfz+i);  // Need to add in area element
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
+   
+   for(ip=1;ip<Nfp;ip++){
+      for(i=0;i<size_fp;i++){
+         *(Bmfil + ip*size_fp+i) = *(Bmfil+i);       
+         *(Bmfiln + ip*size_fp+i) = *(Bmfiln+i);       
+      }
+   }
+
+
    endfield = omp_get_wtime();
+   
+   //Map the field to all periods
+   
    printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
 
 }
-
-
-
-
-
 
 
 #define MFILB_FILE_NAME "./outputfiles/mfilB.nc"
@@ -254,7 +296,7 @@ void MultiFilFieldSym(void){
 void WriteMultiB(void){
    //Write to NC
    int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
-   int bxvarid, byvarid, bzvarid;
+   int bxvarid, byvarid, bzvarid, bnvarid;
    int dimids[2];
    
    nc_create(MFILB_FILE_NAME, NC_CLOBBER, &ncid); 
@@ -270,7 +312,7 @@ void WriteMultiB(void){
    nc_def_var(ncid, "Bx", NC_DOUBLE, 2, dimids, &bxvarid);
    nc_def_var(ncid, "By", NC_DOUBLE, 2, dimids, &byvarid);
    nc_def_var(ncid, "Bz", NC_DOUBLE, 2, dimids, &bzvarid);  
- 
+   nc_def_var(ncid, "Bn", NC_DOUBLE, 2, dimids, &bnvarid);
 
    nc_enddef(ncid);
    nc_put_var_double(ncid, xvarid, &xsurf[0]);
@@ -280,6 +322,7 @@ void WriteMultiB(void){
    nc_put_var_double(ncid, bxvarid, &Bmfilx[0]);
    nc_put_var_double(ncid, byvarid, &Bmfily[0]);
    nc_put_var_double(ncid, bzvarid, &Bmfilz[0]);
+   nc_put_var_double(ncid, bnvarid, &Bmfiln[0]);
 
    nc_close(ncid);
 }

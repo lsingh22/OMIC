@@ -6,7 +6,11 @@
 #include <stdio.h>
 // GLOBALS SCOPED IN SOURCE FILE
 
-char* alpha_input;
+#define ERRCODE 2  
+#define ERR(e) {printf("Error: %s\n",nc_strerror(e)); exit(ERRCODE);}
+
+
+char* multi_output;
 double* alpampsinit;
 double* alpamps;
 int case_alpha;
@@ -17,7 +21,7 @@ double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
-void Init_alpha( int option){
+void Init_alpha( int option ){
 
  //  int iCoils = Ncoils / Nfp;
    int iCoils = Ncoils;
@@ -31,21 +35,32 @@ void Init_alpha( int option){
    {
       for(i=0;i<size_alpamp;i++)
       {   
-         *(alpampsinit+i) = 0.0;
+         *(alpamps+i) = 0.0;
       }
    }
    else if(option == 1)
    {
       for(i=0;i<size_alpamp;i++)
       {   
-        *(alpampsinit+i) = alp_const;
         //printf("%.8f\n", *(alpampsinit+i));
 	*(alpamps+i) = 0.0; //alp_const;
       }
    }
    else if(option == 2)
    {
-      //TODO: Read namelist or separate file
+      int ncid, varid, dimid,retval;
+      nc_open(multi_output, NC_NOWRITE, &ncid);
+      nc_inq_varid(ncid, "alpha", &varid);
+      nc_get_var_double(ncid, varid, alpamps);
+  
+      for(i=0;i<size_alpamp;i++)
+      {   
+        printf("%.8f\n", *(alpamps+i) );
+      } 
+
+      if(retval=nc_inq_varid(ncid,"alpha",&varid))
+      ERR(retval);
+      
    }
    else
    {
@@ -54,8 +69,7 @@ void Init_alpha( int option){
    }
 }
 
-
-void Unpack_alpha( int isInit){
+void Unpack_alpha( void ){
    
    //int iCoils = Ncoils / Nfp;
    int iCoils = Ncoils;
@@ -66,47 +80,21 @@ void Unpack_alpha( int isInit){
    double pi = M_PI;
     
    alp = (double*) malloc(iCoils*(Nseg+1)*sizeof(double));
-   
-   if(isInit == 0) // Optimization branch
-   {
-      for(i=0;i<iCoils;i++){
-         for(j=0;j<Nseg+1;j++){
-            theta = ((2*pi)/Nseg)*j;
-            a = 0;
-            for(k=0;k<NFalpha+1;k++){
-               a = a + alpamps[ (2*NFalpha+1)*i + k ]*cos(k*theta);
-            }
-            for(k=1;k<NFalpha+1;k++){
-               a = a + alpamps[ (2*NFalpha+1)*i + NFalpha + k ]*sin(k*theta);
-            }
 
-            *(alp +i*(Nseg+1) + j ) = a;
+   for(i=0;i<iCoils;i++){
+      for(j=0;j<Nseg+1;j++){
+         theta = ((2*pi)/Nseg)*j;
+         a = 0;
+         for(k=0;k<NFalpha+1;k++){
+            a = a + alpamps[ (2*NFalpha+1)*i + k ]*cos(k*theta);
          }
-      }     
-   }
-   else if(isInit == 1) // Initialization branch
-   {
- 
-      for(i=0;i<iCoils;i++){
-         for(j=0;j<Nseg+1;j++){
-            theta = ((2*pi)/Nseg)*j;
-            a = 0;
-            for(k=0;k<NFalpha+1;k++){
-               a = a + alpampsinit[ (2*NFalpha+1)*i + k ]*cos(k*theta);
-            }
-            for(k=1;k<NFalpha+1;k++){
-               a = a + alpampsinit[ (2*NFalpha+1)*i + NFalpha + k ]*sin(k*theta);
-            }
-
-            *(alp +i*(Nseg+1) + j ) = a;
+         for(k=1;k<NFalpha+1;k++){
+            a = a + alpamps[ (2*NFalpha+1)*i + NFalpha + k ]*sin(k*theta);
          }
-      } 
+            *(alp +i*(Nseg+1) + j ) = a;
+      }
    }
-   else
-   {
-      //Throw error
-   }
-
 }
+
 
 

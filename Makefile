@@ -3,6 +3,7 @@
 
 PROGRAM = multi
 
+
 FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
 
 FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c bfield.h globals.h alpha.h output.h solvers.h
@@ -61,8 +62,8 @@ bfield.o: bfield.c bfield.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
 alpha.o: alpha.c alpha.h globals.h
 	${CC} -c $< -o $@
-output.o: output.c output.h globals.h
-	${CC} -c $< -o $@
+#output.o: output.c output.h globals.h
+#	${CC} -c $< -o $@
 solvers.o: solvers.c solvers.h globals.h
 	${CC} -c $< -o $@
 
