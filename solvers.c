@@ -30,7 +30,7 @@ void Central_diff( void ){
    int i,j;
 
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
-   double h = .00000001;
+   double h = .000001;
    
    double minus_bn;
    double plus_bn;
@@ -109,7 +109,7 @@ void Forward_track( void ){
       search_bn = 0.0;
       printf("Step size is %f\n", 1000.0*step);
       for(j=0;j<size_alpamp;j++){
-	 printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
+	 //printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
          *(alpamps+j) += step*(*(descent_dir+j));
       }
 
@@ -120,7 +120,8 @@ void Forward_track( void ){
       for(j=0;j<Nzeta*Nteta;j++){
          search_bn += sqrt( (*(Bmfiln+j)) * (*(Bmfiln+j)) );
       }
-      printf("Total field error, tracking iter: %f   %d\n",search_bn,k);
+      printf("Total field error, tracking iter: %f   %d\n",search_bn,k); 
+      // Above print still executes even if going uphill, but step is not taken
       step = step*2.0;
       k++;
    }

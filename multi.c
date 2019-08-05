@@ -37,7 +37,7 @@ int main(int argc, char **argv){
    printf("This is 6 \n");
    CalculateMultiFilaments();
    printf("This is 7 \n");
-   int iter = 5;
+   int iter = 10;
    for(int i=0;i<iter;i++){
       Central_diff();
       printf("This is 8 \n");
