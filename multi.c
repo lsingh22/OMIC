@@ -40,7 +40,7 @@ int main(int argc, char **argv){
 
    //printf("This is 7 \n");
 
-   int iter = 5;
+   int iter = 20;
    for(int i=0;i<iter;i++){
       Central_diff(alpamps);
       printf("This is 8 \n");

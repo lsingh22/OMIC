@@ -31,13 +31,13 @@ void SetInputs(void){
    NFalpha = 2;
    alp_const = 0.001;
    Nseg = 128;
-   wid = 0.120;
-   len = 0.060;
+   wid = 0.055;
+   len = 0.125;
    Nturns = 0;
-   Nthreads = 64;
+   Nthreads = 16;
    DEBUG = 0; 
   
-   Nradfil = 2;
+   Nradfil = 3;
    Ntorfil = 2;
 
    //unpack_alpha(case_alpha);

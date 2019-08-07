@@ -24,7 +24,7 @@ double alp_const;
 void Init_alpha( int option ){
 
  //  int iCoils = Ncoils / Nfp;
-   int iCoils = Ncoils;
+   int iCoils = Ncoils / Nfp;
    int size_alpamp = iCoils*(2*NFalpha+1);  
    int i;
 

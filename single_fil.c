@@ -122,7 +122,7 @@ void SingleFilField(void){
    double timeBfield;
    double startBfield, endBfield;
 
-   omp_set_num_threads(2);
+   omp_set_num_threads(Nthreads);
 
    startBfield = omp_get_wtime(); //clock();
    // for(i=0;i<size_surf*size_surf;i++){
