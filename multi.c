@@ -15,7 +15,7 @@
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv){
-   
+   int i;
    double tot_time;
    clock_t start, end;
    double sfil_error;
@@ -43,14 +43,15 @@ int main(int argc, char **argv){
 
    sfil_error = SingleFieldError();
    printf("The single fil error is %.15f\n", sfil_error );
+   double val = CostFunction(0,alpamps);
+   printf("The value of cost function is %.15f\n", val);
 
 if(isVaryRotation==1){
- 
-   for(int i=0;i<niter;i++){
+   for(i=0;i<niter;i++){
       Central_diff(alpamps);
-      //printf("This is 8 \n");
+      printf("This is 8 \n");
       Steepest_descent();
-      //printf("This is 9 \n");
+      printf("This is 9 \n");
       Forward_track();
       printf("Done with iteration: %d\n",i);
    }
@@ -59,7 +60,7 @@ if(isVaryRotation==1){
 
    //printf("This is 10 \n");
 
-
+   WriteSingleFilaments();
    WriteMultiFilaments();
    
    WriteMultiB();
