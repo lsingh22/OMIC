@@ -129,6 +129,7 @@ extern double* finz;
 extern double* derivs;
 extern double* descent_dir;
 extern int niter;
+extern int isVaryRotation;
 
 ///// BENCHMARKING VARIABLES /////
 

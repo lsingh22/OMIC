@@ -5,6 +5,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "multi_fil.h"
+#include "single_fil.h"
 #include "alpha.h"
 // GLOBALS SCOPED IN SOURCE FILE
 
@@ -14,7 +15,7 @@ double* alpamps;
 double* derivs;
 double* descent_dir;
 double* nsurfn;
-
+double* fbn;
 
 int case_alpha;
 int Ncoils;
@@ -48,8 +49,27 @@ double feval = 0.0;
    }
  
    //TODO: Add in other options later (length, cc, cp)
+return feval;
 }
 
+
+double SingleFieldError(void){
+
+int iCoils = Ncoils / Nfp;
+int size_fp = Nteta*Nzeta / Nfp;
+int i;
+double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+double feval = 0.0;
+
+UnpackSingleFilaments();
+SingleFilField();
+    
+   for(i=0;i<size_fp;i++){
+      feval += (0.5)*pow( *(fbn+i),2 )* (*(nsurfn+i))*dsfactor;   
+   } 
+return feval;
+}
+ 
 
 void Central_diff( double *dof ){
    

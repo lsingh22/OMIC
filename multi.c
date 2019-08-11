@@ -18,6 +18,7 @@ int main(int argc, char **argv){
    
    double tot_time;
    clock_t start, end;
+   double sfil_error;
    // At some point use higher resolution timer 
    
    start = clock();
@@ -40,7 +41,11 @@ int main(int argc, char **argv){
 
    //printf("This is 7 \n");
 
- /*
+   sfil_error = SingleFieldError();
+   printf("The single fil error is %.15f\n", sfil_error );
+
+if(isVaryRotation==1){
+ 
    for(int i=0;i<niter;i++){
       Central_diff(alpamps);
       //printf("This is 8 \n");
@@ -49,7 +54,9 @@ int main(int argc, char **argv){
       Forward_track();
       printf("Done with iteration: %d\n",i);
    }
-*/
+}
+
+
    //printf("This is 10 \n");
 
 
