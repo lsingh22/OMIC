@@ -343,7 +343,7 @@ void WriteMultiFilaments(void){
                                                  *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f Mod 1 1\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+      fprintf(fb,"%.15f %.15f %.15f %.8f 1 Mod\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i));   
       }

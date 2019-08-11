@@ -24,7 +24,7 @@ int niter;
 void SetInputs(void){
   
    //focus_output = "./inputfiles/focus_circular_01.nc";
-   focus_output = "./inputfiles/focus_hsx.m12_07_12864.nc";
+   focus_output = "./inputfiles/focus_hsx.m12_07.nc";
    multi_output = "./outputfiles/output.nc";
 
 //   wid = 0.120;
@@ -43,8 +43,8 @@ void SetInputs(void){
   
    Nradfil = 3;
    Ntorfil = 2;
-   isVaryRotation = 0;
-   niter = 10;
+   isVaryRotation = 1;
+   niter = 7;
    //unpack_alpha(case_alpha);
  
 }

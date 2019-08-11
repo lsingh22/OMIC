@@ -14,6 +14,7 @@ double* derivs;
 double* alpamps;
 double* derivs;
 double* descent_dir;
+double* Bmfiln;
 double* nsurfn;
 double* fbn;
 
@@ -21,6 +22,7 @@ int case_alpha;
 int Ncoils;
 int Nfp;
 int NFalpha;
+int size_alpamp;
 double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
@@ -44,12 +46,11 @@ double feval = 0.0;
       MultiFilFieldSym();
       
       for(i=0;i<size_fp;i++){
-         feval += (0.5)*pow(*(Bmfiln+i),2)*(*(nsurfn+i))*dsfactor;   
+         feval += (0.5) * (*(Bmfiln+i) * *(Bmfiln+i))*(*(nsurfn+i))*dsfactor;
       } 
    }
  
-   //TODO: Add in other options later (length, cc, cp)
-return feval;
+   return feval;
 }
 
 
@@ -65,7 +66,7 @@ UnpackSingleFilaments();
 SingleFilField();
     
    for(i=0;i<size_fp;i++){
-      feval += (0.5)*pow( *(fbn+i),2 )* (*(nsurfn+i))*dsfactor;   
+      feval += (0.5)*( *(fbn+i)* *(fbn+i) )* (*(nsurfn+i))*dsfactor;   
    } 
 return feval;
 }
@@ -134,7 +135,7 @@ void Forward_track( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .001; // There is small error, I fix later
+   double step = .0001; // There is small error, I fix later
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;

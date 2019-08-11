@@ -189,7 +189,7 @@ void WriteSingleFilaments(void){
       for(j=0;j<Nseg;j++){
          fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(sfilx+i*(Nseg+1)+j), *(sfily+i*(Nseg+1)+j), *(sfilz+i*(Nseg+1)+j), *(currents+i));         
          }
-      fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*(Nseg+1)), *(sfily+i*(Nseg+1)), *(sfilz+i*(Nseg+1)), *(currents+i), i+1);         
+      fprintf(fb,"%.15f %.15f %.15f %.15f 1 Mod\n", *(sfilx+i*(Nseg+1)), *(sfily+i*(Nseg+1)), *(sfilz+i*(Nseg+1)), *(currents+i));         
    }
    fprintf(fb,"end");
 
