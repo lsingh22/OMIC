@@ -82,7 +82,9 @@ void ReadFocusArrays(char* output_file){
    fby = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    fbz = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    fbn = (double*) malloc(Nteta*Nzeta*sizeof(double));   
-      
+
+   //NOTE: Assuming that there is only a single row of data; if evolution 
+   //is a seg fault    
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "coilspace", &varid);
    nc_get_var_double(ncid, varid, coilspace);

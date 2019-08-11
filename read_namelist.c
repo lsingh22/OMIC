@@ -17,29 +17,32 @@ int Nthreads;
 int case_alpha;
 int NFalpha;
 double alp_const;
+int niter;
 
 // UPDATES GLOBALS TO USER INPUT
 void SetInputs(void){
   
    //focus_output = "./inputfiles/focus_circular_01.nc";
-   focus_output = "./inputfiles/focus_hsx.m12_07.nc";
+   focus_output = "./inputfiles/focus_hsx.m12_07_12864.nc";
    multi_output = "./outputfiles/output.nc";
 
 //   wid = 0.120;
 //   len = 0.060;
-   case_alpha = 2;
-   NFalpha = 2;
+   case_alpha = 1;
+   NFalpha = 1;
    alp_const = 0.001;
    Nseg = 128;
-   wid = 0.055;
-   len = 0.125;
+   wid = 0.035;
+   len = 0.060;
+//   wid = 0.120;
+//   len = 0.250;
    Nturns = 0;
-   Nthreads = 16;
+   Nthreads = 20;
    DEBUG = 0; 
   
    Nradfil = 3;
    Ntorfil = 2;
-
+   niter = 10;
    //unpack_alpha(case_alpha);
  
 }

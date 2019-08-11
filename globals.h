@@ -128,7 +128,7 @@ extern double* finz;
 
 extern double* derivs;
 extern double* descent_dir;
-
+extern int niter;
 
 ///// BENCHMARKING VARIABLES /////
 

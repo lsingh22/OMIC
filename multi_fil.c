@@ -137,7 +137,7 @@ void CalculateMultiFilaments(void){
    int i,j,k,l;
    //Set a length and width scale for placing the filements
    //len and wid are the true length and width of the finite build
-   double gridlen = len / (2*Nradfil);
+   double gridlen = len / (4*Nradfil);
    double gridwid = wid / (2*Ntorfil);
    double hwid = wid / 2;
    double hlen = len / 2;
@@ -333,7 +333,7 @@ void WriteMultiFilaments(void){
    int i,j,k;
    FILE* fb;
    fb = fopen("./outputfiles/mfil.out","w");
-   fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
+   fprintf(fb, "periods 4\n begin filament\n mirror NIL\n");
    int Nfils = Ntorfil*Nradfil;
    
    for(i=0;i<Ncoils;i++){
@@ -343,9 +343,9 @@ void WriteMultiFilaments(void){
                                                  *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+      fprintf(fb,"%.15f %.15f %.15f %.8f Mod 1 1\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
-                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i), i+1,j+1);   
+                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i));   
       }
    }
    fprintf(fb,"end");
