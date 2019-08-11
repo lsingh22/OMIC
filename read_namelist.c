@@ -13,6 +13,7 @@ double* alp;
 int Nradfil;
 int Ntorfil;
 int Nseg;
+int isVaryRotation;
 int Nthreads;
 int case_alpha;
 int NFalpha;
@@ -37,11 +38,12 @@ void SetInputs(void){
 //   wid = 0.120;
 //   len = 0.250;
    Nturns = 0;
-   Nthreads = 20;
+   Nthreads = 16;
    DEBUG = 0; 
   
    Nradfil = 3;
    Ntorfil = 2;
+   isVaryRotation = 0;
    niter = 10;
    //unpack_alpha(case_alpha);
  
