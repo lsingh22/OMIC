@@ -43,7 +43,7 @@ void Init_alpha( int option ){
       for(i=0;i<size_alpamp;i++)
       {   
         //printf("%.8f\n", *(alpampsinit+i));
-	*(alpamps+i) = 0.0; //alp_const;
+	*(alpamps+i) = alp_const;
       }
    }
    else if(option == 2)
