@@ -93,7 +93,7 @@ extern double* bz;
 // Alpha rotation parameters
 
 extern int NFalpha;
-extern double* alpampsinit; // Stores the namelist alpha amplitudes
+extern double* malp; // Stores the namelist alpha amplitudes
 extern double  alp_const;
 extern double* alpamps; // Stores the objective function alpha amplitudes
 extern double* alp; // Stores the real space alpha values for calculating multifilaments

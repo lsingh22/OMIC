@@ -333,7 +333,7 @@ void WriteMultiFilaments(void){
    int i,j,k;
    FILE* fb;
    fb = fopen("./outputfiles/mfil.out","w");
-   fprintf(fb, "periods 4\n begin filament\n mirror NIL\n");
+   fprintf(fb, "periods %d\n begin filament\n mirror NIL\n",Nfp);
    int Nfils = Ntorfil*Nradfil;
    
    for(i=0;i<Ncoils;i++){
@@ -341,11 +341,11 @@ void WriteMultiFilaments(void){
          for(k=0;k<Nseg;k++){
          fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
-                                                 *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
+                                                 *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i)/Nfils);     
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f 1 Mod\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+      fprintf(fb,"%.15f %.15f %.15f %.15f 1 Mod\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
-                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i));   
+                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), 0.0);   
       }
    }
    fprintf(fb,"end");

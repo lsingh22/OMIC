@@ -43,8 +43,8 @@ void SetInputs(void){
   
    Nradfil = 3;
    Ntorfil = 2;
-   isVaryRotation = 1;
-   niter = 7;
+   isVaryRotation = 0;
+   niter = 1;
    //unpack_alpha(case_alpha);
  
 }
