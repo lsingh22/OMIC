@@ -33,8 +33,8 @@ void SetInputs(void){
    NFalpha = 1;
    alp_const = 0.001;
    Nseg = 128;
-   wid = 0.035;
-   len = 0.060;
+   wid = 0.055;
+   len = 0.105;
 //   wid = 0.120;
 //   len = 0.250;
    Nturns = 0;
@@ -43,8 +43,8 @@ void SetInputs(void){
   
    Nradfil = 3;
    Ntorfil = 2;
-   isVaryRotation = 0;
-   niter = 1;
+   isVaryRotation = 1;
+   niter = 10;
    //unpack_alpha(case_alpha);
  
 }
