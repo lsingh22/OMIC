@@ -24,7 +24,7 @@ int niter;
 void SetInputs(void){
   
    //focus_output = "./inputfiles/focus_circular_01.nc";
-   focus_output = "./inputfiles/focus_hsx.m12_07.nc";
+   focus_output = "./inputfiles/focus_circular.nc";
    multi_output = "./outputfiles/output.nc";
 
 //   wid = 0.120;
@@ -33,8 +33,8 @@ void SetInputs(void){
    NFalpha = 1;
    alp_const = 0.001;
    Nseg = 128;
-   wid = 0.055;
-   len = 0.105;
+//   wid = 0.055;
+//   len = 0.105;
 //   wid = 0.120;
 //   len = 0.250;
    Nturns = 0;
