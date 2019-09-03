@@ -135,6 +135,8 @@ void CalculateMultiFilaments(void){
    CalculateBuildDirections();
    
    int i,j,k,l;
+   int iCoils = Ncoils / Nfp;
+   int ip;
    //Set a length and width scale for placing the filements
    //len and wid are the true length and width of the finite build
    double gridlen = len / (4*Nradfil);
@@ -202,7 +204,7 @@ void CalculateMultiFilaments(void){
    }
    
 
-   for(i=0;i<Ncoils;i++){
+   for(i=0;i<iCoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
             for(l=0;l<Nseg+1;l++){
@@ -213,6 +215,19 @@ void CalculateMultiFilaments(void){
          }
       }
    }
+
+   int mfil_fp = Ntorfil*Nradfil*(Nseg+1);
+
+   if(Nfp != 1) {
+      for(ip=1;ip<Nfp+1;ip++){   
+         for(j=0;j<mfil_fp;j++){
+            *(mfilx+ip*mfil_fp+j) =  *(mfilx+j)*cosnfp(ip) + *(mfily+j)*sinnfp(ip);
+            *(mfilx+ip*mfil_fp+j) = -*(mfilx+j)*sinnfp(ip) + *(mfily+j)*cosnfp(ip);
+            *(mfilz+ip*mfil_fp+j) =  *(mfilz+j);
+         }
+      }
+   }
+
 }
 
 

@@ -81,7 +81,7 @@ void Central_diff( double *dof ){
    int i,j;
 
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
-   double h = 1e-13;
+   double h = 1e-8;
    
    double minus_bn;
    double plus_bn;
