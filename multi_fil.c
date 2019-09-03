@@ -260,7 +260,6 @@ void MultiFilFieldSym(void){
    double startfield, endfield;
    int size_fp = Nzeta*Nteta / Nfp;
    
-   //Use the maximum threads available minus 1
    omp_set_num_threads(Nthreads);
    startfield = omp_get_wtime();
  
