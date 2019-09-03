@@ -12,7 +12,7 @@ extern char* namelist; // TODO: The input namelist file
 extern int Nthreads; // Threads to use in OpenMP field calculation
 extern int DEBUG; // Option to suppress output
 extern int case_alpha; // Determines where to get initial alpha amps ( 0 =all 0,  1 =all const, 2 =file)
-
+extern int case_opt;
 ///// PLASMA EQUILIBRIUM DATA  /////
 
 extern int Nfp;

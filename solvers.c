@@ -81,7 +81,7 @@ void Central_diff( double *dof ){
    int i,j;
 
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
-   double h = .000001;
+   double h = 1e-13;
    
    double minus_bn;
    double plus_bn;
@@ -93,7 +93,7 @@ void Central_diff( double *dof ){
    }
 
    
-   //MultiFilFieldSym(); // Calculates B dot n for the multifilaments might not be needed here 
+   MultiFilFieldSym(); // Calculates B dot n for the multifilaments might not be needed here 
    init_bn = CostFunction(0,alpamps);
 
    for(i=0;i<size_alpamp;i++){
@@ -124,6 +124,7 @@ void Steepest_descent( void ){
 
    for(i=0;i<size_alpamp;i++){
       *(descent_dir+i) = -1.0 * (*(derivs+i));
+      printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
    }   
 
 }
@@ -135,7 +136,7 @@ void Forward_track( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .000001; // There is small error, I fix later
+   double step = .00000001; // There is small error, I fix later
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;
@@ -154,10 +155,10 @@ void Forward_track( void ){
       printf("Step size is %f\n", 1000.0*step);
       
       for(j=0;j<size_alpamp;j++){
-	 printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
+	 printf("NF:   %dAlphas   %.12f\n",j,*(alpamps+j));
          *(alpamps+j) += step*(*(descent_dir+j));
+      
       }
-
       search_bn = CostFunction(0,alpamps);
       printf("Total field error, tracking iter: %.9f   %d\n",search_bn,k);
       step = step*2.0;
