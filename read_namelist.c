@@ -25,20 +25,20 @@ int niter;
 void SetInputs(void){
   
    //focus_output = "./inputfiles/focus_circular_01.nc";
-   focus_output = "./inputfiles/focus_circular.nc";
+   focus_output = "./inputfiles/focus_hsx.m12_07.nc";
    multi_output = "./outputfiles/output.nc";
 
 //   wid = 0.120;
 //   len = 0.060;
-   case_alpha = 1;
+   case_alpha = 0;
    case_opt = 0;
    NFalpha = 1;
    alp_const = 0.5;
    Nseg = 128;
-//   wid = 0.055;
-//   len = 0.105;
-   wid = 0.100;
-   len = 0.200;
+   wid = 0.055;
+   len = 0.105;
+   //wid = 0.100;
+   //len = 0.200;
    Nturns = 0;
    Nthreads = 16;
    DEBUG = 0; 
@@ -46,7 +46,7 @@ void SetInputs(void){
    Nradfil = 3;
    Ntorfil = 2;
    isVaryRotation = 1;
-   niter = 5;
+   niter = 1;
    //unpack_alpha(case_alpha);
  
 }
