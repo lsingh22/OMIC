@@ -114,7 +114,7 @@ void Forward_track( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .0001; // There is small error, I fix later
+   double step = .0001; 
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;
