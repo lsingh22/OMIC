@@ -8,11 +8,14 @@
 extern char* focus_output;  // The input single filament focus file
 extern char* multi_output; // TODO: This will be in the namelist eventually
 extern char* namelist; // TODO: The input namelist file
+extern char* mfil_output; // The multfilament coils file
+extern char* sfil_output; // The single filament coils file
+
 
 extern int Nthreads; // Threads to use in OpenMP field calculation
 extern int DEBUG; // Option to suppress output
 extern int case_alpha; // Determines where to get initial alpha amps ( 0 =all 0,  1 =all const, 2 =file)
-
+extern int case_opt;
 ///// PLASMA EQUILIBRIUM DATA  /////
 
 extern int Nfp;
@@ -67,8 +70,8 @@ extern double* cz;
 
 extern int Nradfil;
 extern int Ntorfil;
-extern double wid; 
-extern double len; 
+extern double len_rad; 
+extern double len_tor; 
 
 // Local basis data found from Gram-Schmidt and Frenet-Serret formulae
 
@@ -93,7 +96,7 @@ extern double* bz;
 // Alpha rotation parameters
 
 extern int NFalpha;
-extern double* alpampsinit; // Stores the namelist alpha amplitudes
+extern double* malp; // Stores the namelist alpha amplitudes
 extern double  alp_const;
 extern double* alpamps; // Stores the objective function alpha amplitudes
 extern double* alp; // Stores the real space alpha values for calculating multifilaments
@@ -128,6 +131,10 @@ extern double* finz;
 
 extern double* derivs;
 extern double* descent_dir;
+
+// Optimization settings
+extern int niter;
+extern double deriv;
 
 
 ///// BENCHMARKING VARIABLES /////

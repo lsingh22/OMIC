@@ -1,0 +1,8 @@
+#bmn bNfp nbf
+2 1 0
+#plasma boundary
+# n m Rbc Rbs Zbc Zbs
+0 0  3.00 0.0 0.0  0.00
+0 1  0.30 0.0 0.0 -0.30
+#Bn harmonics
+# n m bnc bns

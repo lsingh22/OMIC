@@ -33,7 +33,7 @@ double* Bmfiln;
 
 int Nseg, Ntorfil, Nradfil, Nzeta, Nteta, Ncoils, NFalpha, Nfp;
 
-#define FILE_NAME "./outputfiles/output.nc"
+#define FILE_NAME multi_output
 
 void WriteOutputNC(void){
 
@@ -46,8 +46,10 @@ void WriteOutputNC(void){
    int alpvarid, alpampdimid;
    int sbxvarid, sbyvarid, sbzvarid, sbvarid, sbnvarid;
    int mbxvarid, mbyvarid, mbzvarid, mbvarid, mbnvarid;
+   int NFalphavarid, len_radvarid, len_torvarid, nitervarid, Ntorfilvarid, Nradfilvarid;
    int Nfils = Ntorfil*Nradfil;
-   int dimids[2], sfildims[2], mfildims[2], ffildims[2],  alpdims[2];
+   int dimids[2], sfildims[2], mfildims[2], ffildims[2], alpdims[2];
+   int singledims[2];
  
    Nseg = Nseg+1;
    
@@ -62,7 +64,7 @@ void WriteOutputNC(void){
    nc_def_dim(ncid, "Nseg", Nseg, &nsegdimid);
    nc_def_dim(ncid, "Ncoil", Ncoils, &coildimid);
    nc_def_dim(ncid, "iCoil", (Ncoils / Nfp) , &symcoildimid);
- 
+
    dimids[0] = xdimid;
    dimids[1] = ydimid;
    
@@ -77,6 +79,9 @@ void WriteOutputNC(void){
 
    ffildims[0] = coildimid;
    ffildims[1] = ffildimid;
+
+   singledims[0] = p1dimid;
+   singledims[1] = p1dimid;
 
    //Output the surface
    nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
@@ -101,7 +106,7 @@ void WriteOutputNC(void){
 
    //Output the alphss
    nc_def_var(ncid, "alpha", NC_DOUBLE, 2, alpdims, &alpvarid);
-    
+
    //Output the centroid single filament field
    nc_def_var(ncid, "sB", NC_DOUBLE, 2, dimids, &sbvarid);  
    nc_def_var(ncid, "sBx", NC_DOUBLE, 2, dimids, &sbxvarid);
@@ -116,6 +121,18 @@ void WriteOutputNC(void){
    nc_def_var(ncid, "mBz", NC_DOUBLE, 2, dimids, &mbzvarid);  
    nc_def_var(ncid, "mBn", NC_DOUBLE, 2, dimids, &mbnvarid);  
 
+   //Output some other useful stuff
+   nc_def_var(ncid, "NFalpha", NC_INT, 2, singledims, &NFalphavarid); 
+   nc_def_var(ncid, "niter", NC_INT, 2, singledims, &nitervarid);
+   nc_def_var(ncid, "len_rad", NC_DOUBLE, 2, singledims, &len_radvarid);
+   nc_def_var(ncid, "len_tor", NC_DOUBLE, 2, singledims, &len_torvarid);
+   nc_def_var(ncid, "Nradfil", NC_INT, 2, singledims, &Nradfilvarid);
+   nc_def_var(ncid, "Ntorfil", NC_INT, 2,singledims, &Ntorfilvarid);
+    
+ 
+ 
+ 
+   
    nc_enddef(ncid);
  
    nc_put_var_double(ncid, xvarid, &xsurf[0]);
@@ -147,7 +164,14 @@ void WriteOutputNC(void){
    nc_put_var_double(ncid, mbyvarid, &Bmfily[0]);
    nc_put_var_double(ncid, mbzvarid, &Bmfilz[0]);
    nc_put_var_double(ncid, mbnvarid, &Bmfiln[0]);
-  
+   
+   nc_put_var_int(ncid, NFalphavarid, &NFalpha); 
+   nc_put_var_double(ncid, len_radvarid, &len_rad); 
+   nc_put_var_double(ncid, len_torvarid, &len_tor); 
+   nc_put_var_int(ncid, Nradfilvarid, &Nradfil); 
+   nc_put_var_int(ncid, Ntorfilvarid, &Ntorfil); 
+   nc_put_var_int(ncid, nitervarid, &niter); 
+   
    nc_close(ncid);
 }
 

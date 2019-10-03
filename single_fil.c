@@ -122,7 +122,7 @@ void SingleFilField(void){
    double timeBfield;
    double startBfield, endBfield;
 
-   omp_set_num_threads(2);
+   omp_set_num_threads(Nthreads);
 
    startBfield = omp_get_wtime(); //clock();
    // for(i=0;i<size_surf*size_surf;i++){
@@ -179,24 +179,22 @@ void WriteSingleB(void){
 
 
 void WriteSingleFilaments(void){
-  
+  //THERE IS AN INDEXING ISSUE
    int i,j;
    FILE* fb;
-   fb = fopen("./outputfiles/sfil.out","w");
+   //fb = fopen("./outputfiles/sfil.out","w");
+   fb = fopen(sfil_output, "w");
    fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
 
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nseg;j++){
          fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(sfilx+i*(Nseg+1)+j), *(sfily+i*(Nseg+1)+j), *(sfilz+i*(Nseg+1)+j), *(currents+i));         
          }
-      fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*(Nseg+1)), *(sfily+i*(Nseg+1)), *(sfilz+i*(Nseg+1)), *(currents+i), i+1);         
+      fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*(Nseg)), *(sfily+i*(Nseg)), *(sfilz+i*(Nseg)), *(currents+i), 1);         
+
    }
    fprintf(fb,"end");
 
 }
 
-void WriteSingleFilamentsNC(void){
 
-//TODO: Write NETCDF out for more general and faster plotting
-
-}
