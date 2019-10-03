@@ -20,28 +20,43 @@ int main(int argc, char **argv){
    clock_t start, end;
    // At some point use higher resolution timer 
    
-   start = clock();
- 
+   start = clock(); 
    //printf("This is 1 \n");
    SetInputs();
    //printf("This is 2 \n");
    ReadFocusInts(focus_output);
+
+   niter = 0;
+
+   printf("\nThis is OMIC...\n\n");
+   printf("The number of iterations is: %d\n",niter);
+   printf("The number of alphas is: %d\n",NFalpha);
+   printf("The dimensions (radxtor) are : %.4f x %.4f \n",len_rad,len_tor);
+   printf("The filaments (radxtor) are : %d x %d\n",Nradfil, Ntorfil);
+
+
    //printf("This is 3 \n");
    ReadFocusArrays(focus_output);
    //printf("This is 4 \n");
    UnpackSingleFilaments();
+
    Init_alpha(case_alpha);
    //printf("This is 6 \n");
    CalculateMultiFilaments();
    
-   SingleFilField();
+   //SingleFilField();
+   double sfil_error = SingleFieldError();
+   printf("The single fil error is %.15f\n", sfil_error);
+    
+   double val = CostFunction(0,alpamps);
+   printf("The value of cost function is %.15f\n", val);
    
-   MultiFilFieldSym(); 
+   //MultiFilFieldSym(); 
 
    //printf("This is 7 \n");
 
-   int iter = 5;
-   for(int i=0;i<iter;i++){
+   
+   for(int i=0;i<niter;i++){
       Central_diff(alpamps);
       printf("This is 8 \n");
       Steepest_descent();
@@ -52,13 +67,13 @@ int main(int argc, char **argv){
 
    //printf("This is 10 \n");
 
-   //WriteMultiFilaments(); 
+   WriteMultiFilaments(); 
 
-   WriteMultiB();
+   //WriteMultiB();
   
    WriteOutputNC(); 
    
- 
+   //WriteSingleFilaments();
    
    
    

@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include "multi_fil.h"
 #include "alpha.h"
+#include "single_fil.h"
+
 // GLOBALS SCOPED IN SOURCE FILE
 
 double* alpampsinit;
@@ -23,6 +25,27 @@ int NFalpha;
 double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
+
+double SingleFieldError(void){
+
+int iCoils = Ncoils / Nfp;
+int size_fp = Nteta*Nzeta / Nfp;
+int i;
+double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+double feval = 0.0;
+
+UnpackSingleFilaments();
+SingleFilField();
+
+   for(i=0;i<size_fp;i++){
+      feval += (0.5)*pow(*(fbn+i),2) * (1/(pow(*(fbx+i),2)+pow(*(fby+i),2)+pow(*(fbz+i),2))) * (*(nsurfn+i))*dsfactor;
+   }
+
+return feval;
+
+}
+
+
 
 double CostFunction(int case_opt, double* dof){
 
@@ -43,7 +66,7 @@ double feval = 0.0;
       MultiFilFieldSym();
       
       for(i=0;i<size_fp;i++){
-         feval += (0.5)*pow(*(Bmfiln+i),2)*(*(nsurfn+i))*dsfactor;   
+         feval += (0.5)*pow( ( *(Bmfiln+i) / *(Bmfil) ) ,2) * (*(nsurfn+i))*dsfactor;   
       } 
    }
  
@@ -60,7 +83,7 @@ void Central_diff( double *dof ){
    int i,j;
 
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
-   double h = .000001;
+   double h = 0.000001;
    
    double minus_bn;
    double plus_bn;

@@ -48,12 +48,13 @@ void Init_alpha( int option ){
    }
    else if(option == 2)
    {
+      int size_amp = iCoils*(2*NFalpha+1)/Nfp;
       int ncid, varid, dimid,retval;
       nc_open(multi_output, NC_NOWRITE, &ncid);
       nc_inq_varid(ncid, "alpha", &varid);
       nc_get_var_double(ncid, varid, alpamps);
   
-      for(i=0;i<size_alpamp;i++)
+      for(i=0;i<size_amp;i++)
       {   
         printf("%.8f\n", *(alpamps+i) );
       } 
