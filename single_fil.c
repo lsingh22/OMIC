@@ -122,7 +122,7 @@ void SingleFilField(void){
    double timeBfield;
    double startBfield, endBfield;
 
-   omp_set_num_threads(2);
+   omp_set_num_threads(Nthreads);
 
    startBfield = omp_get_wtime(); //clock();
    // for(i=0;i<size_surf*size_surf;i++){
@@ -191,6 +191,7 @@ void WriteSingleFilaments(void){
          fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(sfilx+i*(Nseg+1)+j), *(sfily+i*(Nseg+1)+j), *(sfilz+i*(Nseg+1)+j), *(currents+i));         
          }
       fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*(Nseg)), *(sfily+i*(Nseg)), *(sfilz+i*(Nseg)), *(currents+i), 1);         
+
    }
    fprintf(fb,"end");
 

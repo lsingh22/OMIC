@@ -18,17 +18,16 @@ int Ncoils;
 int Nfp;
 int NFalpha;
 double alp_const;
+double* alp;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
 void Init_alpha( int option ){
 
- //  int iCoils = Ncoils / Nfp;
-   int iCoils = Ncoils;
+   int iCoils = Ncoils/ Nfp;
    int size_alpamp = iCoils*(2*NFalpha+1);  
    int i;
 
-   alpampsinit = (double*) malloc( size_alpamp*sizeof(double) );
    alpamps = (double*) malloc( size_alpamp*sizeof(double) );
    
    if(option == 0)
@@ -42,8 +41,9 @@ void Init_alpha( int option ){
    {
       for(i=0;i<size_alpamp;i++)
       {   
-        //printf("%.8f\n", *(alpampsinit+i));
-	*(alpamps+i) = 0.0; //alp_const;
+	*(alpamps+i) = alp_const;
+        printf("%.8f\n", *(alpamps+i));
+
       }
    }
    else if(option == 2)
@@ -72,8 +72,8 @@ void Init_alpha( int option ){
 
 void Unpack_alpha( void ){
    
-   //int iCoils = Ncoils / Nfp;
-   int iCoils = Ncoils;
+   int iCoils = Ncoils / Nfp;
+   //int iCoils = Ncoils;
    int size_alpamp = iCoils*(2*NFalpha+1);  
    int size_alp = iCoils*(Nseg+1);
    int i,j,k;
@@ -83,7 +83,7 @@ void Unpack_alpha( void ){
    alp = (double*) malloc(iCoils*(Nseg+1)*sizeof(double));
 
    for(i=0;i<iCoils;i++){
-      for(j=0;j<Nseg+1;j++){
+      for(j=0;j<(Nseg+1);j++){
          theta = ((2*pi)/Nseg)*j;
          a = 0;
          for(k=0;k<NFalpha+1;k++){
@@ -95,6 +95,7 @@ void Unpack_alpha( void ){
             *(alp +i*(Nseg+1) + j ) = a;
       }
    }
+
 }
 
 

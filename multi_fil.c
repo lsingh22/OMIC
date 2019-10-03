@@ -135,12 +135,15 @@ void CalculateMultiFilaments(void){
    CalculateBuildDirections();
    
    int i,j,k,l;
+   int iCoils = Ncoils / Nfp;
+   int ip;
    //Set a length and width scale for placing the filements
    //len and wid are the true length and width of the finite build
    double gridlen = len_tor / (1*Nradfil);
    double gridwid = len_rad / (4*Ntorfil);
    double hlen_rad = len_rad / 2;
    double hlen_tor = len_tor / 2;
+
 
 
    int Nfils = Nradfil*Ntorfil;
@@ -220,6 +223,7 @@ void CalculateMultiFilaments(void){
          *(mfilx + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*cosnfp(ip) - *(mfily+j)*sinnfp(ip);
          *(mfily + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*sinnfp(ip) + *(mfily+j)*cosnfp(ip);
          *(mfilz + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilz+j);
+
       }
    }
 
@@ -352,10 +356,12 @@ void WriteMultiFilaments(void){
          fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i) / Nfils);     
+
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+      fprintf(fb,"%.15f %.15f %.15f %.15f 1 Mod\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i) / Nfils, 1,1);   
+
       }
    }
    fprintf(fb,"end");

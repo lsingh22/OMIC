@@ -15,9 +15,10 @@
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv){
-   
+   int i;
    double tot_time;
    clock_t start, end;
+   double sfil_error;
    // At some point use higher resolution timer 
    
    start = clock(); 
@@ -64,12 +65,13 @@ int main(int argc, char **argv){
       Forward_track();
       printf("Done with iteration: %d\n",i);
    }
+}
 
-   //printf("This is 10 \n");
 
    WriteMultiFilaments(); 
 
    //WriteMultiB();
+
   
    WriteOutputNC(); 
    

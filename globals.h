@@ -15,7 +15,7 @@ extern char* sfil_output; // The single filament coils file
 extern int Nthreads; // Threads to use in OpenMP field calculation
 extern int DEBUG; // Option to suppress output
 extern int case_alpha; // Determines where to get initial alpha amps ( 0 =all 0,  1 =all const, 2 =file)
-
+extern int case_opt;
 ///// PLASMA EQUILIBRIUM DATA  /////
 
 extern int Nfp;
@@ -96,7 +96,7 @@ extern double* bz;
 // Alpha rotation parameters
 
 extern int NFalpha;
-extern double* alpampsinit; // Stores the namelist alpha amplitudes
+extern double* malp; // Stores the namelist alpha amplitudes
 extern double  alp_const;
 extern double* alpamps; // Stores the objective function alpha amplitudes
 extern double* alp; // Stores the real space alpha values for calculating multifilaments
@@ -135,6 +135,7 @@ extern double* descent_dir;
 // Optimization settings
 extern int niter;
 extern double deriv;
+
 
 ///// BENCHMARKING VARIABLES /////
 
