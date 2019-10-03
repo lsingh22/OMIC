@@ -16,8 +16,10 @@ double* alp;
 int Nradfil;
 int Ntorfil;
 int Nseg;
+int isVaryRotation;
 int Nthreads;
 int case_alpha;
+int case_opt;
 int NFalpha;
 double alp_const;
 int niter;
@@ -49,6 +51,7 @@ void SetInputs(void){
   
    Nradfil = 4;
    Ntorfil = 3;
+
  
 }
 
