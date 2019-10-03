@@ -27,11 +27,11 @@ void SetInputs(void){
 
    //focus_output = "./inputfiles/focus_hsx.m12_07_12864.nc";  
    //focus_output = "./inputfiles/focus_circular_01.nc";
-   focus_output = "./inputfiles/focus_hsx.m12_07_12864.nc";
+   focus_output = "./inputfiles/focus_hsx.m12_07.nc";
    multi_output = "./outputfiles/output_hsx.m12_07_test.nc";
    //multi_output = "./outputfiles/output_hsx.m12_07_53.nc";
   
-   mfil_output = "./outputfiles/output_hsx.m12_07_test_mfil";
+   mfil_output = "./outputfiles/output_hsx.m12_07_test";
    //mfil_output = "./outputfiles/coils.hsx.m12_07_53_mfil";
 
 //   wid = 0.120;
