@@ -5,7 +5,10 @@
 #include <math.h>
 #include <stdio.h>
 #include "multi_fil.h"
+#include "single_fil.h"
 #include "alpha.h"
+#include "single_fil.h"
+
 // GLOBALS SCOPED IN SOURCE FILE
 
 double* alpampsinit;
@@ -13,16 +16,39 @@ double* derivs;
 double* alpamps;
 double* derivs;
 double* descent_dir;
+double* Bmfiln;
 double* nsurfn;
-
+double* fbn;
 
 int case_alpha;
 int Ncoils;
 int Nfp;
 int NFalpha;
+int size_alpamp;
 double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
+
+double SingleFieldError(void){
+
+int iCoils = Ncoils / Nfp;
+int size_fp = Nteta*Nzeta / Nfp;
+int i;
+double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+double feval = 0.0;
+
+UnpackSingleFilaments();
+SingleFilField();
+
+   for(i=0;i<size_fp;i++){
+      feval += (0.5)*pow(*(fbn+i),2) * (1/(pow(*(fbx+i),2)+pow(*(fby+i),2)+pow(*(fbz+i),2))) * (*(nsurfn+i))*dsfactor;
+   }
+
+return feval;
+
+}
+
+
 
 double CostFunction(int case_opt, double* dof){
 
@@ -43,13 +69,32 @@ double feval = 0.0;
       MultiFilFieldSym();
       
       for(i=0;i<size_fp;i++){
-         feval += (0.5)*pow(*(Bmfiln+i),2)*(*(nsurfn+i))*dsfactor;   
+         feval += (0.5)*pow( ( *(Bmfiln+i) / *(Bmfil) ) ,2) * (*(nsurfn+i))*dsfactor;   
+
       } 
    }
  
-   //TODO: Add in other options later (length, cc, cp)
+   return feval;
 }
 
+
+double SingleFieldError(void){
+
+int iCoils = Ncoils / Nfp;
+int size_fp = Nteta*Nzeta / Nfp;
+int i;
+double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+double feval = 0.0;
+
+UnpackSingleFilaments();
+SingleFilField();
+    
+   for(i=0;i<size_fp;i++){
+      feval += (0.5)*( *(fbn+i)* *(fbn+i) )* (*(nsurfn+i))*dsfactor;   
+   } 
+return feval;
+}
+ 
 
 void Central_diff( double *dof ){
    
@@ -60,7 +105,8 @@ void Central_diff( double *dof ){
    int i,j;
 
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
-   double h = .000001;
+   double h = 0.000001;
+
    
    double minus_bn;
    double plus_bn;
@@ -72,7 +118,7 @@ void Central_diff( double *dof ){
    }
 
    
-   //MultiFilFieldSym(); // Calculates B dot n for the multifilaments might not be needed here 
+   MultiFilFieldSym(); // Calculates B dot n for the multifilaments might not be needed here 
    init_bn = CostFunction(0,alpamps);
 
    for(i=0;i<size_alpamp;i++){
@@ -103,6 +149,7 @@ void Steepest_descent( void ){
 
    for(i=0;i<size_alpamp;i++){
       *(descent_dir+i) = -1.0 * (*(derivs+i));
+      printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
    }   
 
 }
@@ -114,7 +161,7 @@ void Forward_track( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .0001; 
+   double step = .00000001; // There is small error, I fix later
    double init_bn = 0.0;
    double search_bn;
    double hold_bn;
@@ -135,8 +182,8 @@ void Forward_track( void ){
       for(j=0;j<size_alpamp;j++){
 	 //printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
          *(alpamps+j) += step*(*(descent_dir+j));
+      
       }
-
       search_bn = CostFunction(0,alpamps);
       printf("Total field error, tracking iter: %.9f   %d\n",search_bn,k);
       step = step*2.0;

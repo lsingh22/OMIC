@@ -11,8 +11,9 @@ int Nthreads;
 
 //GLOBALS SCOPED IN SOURCE FILE
 
-double hwid;
-double hlen;
+double len_rad;
+double len_tor;
+
 int Nseg;
 int Nradfil;
 int Ntorfil;
@@ -30,7 +31,6 @@ double* nz;
 double* bx; 
 double* by; 
 double* bz; 
-
 
 double* alp;   
 
@@ -135,12 +135,15 @@ void CalculateMultiFilaments(void){
    CalculateBuildDirections();
    
    int i,j,k,l;
+   int iCoils = Ncoils / Nfp;
+   int ip;
    //Set a length and width scale for placing the filements
    //len and wid are the true length and width of the finite build
-   double gridlen = len / (2*Nradfil);
-   double gridwid = wid / (2*Ntorfil);
-   double hwid = wid / 2;
-   double hlen = len / 2;
+   double gridlen = len_tor / (1*Nradfil);
+   double gridwid = len_rad / (4*Ntorfil);
+   double hlen_rad = len_rad / 2;
+   double hlen_tor = len_tor / 2;
+
 
 
    int Nfils = Nradfil*Ntorfil;
@@ -181,28 +184,28 @@ void CalculateMultiFilaments(void){
       *(bza+i) = -*(nz+i)*sin(*(alp+i)) + *(bz+i)*cos(*(alp+i));
    
       for(j=0;j<5;j++){
-         *(ffilx + 5*i) =     *(sfilx+i) + hwid * *(nxa+i) + hlen * *(bxa+i);
-         *(ffilx + 5*i + 1) = *(sfilx+i) - hwid * *(nxa+i) + hlen * *(bxa+i);
-         *(ffilx + 5*i + 2) = *(sfilx+i) - hwid * *(nxa+i) - hlen * *(bxa+i);
-         *(ffilx + 5*i + 3) = *(sfilx+i) + hwid * *(nxa+i) - hlen * *(bxa+i);
-         *(ffilx + 5*i + 4) = *(sfilx+i) + hwid * *(nxa+i) + hlen * *(bxa+i);
+         *(ffilx + 5*i) =     *(sfilx+i) + hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i);
+         *(ffilx + 5*i + 1) = *(sfilx+i) - hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i);
+         *(ffilx + 5*i + 2) = *(sfilx+i) - hlen_rad * *(nxa+i) - hlen_tor * *(bxa+i);
+         *(ffilx + 5*i + 3) = *(sfilx+i) + hlen_rad * *(nxa+i) - hlen_tor * *(bxa+i);
+         *(ffilx + 5*i + 4) = *(sfilx+i) + hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i);
 
-         *(ffily + 5*i) =     *(sfily+i) + hwid * *(nya+i) + hlen * *(bya+i);
-         *(ffily + 5*i + 1) = *(sfily+i) - hwid * *(nya+i) + hlen * *(bya+i);
-         *(ffily + 5*i + 2) = *(sfily+i) - hwid * *(nya+i) - hlen * *(bya+i);
-         *(ffily + 5*i + 3) = *(sfily+i) + hwid * *(nya+i) - hlen * *(bya+i);
-         *(ffily + 5*i + 4) = *(sfily+i) + hwid * *(nya+i) + hlen * *(bya+i);
+         *(ffily + 5*i) =     *(sfily+i) + hlen_rad * *(nya+i) + hlen_tor * *(bya+i);
+         *(ffily + 5*i + 1) = *(sfily+i) - hlen_rad * *(nya+i) + hlen_tor * *(bya+i);
+         *(ffily + 5*i + 2) = *(sfily+i) - hlen_rad * *(nya+i) - hlen_tor * *(bya+i);
+         *(ffily + 5*i + 3) = *(sfily+i) + hlen_rad * *(nya+i) - hlen_tor * *(bya+i);
+         *(ffily + 5*i + 4) = *(sfily+i) + hlen_rad * *(nya+i) + hlen_tor * *(bya+i);
 
-         *(ffilz + 5*i)     = *(sfilz+i) + hwid * *(nza+i) + hlen * *(bza+i);
-         *(ffilz + 5*i + 1) = *(sfilz+i) - hwid * *(nza+i) + hlen * *(bza+i);
-         *(ffilz + 5*i + 2) = *(sfilz+i) - hwid * *(nza+i) - hlen * *(bza+i);
-         *(ffilz + 5*i + 3) = *(sfilz+i) + hwid * *(nza+i) - hlen * *(bza+i);
-         *(ffilz + 5*i + 4) = *(sfilz+i) + hwid * *(nza+i) + hlen * *(bza+i);	 
+         *(ffilz + 5*i)     = *(sfilz+i) + hlen_rad * *(nza+i) + hlen_tor * *(bza+i);
+         *(ffilz + 5*i + 1) = *(sfilz+i) - hlen_rad * *(nza+i) + hlen_tor * *(bza+i);
+         *(ffilz + 5*i + 2) = *(sfilz+i) - hlen_rad * *(nza+i) - hlen_tor * *(bza+i);
+         *(ffilz + 5*i + 3) = *(sfilz+i) + hlen_rad * *(nza+i) - hlen_tor * *(bza+i);
+         *(ffilz + 5*i + 4) = *(sfilz+i) + hlen_rad * *(nza+i) + hlen_tor * *(bza+i);	 
       }    
    }
-   
+   int iCoils = Ncoils / Nfp;
 
-   for(i=0;i<Ncoils;i++){
+   for(i=0;i<iCoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
             for(l=0;l<Nseg+1;l++){
@@ -213,6 +216,17 @@ void CalculateMultiFilaments(void){
          }
       }
    }
+   int ip;
+   
+   for(ip=2;ip<Nfp+1;ip++){
+      for(j=0;j<iCoils*Nfils*(Nseg+1);j++){
+         *(mfilx + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*cosnfp(ip) - *(mfily+j)*sinnfp(ip);
+         *(mfily + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*sinnfp(ip) + *(mfily+j)*cosnfp(ip);
+         *(mfilz + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilz+j);
+
+      }
+   }
+
 }
 
 
@@ -260,7 +274,6 @@ void MultiFilFieldSym(void){
    double startfield, endfield;
    int size_fp = Nzeta*Nteta / Nfp;
    
-   //Use the maximum threads available minus 1
    omp_set_num_threads(Nthreads);
    startfield = omp_get_wtime();
  
@@ -332,7 +345,8 @@ void WriteMultiFilaments(void){
 
    int i,j,k;
    FILE* fb;
-   fb = fopen("./outputfiles/mfil.out","w");
+   //fb = fopen("./outputfiles/mfil.out","w");
+   fb = fopen(mfil_output,"w");
    fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
    int Nfils = Ntorfil*Nradfil;
    
@@ -341,11 +355,13 @@ void WriteMultiFilaments(void){
          for(k=0;k<Nseg;k++){
          fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
-                                                 *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i));     
+                                                 *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i) / Nfils);     
+
          }
-      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d %d\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
+      fprintf(fb,"%.15f %.15f %.15f %.15f 1 Mod\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
-                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i), i+1,j+1);   
+                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i) / Nfils, 1,1);   
+
       }
    }
    fprintf(fb,"end");

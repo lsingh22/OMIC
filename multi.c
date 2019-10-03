@@ -15,28 +15,44 @@
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
 int main(int argc, char **argv){
-   
+   int i;
    double tot_time;
    clock_t start, end;
+   double sfil_error;
    // At some point use higher resolution timer 
    
-   start = clock();
- 
+   start = clock(); 
    //printf("This is 1 \n");
    SetInputs();
    //printf("This is 2 \n");
    ReadFocusInts(focus_output);
+
+   niter = 0;
+
+   printf("\nThis is OMIC...\n\n");
+   printf("The number of iterations is: %d\n",niter);
+   printf("The number of alphas is: %d\n",NFalpha);
+   printf("The dimensions (radxtor) are : %.4f x %.4f \n",len_rad,len_tor);
+   printf("The filaments (radxtor) are : %d x %d\n",Nradfil, Ntorfil);
+
+
    //printf("This is 3 \n");
    ReadFocusArrays(focus_output);
    //printf("This is 4 \n");
    UnpackSingleFilaments();
+
    Init_alpha(case_alpha);
    //printf("This is 6 \n");
    CalculateMultiFilaments();
    
-   SingleFilField();
+   //SingleFilField();
+   double sfil_error = SingleFieldError();
+   printf("The single fil error is %.15f\n", sfil_error);
+    
+   double val = CostFunction(0,alpamps);
+   printf("The value of cost function is %.15f\n", val);
    
-   MultiFilFieldSym(); 
+   //MultiFilFieldSym(); 
 
    //printf("This is 7 \n");
 
@@ -49,16 +65,16 @@ int main(int argc, char **argv){
       Forward_track();
       printf("Done with iteration: %d\n",i);
    }
+}
 
-   //printf("This is 10 \n");
 
    WriteMultiFilaments(); 
 
-   WriteMultiB();
+   WriteMultiFilaments(); 
   
    WriteOutputNC(); 
    
- 
+   //WriteSingleFilaments();
    
    
    
