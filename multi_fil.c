@@ -130,8 +130,9 @@ void CalculateBuildDirections(void){
 
 
 void CalculateMultiFilaments(void){
-   
+ 
    Unpack_alpha();
+ 
    CalculateBuildDirections();
    
    int i,j,k,l;
@@ -203,8 +204,8 @@ void CalculateMultiFilaments(void){
          *(ffilz + 5*i + 4) = *(sfilz+i) + hlen_rad * *(nza+i) + hlen_tor * *(bza+i);	 
       }    
    }
-   int iCoils = Ncoils / Nfp;
 
+     printf("This is mfil 1 \n");
    for(i=0;i<iCoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
@@ -216,8 +217,7 @@ void CalculateMultiFilaments(void){
          }
       }
    }
-   int ip;
-   
+
    for(ip=2;ip<Nfp+1;ip++){
       for(j=0;j<iCoils*Nfils*(Nseg+1);j++){
          *(mfilx + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*cosnfp(ip) - *(mfily+j)*sinnfp(ip);

@@ -18,16 +18,15 @@ int main(int argc, char **argv){
    int i;
    double tot_time;
    clock_t start, end;
-   double sfil_error;
    // At some point use higher resolution timer 
    
    start = clock(); 
    //printf("This is 1 \n");
+   printf("This is 1 \n");
    SetInputs();
    //printf("This is 2 \n");
+   printf("This is 2 \n");
    ReadFocusInts(focus_output);
-
-   niter = 0;
 
    printf("\nThis is OMIC...\n\n");
    printf("The number of iterations is: %d\n",niter);
@@ -36,19 +35,22 @@ int main(int argc, char **argv){
    printf("The filaments (radxtor) are : %d x %d\n",Nradfil, Ntorfil);
 
 
-   //printf("This is 3 \n");
+   printf("This is 3 \n");
    ReadFocusArrays(focus_output);
-   //printf("This is 4 \n");
+   printf("This is 4 \n");
    UnpackSingleFilaments();
-
+   printf("This is 5 \n");
    Init_alpha(case_alpha);
-   //printf("This is 6 \n");
+   printf("This is 6 \n");
    CalculateMultiFilaments();
    
    //SingleFilField();
+   
+   printf("This is 7 \n");
    double sfil_error = SingleFieldError();
    printf("The single fil error is %.15f\n", sfil_error);
-    
+     
+   printf("This is 8 \n");  
    double val = CostFunction(0,alpamps);
    printf("The value of cost function is %.15f\n", val);
    
@@ -56,7 +58,7 @@ int main(int argc, char **argv){
 
    //printf("This is 7 \n");
 
-   int iter = 0;
+   int iter = 1;
    for(int i=0;i<iter;i++){
       Central_diff(alpamps);
       printf("This is 8 \n");
@@ -65,7 +67,7 @@ int main(int argc, char **argv){
       Forward_track();
       printf("Done with iteration: %d\n",i);
    }
-}
+
 
 
    WriteMultiFilaments(); 
