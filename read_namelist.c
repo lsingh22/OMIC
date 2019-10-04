@@ -42,10 +42,10 @@ void SetInputs(void){
    NFalpha = 2;
    alp_const = 0.000;
    Nseg = 128;
-   wid = 0.120;
-   len = 0.060;
+   len_rad = 0.120;
+   len_tor = 0.060;
    Nturns = 0;
-   Nthreads = 4;
+   Nthreads = 16;
    DEBUG = 0; 
   
    Nradfil = 7;

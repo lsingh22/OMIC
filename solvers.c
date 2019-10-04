@@ -77,7 +77,7 @@ double feval = 0.0;
    return feval;
 }
 
-
+/*
 double SingleFieldError(void){
 
 int iCoils = Ncoils / Nfp;
@@ -94,7 +94,7 @@ SingleFilField();
    } 
 return feval;
 }
- 
+*/
 
 void Central_diff( double *dof ){
    
