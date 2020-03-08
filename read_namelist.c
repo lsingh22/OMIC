@@ -1,5 +1,4 @@
 //This is for initializing user inputs
-
 #include "read_namelist.h"
 #include "alpha.h"
 #include <stdlib.h>
@@ -23,41 +22,45 @@ int case_opt;
 int NFalpha;
 double alp_const;
 int niter;
-
+double surface_area;
 // UPDATES GLOBALS TO USER INPUT
 void SetInputs(void){
 
-   //focus_output = "./inputfiles/focus_hsx.m12_07_12864.nc";  
-   //focus_output = "./inputfiles/focus_circular_01.nc";
-   focus_output = "./inputfiles/focus_hsx.m12_07.nc";
-   multi_output = "./outputfiles/output_hsx.m12_07_test.nc";
-   //multi_output = "./outputfiles/output_hsx.m12_07_53.nc";
-  
-   mfil_output = "./outputfiles/output_hsx.m12_07_test";
-   //mfil_output = "./outputfiles/coils.hsx.m12_07_53_mfil";
+   focus_output = "./inputfiles/focus_hsx.m12_07_51264.nc";
+   //focus_output = "./inputfiles/focus_wista_08_51264.nc";   
+   //focus_output = "./inputfiles/focus_ellipse.nc";  
 
-//   wid = 0.120;
-//   len = 0.060;
+   multi_output = "./runs/hsx/multi_hsx.m12_07_1_1_nocomp.nc";
+   //multi_output = "./runs/wista/multi_wista_08_01_04.nc";
+   //multi_output = "./outputfiles/ellipse/output_ellipse_00.nc";
+   
+   mfil_output = "./runs/hsx/coils.hsx.m12_07_1_10_nocomp";
+   //mfil_output = "./runs/wista/wista_08_01_04/coils.wista_08_01_01_04";
+   //mfil_output = "./outputfiles/ellipse/output_ellipse_00";
+
+   niter = 1;
    case_alpha = 0;
-   NFalpha = 2;
+   NFalpha = 10;
    alp_const = 0.000;
    Nseg = 128;
-   len_rad = 0.120;
-   len_tor = 0.060;
-   Nturns = 0;
-   Nthreads = 16;
-   DEBUG = 0; 
-  
+
+   weight_comp = 0.000010; //complexity weighting
+   case_opt = 0; //0 for fbn , 1 for both fbn and fc
+   nvals_scaling = 2; // the beta in the complexity formulation   
+
    Nradfil = 7;
    Ntorfil = 2;
+
+   len_rad = 0.120; // 1/2 hsx 
+   len_tor = 0.060;
+   //len_rad = 0.120; // wista
+   //len_tor = 0.060;
+   //len_rad = 0.240; // ellipse
+   //len_tor = 0.120;
+
+   Nthreads = 32;
+//   Nturns = 0;  not currently supported
+//   DEBUG = 0; 
  
 }
 
-
-//TODO: Implement F90-like namelist 
-
-/*
-void SetDefault(char *namelist){
-  namelist = argv;
- }
-*/

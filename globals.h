@@ -32,6 +32,7 @@ extern double* nsurfx;
 extern double* nsurfy;
 extern double* nsurfz;
 extern double* nsurfn; //Jacocbian
+extern double surface_area;
 
 ///// SINGLE FILAMENT COIL DATA /////
 
@@ -132,10 +133,15 @@ extern double* finz;
 extern double* derivs;
 extern double* descent_dir;
 
+// Complexity optimization
+extern double weight_comp;
+extern double nvals_scaling;
+
 // Optimization settings
 extern int niter;
 extern double deriv;
-
+extern double multi_error_init;
+extern double comp_penalty_init; 
 
 ///// BENCHMARKING VARIABLES /////
 

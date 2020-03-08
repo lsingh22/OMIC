@@ -205,15 +205,18 @@ void CalculateMultiFilaments(void){
       }    
    }
 
-     printf("This is mfil 1 \n");
    for(i=0;i<iCoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
-            for(l=0;l<Nseg+1;l++){
+            for(l=0;l<Nseg;l++){
             *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilx +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nxa + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bxa + i*(Nseg+1) + l);
             *(mfily + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfily +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nya + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bya + i*(Nseg+1) + l);
 	    *(mfilz + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilz +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nza + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bza + i*(Nseg+1) + l);
 	    }
+           
+ 	    *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + Nseg ) = *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) );
+            *(mfily + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + Nseg ) = *(mfily + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) );
+	    *(mfilz + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + Nseg ) = *(mfilz + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) );         
          }
       }
    }
@@ -230,7 +233,6 @@ void CalculateMultiFilaments(void){
 }
 
 
-/*
 void MultiFilField(void){
   
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -256,10 +258,10 @@ void MultiFilField(void){
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
    endfield = omp_get_wtime();
-   //printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
+   printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
 
 }
-*/
+
 
 void MultiFilFieldSym(void){
    
@@ -287,10 +289,15 @@ void MultiFilFieldSym(void){
       *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
    
-   for(ip=1;ip<Nfp;ip++){
+
+   //Reflect to the rest of the field periods
+   for(ip=2;ip<Nfp+1;ip++){
       for(i=0;i<size_fp;i++){
-         *(Bmfil + ip*size_fp+i) = *(Bmfil+i);       
-         *(Bmfiln + ip*size_fp+i) = *(Bmfiln+i);       
+         *(Bmfil  + (ip-1)*size_fp+i) = *(Bmfil+i);       
+         *(Bmfiln + (ip-1)*size_fp+i) = *(Bmfiln+i);
+         *(Bmfilx + (ip-1)*size_fp+i) = *(Bmfilx+i)*cosnfp(ip) - *(Bmfily+i)*sinnfp(ip);
+         *(Bmfily + (ip-1)*size_fp+i) = *(Bmfilx+i)*sinnfp(ip) + *(Bmfily+i)*cosnfp(ip);
+         *(Bmfilz + (ip-1)*size_fp+i) = *(Bmfilz+i);
       }
    }
 
@@ -340,27 +347,27 @@ void WriteMultiB(void){
    nc_close(ncid);
 }
 
- 
+//TODO: Fix periods 4 !!
 void WriteMultiFilaments(void){
 
    int i,j,k;
    FILE* fb;
    //fb = fopen("./outputfiles/mfil.out","w");
    fb = fopen(mfil_output,"w");
-   fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
+   fprintf(fb, "periods %d \nbegin filament\nmirror NIL\n", Nfp);
    int Nfils = Ntorfil*Nradfil;
    
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nfils;j++){
          for(k=0;k<Nseg;k++){
-         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
+         fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), \
                                                  *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)+k), *(currents+i) / Nfils);     
 
          }
       fprintf(fb,"%.15f %.15f %.15f %.15f 1 Mod\n", *(mfilx+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
                                                        *(mfily+i*(Nseg+1)*Nfils+j*(Nseg+1)), \
-                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), *(currents+i) / Nfils, 1,1);   
+                                                       *(mfilz+i*(Nseg+1)*Nfils+j*(Nseg+1)), 0.0 );   
 
       }
    }

@@ -110,7 +110,7 @@ void UnpackSingleFilaments(void){
 }
 
 void SingleFilField(void){
-  
+//TODO:   
    Bsfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bsfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bsfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -188,9 +188,9 @@ void WriteSingleFilaments(void){
 
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nseg;j++){
-         fprintf(fb,"%.15f %.15f %.15f %.15f \n", *(sfilx+i*(Nseg+1)+j), *(sfily+i*(Nseg+1)+j), *(sfilz+i*(Nseg+1)+j), *(currents+i));         
+         fprintf(fb,"%.15f %.15f %.15f %.8f \n", *(sfilx+i*(Nseg+1)+j), *(sfily+i*(Nseg+1)+j), *(sfilz+i*(Nseg+1)+j), *(currents+i));         
          }
-      fprintf(fb,"%.15f %.15f %.15f %.15f Mod %d\n", *(sfilx+i*(Nseg)), *(sfily+i*(Nseg)), *(sfilz+i*(Nseg)), *(currents+i), 1);         
+      fprintf(fb,"%.15f %.15f %.15f %.8f Mod %d\n", *(sfilx+i*(Nseg)), *(sfily+i*(Nseg)), *(sfilz+i*(Nseg)), *(currents+i), 1);         
 
    }
    fprintf(fb,"end");

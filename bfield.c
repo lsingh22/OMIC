@@ -128,7 +128,7 @@ void CalculateMultiField(double x, double y, double z, \
             l = sqrt( pow( ((*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) + \
                       pow( ((*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) + \
                       pow( ((*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) ); 
-               
+              
             ex = ( (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;  
             ey = ( (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;    
             ez = ( (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;   
@@ -192,16 +192,17 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    // Symmetry calculation taken straight from FOCUS
    for(ip=1;ip<Nfp+1;ip++){   
       //Find periodic point
-      xx =  x*cosnfp(ip) + y*sinnfp(ip);
-      yy = -x*sinnfp(ip) + y*cosnfp(ip);
+      xx =  x*cosnfp(ip) - y*sinnfp(ip);
+      yy =  x*sinnfp(ip) + y*cosnfp(ip);
       zz =  z;
       for(i=0;i<iCoils;i++){
          for(j=0;j<Nfils;j++){
             for(k=0;k<Nseg;k++){
                l = sqrt( pow( ((*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) + \
-                      pow( ((*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) + \
-                      pow( ((*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) ); 
+                         pow( ((*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) + \
+                         pow( ((*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) ); 
                
+ 
                ex = ( (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;  
                ey = ( (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;    
                ez = ( (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;   
@@ -229,8 +230,8 @@ void CalculateMultiFieldSym(double x, double y, double z, \
                      / ( (ri*rf) * ( pow((ri+rf),2) - pow(l,2))  );
             
 
-                bxx += bx*cosnfp(ip) - by*sinnfp(ip);
-                byy += bx*sinnfp(ip) + by*cosnfp(ip);
+                bxx += bx*cosnfp(ip) + by*sinnfp(ip);
+                byy += -bx*sinnfp(ip) + by*cosnfp(ip);
                 bzz += bz;
             
             }

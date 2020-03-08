@@ -51,7 +51,7 @@ ${PROGRAM}: ${FILES.o}
 read_namelist.o: read_namelist.c globals.h read_namelist.h
 	${CC} ${NETCDF} -c $< -o $@
 multi.o: multi.c read_namelist.h 
-	${CC} -c $< -o $@
+	${CC}  -c $< -o $@
 read_focus.o: read_focus.c read_focus.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
 single_fil.o: single_fil.c single_fil.h globals.h

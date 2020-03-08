@@ -20,6 +20,13 @@ double* Bmfiln;
 double* nsurfn;
 double* fbn;
 
+double weight_comp;
+double nvals_scaling;
+double multi_error_init;
+double comp_penalty_init;
+double weight_comp;
+
+
 int case_alpha;
 int Ncoils;
 int Nfp;
@@ -31,110 +38,179 @@ double alp_const;
 
 double SingleFieldError(void){
 
-int iCoils = Ncoils / Nfp;
-int size_fp = Nteta*Nzeta / Nfp;
-int i;
-double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
-double feval = 0.0;
+   int iCoils = Ncoils / Nfp;
+   int size_fp = Nteta*Nzeta / Nfp;
+   int i;
+   double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+   double feval = 0.0;
 
-UnpackSingleFilaments();
-SingleFilField();
+   UnpackSingleFilaments();
+   SingleFilField();
 
    for(i=0;i<size_fp;i++){
-      feval += (0.5)*pow(*(fbn+i),2) * (1/(pow(*(fbx+i),2)+pow(*(fby+i),2)+pow(*(fbz+i),2))) * (*(nsurfn+i))*dsfactor;
+      feval += (0.5)*pow(*(Bsfiln+i),2) * (1/(pow(*(Bsfilx+i),2)+pow(*(Bsfily+i),2)+pow(*(Bsfilz+i),2))) * (*(nsurfn+i))*dsfactor;
    }
 
-return feval;
+   feval = feval*Nfp; //Multiply by Nfp since only calculating for one fp
+   return feval;
 
 }
 
 
 
-double CostFunction(int case_opt, double* dof){
+double MultiFieldError(void){  //TODO: Change CostFunction to MultiFieldError
 
-int iCoils = Ncoils / Nfp;
-int size_fp = Nteta*Nzeta / Nfp;
-int size_alpamp = iCoils*(2*NFalpha+1);
-int i;
-double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
-double feval = 0.0;
-
-   if(case_opt==0)
-   {
-      for(i=0;i<size_alpamp;i++)
-      {
-         *(alpamps+i) = dof[i];
-      }
-      CalculateMultiFilaments();
-      MultiFilFieldSym();
-      
-      for(i=0;i<size_fp;i++){
-         feval += (0.5)*pow( ( *(Bmfiln+i) / *(Bmfil) ) ,2) * (*(nsurfn+i))*dsfactor;   
-
-      } 
-   }
+   int iCoils = Ncoils / Nfp;
+   int size_fp = Nteta*Nzeta / Nfp;
+   int i;
+   double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+   double feval = 0.0;
  
+   for(i=0;i<size_fp;i++){
+      feval += (0.5)*pow(*(Bmfiln+i),2) * (1/(pow(*(Bmfilx+i),2)+pow(*(Bmfily+i),2)+pow(*(Bmfilz+i),2))) * (*(nsurfn+i))*dsfactor;
+   }
+
+   feval = feval*Nfp;
    return feval;
 }
 
-/*
-double SingleFieldError(void){
 
-int iCoils = Ncoils / Nfp;
-int size_fp = Nteta*Nzeta / Nfp;
-int i;
-double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
-double feval = 0.0;
+double ComplexityPenalty(void){
 
-UnpackSingleFilaments();
-SingleFilField();
-    
-   for(i=0;i<size_fp;i++){
-      feval += (0.5)*( *(fbn+i)* *(fbn+i) )* (*(nsurfn+i))*dsfactor;   
-   } 
-return feval;
+   int iCoils = Ncoils / Nfp;
+   int i,j;
+   double feval = 0.0;
+   int size_alpamp = iCoils*(2*NFalpha+1);   
+   double* nvals = (double*) malloc( size_alpamp*sizeof(double) );
+   int alp_per_coil = 2*NFalpha+1;
+   if(case_opt==1)
+   {
+      *(nvals+0) = 0.0;
+      for(i=1;i<NFalpha+1;i++)
+      {
+         *(nvals+i) = (double) i;
+         *(nvals+i+NFalpha) = (double) i;
+      }
+      
+      for(i=0;i<alp_per_coil;i++)
+      {
+         for(j=1;j<iCoils;j++)
+         {
+            *(nvals+j*alp_per_coil+i) = *(nvals+i);
+         }
+      }
+   }
+ 
+   for(i=0;i<size_alpamp;i++)
+   {
+      feval += pow(*(alpamps+i),2) * pow( *(nvals+i), nvals_scaling);
+   }
+   printf("The complexity function is %.9f\n", feval);
+   return feval;
 }
-*/
+
+double CostFunction(int case_opt) {
+//case opt = 0 is just fb, 1 is fb and fc.
+   double fb, fc;
+   double feval = 0.0;
+
+   //Calculate the filaments and the field
+   CalculateMultiFilaments();
+   MultiFilFieldSym();
+
+   //Calculate the objective functions
+   fb = MultiFieldError();
+   fc = ComplexityPenalty();  
+
+   if(case_opt==0)
+   {   
+      feval = fb;
+      weight_comp = 0.0;
+   }
+   else if(case_opt==1)
+   {  
+      feval = fb / multi_error_init + weight_comp * fc;
+   }
+   
+   return feval;
+
+}
+
+
+double SurfaceArea(void){
+   int i;
+   double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+   int size_fp = Nteta*Nzeta / Nfp;
+   double area = 0.0;
+
+   for(i=0;i<size_fp;i++){
+      area += *(nsurfn+i);   
+   }
+   area = area*dsfactor; 
+   return area;
+}
+
 
 void Central_diff( double *dof ){
-   
+
+   //TODO: Change naming of this, and make two individual complexity and bn sections
    int iCoils = Ncoils / Nfp;
    int size_alpamp = iCoils*(2*NFalpha+1);   
    //int iCoils = Ncoils;
    int size_fp = Nteta*Nzeta / Nfp;
    int i,j;
 
+   double* nvals = (double*) malloc( size_alpamp*sizeof(double) );
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
    double h = 0.000001;
-
    
    double minus_bn;
    double plus_bn;
    double init_bn = 0.0;
-
+   int alp_per_coil = 2*NFalpha+1;
+ 
    for(i=0;i<size_alpamp;i++)
    {
       *(alpamps+i) = dof[i];
    }
 
+   if(case_opt==1)
+   {
+      *(nvals+0) = 0.0;
+      for(i=1;i<NFalpha;i++)
+      {
+         *(nvals+i) = (double) i;
+         *(nvals+i+NFalpha) = (double) i;
+      }
+      
+      for(i=0;i<alp_per_coil;i++)
+      {
+         for(j=1;j<iCoils;j++)
+         {
+            *(nvals+j*alp_per_coil+i) = *(nvals+i);
+         }
+      }
+   }
    
-   MultiFilFieldSym(); // Calculates B dot n for the multifilaments might not be needed here 
-   init_bn = CostFunction(0,alpamps);
+   init_bn = MultiFieldError();
 
    for(i=0;i<size_alpamp;i++){
-
       minus_bn = 0.0;
       plus_bn = 0.0;
       // Move alpha positive and redo x,y,z coil calc
       
       *(alpamps+i) += h;
-      plus_bn = CostFunction(0,alpamps);
+      CalculateMultiFilaments();
+      MultiFilFieldSym();
+      plus_bn = MultiFieldError();
 
       *(alpamps+i) -= 2*h;
-      minus_bn = CostFunction(0,alpamps);  
+      CalculateMultiFilaments();
+      MultiFilFieldSym();
+      minus_bn = MultiFieldError(); 
 
       *(alpamps+i) += h;
-      *(derivs+i) = (plus_bn-minus_bn)/(2*h);
+      *(derivs+i) = (1/multi_error_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
    }
 }
 
@@ -163,10 +239,11 @@ void Forward_track( void ){
    
    double step = .00000001; // There is small error, I fix later
    double init_bn = 0.0;
+   double fb_now, fc_now;
    double search_bn;
    double hold_bn;
 
-   init_bn = CostFunction(0,alpamps);
+   init_bn = CostFunction(case_opt);
    hold_bn = init_bn;
    search_bn = 0.0;
    
@@ -184,8 +261,13 @@ void Forward_track( void ){
          *(alpamps+j) += step*(*(descent_dir+j));
       
       }
-      search_bn = CostFunction(0,alpamps);
-      printf("Total field error, tracking iter: %.9f   %d\n",search_bn,k);
+      search_bn = CostFunction(case_opt);
+      fb_now = MultiFieldError();
+      fc_now = ComplexityPenalty();
+
+      printf("Total cost function value, tracking iter: %.9f   %d\n",search_bn,k);
+      printf("The fB value is: %.9f   \n",fb_now,k);
+      printf("The fC value is: %.9f   \n",fc_now,k);
       step = step*2.0;
       k++;
    }
