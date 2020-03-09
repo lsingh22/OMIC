@@ -61,6 +61,4 @@ void SetInputs(void){
    Nthreads = 32;
 //   Nturns = 0;  not currently supported
 //   DEBUG = 0; 
- 
 }
-

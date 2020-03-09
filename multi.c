@@ -25,8 +25,10 @@ int main(int argc, char **argv){
    
    start = clock(); 
    //printf("This is 1 \n");
+   printf("This is 1 \n");
    SetInputs();
    //printf("This is 2 \n");
+   printf("This is 2 \n");
    ReadFocusInts(focus_output);
 
    printf("\nThis is OMIC...\n\n");
@@ -38,12 +40,15 @@ int main(int argc, char **argv){
    printf("The spectral weighting factor is: %.6f \n", nvals_scaling);
    printf("The complexity weighting is: %.6f \n", weight_comp);  
    //printf("This is 3 \n");
+
+
+//   printf("This is 3 \n");
    ReadFocusArrays(focus_output);
-   //printf("This is 4 \n");
+//   printf("This is 4 \n");
    UnpackSingleFilaments();
-   //printf("This is 5 \n");
+//   printf("This is 5 \n");
    Init_alpha(case_alpha);
-   //printf("This is 6 \n");
+//   printf("This is 6 \n");
    CalculateMultiFilaments();
    
    MultiFilFieldSym();
@@ -55,6 +60,7 @@ int main(int argc, char **argv){
    //printf("This is 8 \n");  
    multi_error_init = MultiFieldError();
    printf("The initial multi-filament error is %.15f\n", multi_error_init);
+
    
    comp_penalty_init = ComplexityPenalty();
    printf("The initial complexity error is %.15f\n", comp_penalty_init);
@@ -73,7 +79,7 @@ int main(int argc, char **argv){
    printf("The surface area is %.15f\n", surface_area);
 
    WriteMultiFilaments(); 
-
+  
    WriteOutputNC(); 
      
    if ( DEBUG == 1)

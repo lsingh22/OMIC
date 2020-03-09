@@ -143,6 +143,7 @@ extern double deriv;
 extern double multi_error_init;
 extern double comp_penalty_init; 
 
+
 ///// BENCHMARKING VARIABLES /////
 
 // FOCUS single filament magnetics
