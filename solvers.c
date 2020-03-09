@@ -22,9 +22,7 @@ double* fbn;
 
 double weight_comp;
 double nvals_scaling;
-double multi_error_init;
 double comp_penalty_init;
-double weight_comp;
 
 
 int case_alpha;
@@ -109,7 +107,7 @@ double ComplexityPenalty(void){
    return feval;
 }
 
-double CostFunction(int case_opt) {
+double CostFunction(int case_opt, double fb_init) {
 //case opt = 0 is just fb, 1 is fb and fc.
    double fb, fc;
    double feval = 0.0;
@@ -129,7 +127,7 @@ double CostFunction(int case_opt) {
    }
    else if(case_opt==1)
    {  
-      feval = fb / multi_error_init + weight_comp * fc;
+      feval = fb / fb_init + weight_comp * fc;
    }
    
    return feval;
@@ -151,7 +149,7 @@ double SurfaceArea(void){
 }
 
 
-void Central_diff( double *dof ){
+void Central_diff( double *dof, double fb_init ){
 
    //TODO: Change naming of this, and make two individual complexity and bn sections
    int iCoils = Ncoils / Nfp;
@@ -211,13 +209,18 @@ void Central_diff( double *dof ){
       minus_bn = MultiFieldError(); 
 
       *(alpamps+i) += h;
-      *(derivs+i) = (1/multi_error_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
+
+//      printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
+//      printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
+//      printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
+
+      *(derivs+i) = (1/fb_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
    }
 }
 
 
 void Steepest_descent( void ){
-   
+ //TODO: print statements here  
    int iCoils = Ncoils / Nfp;
    //int iCoils = Ncoils;
    int size_alpamp = iCoils*(2*NFalpha+1);  
@@ -231,7 +234,7 @@ void Steepest_descent( void ){
 
 }
 
-void Forward_track( void ){
+void Forward_track(double fb_init ){
 
    //int iCoils = Ncoils;
    int iCoils = Ncoils / Nfp;
@@ -240,11 +243,11 @@ void Forward_track( void ){
    
    double step = .00000001; // There is small error, I fix later
    double init_bn = 0.0;
-   double fb_now, fc_now;
+   double fb_now=0.0, fc_now=0.0;
    double search_bn;
    double hold_bn;
 
-   init_bn = CostFunction(case_opt);
+   init_bn = CostFunction(case_opt,fb_init);
    hold_bn = init_bn;
    search_bn = 0.0;
    
@@ -259,10 +262,10 @@ void Forward_track( void ){
       
       for(j=0;j<size_alpamp;j++){
 	 //printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
-         *(alpamps+j) += step*(*(descent_dir+j));
-      
+         *(alpamps+j) += step*(*(descent_dir+j));      
       }
-      search_bn = CostFunction(case_opt);
+    
+      search_bn = CostFunction(case_opt,fb_init);
       fb_now = MultiFieldError();
       fc_now = ComplexityPenalty();
 

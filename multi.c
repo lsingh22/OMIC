@@ -14,8 +14,6 @@
 #include "solvers.h"
 
 //THIS IS THE MAIN FOR THE MULTIFILAMENT OPTIMIZATION CODE
-double multi_error_init;
-double comp_penalty_init;
 
 int main(int argc, char **argv){
    int i;
@@ -25,10 +23,8 @@ int main(int argc, char **argv){
    
    start = clock(); 
    //printf("This is 1 \n");
-   printf("This is 1 \n");
    SetInputs();
    //printf("This is 2 \n");
-   printf("This is 2 \n");
    ReadFocusInts(focus_output);
 
    printf("\nThis is OMIC...\n\n");
@@ -39,7 +35,6 @@ int main(int argc, char **argv){
    printf("The filaments (radxtor) are : %d x %d\n",Nradfil, Ntorfil);
    printf("The spectral weighting factor is: %.6f \n", nvals_scaling);
    printf("The complexity weighting is: %.6f \n", weight_comp);  
-   //printf("This is 3 \n");
 
 
 //   printf("This is 3 \n");
@@ -58,19 +53,19 @@ int main(int argc, char **argv){
    printf("The single-filament error is %.15f\n", sfil_error);
     
    //printf("This is 8 \n");  
-   multi_error_init = MultiFieldError();
+   double multi_error_init = MultiFieldError();
    printf("The initial multi-filament error is %.15f\n", multi_error_init);
 
    
-   comp_penalty_init = ComplexityPenalty();
+   double comp_penalty_init = ComplexityPenalty();
    printf("The initial complexity error is %.15f\n", comp_penalty_init);
 
    for(int i=0;i<niter;i++){
-      Central_diff(alpamps);
+      Central_diff(alpamps,multi_error_init);
       //printf("This is 9 \n");
       Steepest_descent();
       //printf("This is 10 \n");
-      Forward_track();
+      Forward_track(multi_error_init);
       printf("Done with iteration: %d\n",i+1);
    }
 

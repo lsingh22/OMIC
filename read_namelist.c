@@ -26,26 +26,26 @@ double surface_area;
 // UPDATES GLOBALS TO USER INPUT
 void SetInputs(void){
 
-   focus_output = "./inputfiles/focus_hsx.m12_07_51264.nc";
+   focus_output = "./inputfiles/focus_hsx.m12_07_debug.nc";
    //focus_output = "./inputfiles/focus_wista_08_51264.nc";   
    //focus_output = "./inputfiles/focus_ellipse.nc";  
 
-   multi_output = "./runs/hsx/multi_hsx.m12_07_1_1_nocomp.nc";
+   multi_output = "./runs/hsx/multi_hsx.m12_07_debug.nc";
    //multi_output = "./runs/wista/multi_wista_08_01_04.nc";
    //multi_output = "./outputfiles/ellipse/output_ellipse_00.nc";
    
-   mfil_output = "./runs/hsx/coils.hsx.m12_07_1_10_nocomp";
+   mfil_output = "./runs/hsx/coils.hsx.m12_07_debug";
    //mfil_output = "./runs/wista/wista_08_01_04/coils.wista_08_01_01_04";
    //mfil_output = "./outputfiles/ellipse/output_ellipse_00";
 
-   niter = 1;
+   niter = 2;
    case_alpha = 0;
-   NFalpha = 10;
+   NFalpha = 1;
    alp_const = 0.000;
-   Nseg = 128;
+   Nseg = 16;
 
    weight_comp = 0.000010; //complexity weighting
-   case_opt = 0; //0 for fbn , 1 for both fbn and fc
+   case_opt = 1; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
    Nradfil = 7;

@@ -140,8 +140,8 @@ extern double nvals_scaling;
 // Optimization settings
 extern int niter;
 extern double deriv;
-extern double multi_error_init;
-extern double comp_penalty_init; 
+//extern double multi_error_init;
+//extern double comp_penalty_init; 
 
 
 ///// BENCHMARKING VARIABLES /////
