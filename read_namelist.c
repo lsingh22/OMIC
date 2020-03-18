@@ -42,7 +42,7 @@ void SetInputs(void){
    case_alpha = 0;
    NFalpha = 1;
    alp_const = 0.000;
-   Nseg = 16;
+   Nseg = 4;
 
    weight_comp = 0.015; //complexity weighting
    case_opt = 0; //0 for fbn , 1 for both fbn and fc
