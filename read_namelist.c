@@ -31,21 +31,21 @@ void SetInputs(void){
    //focus_output = "./inputfiles/focus_ellipse.nc";  
 
    multi_output = "./runs/hsx/multi_hsx.m12_07_debug.nc";
-   //multi_output = "./runs/wista/multi_wista_08_01_04.nc";
-   //multi_output = "./outputfiles/ellipse/output_ellipse_00.nc";
+   //multi_output = "./runs/wista/multi_wista_08_25.nc";
+   //multi_output = "./runs/ell/multi_ell_00.nc";
    
    mfil_output = "./runs/hsx/coils.hsx.m12_07_debug";
-   //mfil_output = "./runs/wista/wista_08_01_04/coils.wista_08_01_01_04";
-   //mfil_output = "./outputfiles/ellipse/output_ellipse_00";
+   //mfil_output = "./runs/wista/coils.wista_08_25";
+   //mfil_output = "./runs/ell/coils.ell_00";
 
-   niter = 2;
+   niter = 5;
    case_alpha = 0;
    NFalpha = 1;
    alp_const = 0.000;
    Nseg = 16;
 
-   weight_comp = 0.000010; //complexity weighting
-   case_opt = 1; //0 for fbn , 1 for both fbn and fc
+   weight_comp = 0.015; //complexity weighting
+   case_opt = 0; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
    Nradfil = 7;

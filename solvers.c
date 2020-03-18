@@ -81,23 +81,22 @@ double ComplexityPenalty(void){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    double* nvals = (double*) malloc( size_alpamp*sizeof(double) );
    int alp_per_coil = 2*NFalpha+1;
-   if(case_opt==1)
+   
+   *(nvals+0) = 0.0;
+   for(i=1;i<NFalpha+1;i++)
    {
-      *(nvals+0) = 0.0;
-      for(i=1;i<NFalpha+1;i++)
-      {
-         *(nvals+i) = (double) i;
-         *(nvals+i+NFalpha) = (double) i;
-      }
+      *(nvals+i) = (double) i;
+      *(nvals+i+NFalpha) = (double) i;
+   }
       
-      for(i=0;i<alp_per_coil;i++)
+   for(i=0;i<alp_per_coil;i++)
+   {
+      for(j=1;j<iCoils;j++)
       {
-         for(j=1;j<iCoils;j++)
-         {
-            *(nvals+j*alp_per_coil+i) = *(nvals+i);
-         }
+         *(nvals+j*alp_per_coil+i) = *(nvals+i);
       }
    }
+   
  
    for(i=0;i<size_alpamp;i++)
    {
@@ -123,7 +122,6 @@ double CostFunction(int case_opt, double fb_init) {
    if(case_opt==0)
    {   
       feval = fb;
-      weight_comp = 0.0;
    }
    else if(case_opt==1)
    {  
@@ -213,8 +211,14 @@ void Central_diff( double *dof, double fb_init ){
 //      printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
 //      printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
 //      printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
-
-      *(derivs+i) = (1/fb_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
+      if(case_opt==1)
+      {
+         *(derivs+i) = (1/fb_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
+      }
+      else if(case_opt==0)
+      {
+         *(derivs+i) = (plus_bn-minus_bn)/(2*h);
+      } 
    }
 }
 
@@ -241,7 +245,7 @@ void Forward_track(double fb_init ){
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    
-   double step = .00000001; // There is small error, I fix later
+   double step = .000000001; // There is small error, I fix later
    double init_bn = 0.0;
    double fb_now=0.0, fc_now=0.0;
    double search_bn;
@@ -279,6 +283,7 @@ void Forward_track(double fb_init ){
    for(j=0;j<size_alpamp;j++){
       *(alpamps+j) -= step*(*(descent_dir+j))/2.0;
    }
+ 
    CalculateMultiFilaments();
    MultiFilFieldSym();
 
