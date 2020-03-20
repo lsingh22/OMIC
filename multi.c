@@ -67,7 +67,7 @@ int main(int argc, char **argv){
       //printf("This is 10 \n");
       Forward_track(multi_error_init);
       printf("Done with iteration: %d\n",i+1);
-      WriteOutputNC();
+//      WriteOutputNC();
    }
 
    surface_area = SurfaceArea();

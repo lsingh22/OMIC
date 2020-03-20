@@ -31,32 +31,32 @@ void SetInputs(void){
    //focus_output = "./inputfiles/focus_ellipse.nc";  
 
    multi_output = "./runs/hsx/multi_hsx.m12_07_debug.nc";
-   //multi_output = "./runs/wista/multi_wista_08_25.nc";
-   //multi_output = "./runs/ell/multi_ell_00.nc";
+   //multi_output = "./runs/wista/multi_wista_08_27.nc";
+   //multi_output = "./runs/ell/multi_ell_01.nc";
    
    mfil_output = "./runs/hsx/coils.hsx.m12_07_debug";
-   //mfil_output = "./runs/wista/coils.wista_08_25";
-   //mfil_output = "./runs/ell/coils.ell_00";
+   //mfil_output = "./runs/wista/coils.wista_08_27";
+   //mfil_output = "./runs/ell/coils.ell_01";
 
-   niter = 5;
+   niter = 2;
    case_alpha = 0;
    NFalpha = 1;
    alp_const = 0.000;
    Nseg = 4;
 
-   weight_comp = 0.015; //complexity weighting
-   case_opt = 0; //0 for fbn , 1 for both fbn and fc
+   weight_comp = 0.005; //complexity weighting
+   case_opt = 1; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
    Nradfil = 7;
    Ntorfil = 2;
 
-   len_rad = 0.120; // 1/2 hsx 
-   len_tor = 0.060;
-   //len_rad = 0.120; // wista
+   //len_rad = 0.120; // 1/2 hsx 
    //len_tor = 0.060;
-   //len_rad = 0.240; // ellipse
-   //len_tor = 0.120;
+   len_rad = 0.120; // wista
+   len_tor = 0.060;
+   //len_rad = 0.3500; // ellipse
+   //len_tor = 0.7000;
 
    Nthreads = 32;
 //   Nturns = 0;  not currently supported
