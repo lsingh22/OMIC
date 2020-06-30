@@ -3,7 +3,7 @@
 
 #include <netcdf.h>
 
-///// INPUTS AND SETTINGS /////
+//--//--// INPUTS AND SETTINGS //--//--//
 
 extern char* focus_output;  // The input single filament focus file
 extern char* multi_output; // TODO: This will be in the namelist eventually
@@ -16,7 +16,8 @@ extern int Nthreads; // Threads to use in OpenMP field calculation
 extern int DEBUG; // Option to suppress output
 extern int case_alpha; // Determines where to get initial alpha amps ( 0 =all 0,  1 =all const, 2 =file)
 extern int case_opt;
-///// PLASMA EQUILIBRIUM DATA  /////
+
+//--//--// PLASMA EQUILIBRIUM DATA  //--//--//
 
 extern int Nfp;
 extern int isSym;
@@ -34,7 +35,7 @@ extern double* nsurfz;
 extern double* nsurfn; //Jacocbian
 extern double surface_area;
 
-///// SINGLE FILAMENT COIL DATA /////
+//--//--// SINGLE FILAMENT COIL DATA //--//--//
 
 extern int Ncoils;
 extern int NFcoil;
@@ -65,7 +66,7 @@ extern double* cx;
 extern double* cy;
 extern double* cz;
 
-///// MULTI-FILAMENT COIL DATA /////
+//--//--// MULTI-FILAMENT COIL DATA //--//--//
 
 // Winding pack dimensions and packing data
 
@@ -134,17 +135,16 @@ extern double* derivs;
 extern double* descent_dir;
 
 // Complexity optimization
+
 extern double weight_comp;
 extern double nvals_scaling;
 
 // Optimization settings
+
 extern int niter;
 extern double deriv;
-//extern double multi_error_init;
-//extern double comp_penalty_init; 
 
-
-///// BENCHMARKING VARIABLES /////
+//--//--// BENCHMARKING VARIABLES //-//-//
 
 // FOCUS single filament magnetics
 
@@ -152,5 +152,7 @@ extern double* fbn;
 extern double* fbx;
 extern double* fby;
 extern double* fbz;
+
+// STELLARATOR SYMMETRY
 
 #endif

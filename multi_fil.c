@@ -7,10 +7,11 @@
 #include <omp.h>
 #include "alpha.h"
 
-int Nthreads;
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 //GLOBALS SCOPED IN SOURCE FILE
 
+int Nthreads;
 double len_rad;
 double len_tor;
 
@@ -56,10 +57,13 @@ double* Bmfilz;
 double* Bmfil;
 double* Bmfiln;
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void CalculateBuildDirections(void){
-
-   double norm;
+//----------------------------------------------------------------------------------------------------
+// Determine the coil-centroid local coordinate frame from single-filament Fourier representation   
+//----------------------------------------------------------------------------------------------------
+   double norm; //used for finding unit vectors
    double theta, x,y,z;
    double pi = M_PI;
    tx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
@@ -73,11 +77,12 @@ void CalculateBuildDirections(void){
    bz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
       
    int i,j,k; 
-   double dot;
-   //Calculate unit tangent vector
+   double dot; //used to store dot products
+
+   //Calculate unit tangent vector by taking the derivative of the single-filament position vector
    for(i=0;i<Ncoils;i++){
-      for(j=0;j<Nseg+1;j++){
-         theta = ((2*pi)/Nseg)*j;
+      for(j=0;j<Nseg+1;j++){ //consider a coil as Nseg unique points (the Nseg-th point is just the starting point)
+         theta = ((2*pi)/Nseg)*j; 
          x=0;y=0;z=0;norm=0;
          for(k=0;k<NFcoil+1;k++){ //add the cosine components
            x = x - k*coilamps[ ind_arr[i] + k ]*sin(k*theta);
@@ -97,12 +102,12 @@ void CalculateBuildDirections(void){
       }
    }
 
-   //printf("%d\n",(*Ncoils)*Nseg*sizeof(double));
+   //Calculate vector pointing from coil centroid to point on coil for each coil
+   //In the JPP 2020 publication, this is the delta vector used to determine coil-centroid normal vector
    double* sfilxa; sfilxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
    double* sfilya; sfilya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
    double* sfilza; sfilza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
 
-   //Calculate vector pointing from coil centroid to point on coil for each coil
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nseg+1;j++){
          *(sfilxa + i*(Nseg+1) + j ) = *(sfilx + i*(Nseg+1) + j ) - *(cx + i);
@@ -114,40 +119,54 @@ void CalculateBuildDirections(void){
 
    for(i=0;i<Ncoils*(Nseg+1);i++){
       x=0;y=0;z=0;
+      //Dot product of delta and tangent vector
       dot = *(sfilxa + i) * *(tx + i) + *(sfilya + i) * *(ty + i) + *(sfilza + i) * *(tz + i);
+      //Components of normal vector before making it a unit vector
       x = *(sfilxa + i) - dot* *(tx + i);
       y = *(sfilya + i) - dot* *(ty + i);
       z = *(sfilza + i) - dot* *(tz + i);
-      norm = sqrt(x*x + y*y + z*z);
+      norm = sqrt(x*x + y*y + z*z); //normal vector magnitude
+      //Unit normal vector components
       *(nx+i) = x/norm;
       *(ny+i) = y/norm;
       *(nz+i) = z/norm;
+      //Unit binormal found via croos product b = t X n
       *(bx+i) = *(ty+i) * *(nz+i) - *(tz+i) * *(ny+i);
       *(by+i) = *(tz+i) * *(nx+i) - *(tx+i) * *(nz+i);
       *(bz+i) = *(tx+i) * *(ny+i) - *(ty+i) * *(nx+i);
    }
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void CalculateMultiFilaments(void){
- 
+//----------------------------------------------------------------------------------------------------
+// Calculate multi-filament coils using pre-computed single-filament coils, coil-centroid frame, and 
+// alpha optimization function for each coil. 
+// A rectangular winding pack is assumed
+// Filaments are spaced evenly within the winding pack  
+//----------------------------------------------------------------------------------------------------
+
    Unpack_alpha();
- 
    CalculateBuildDirections();
    
    int i,j,k,l;
    int iCoils = Ncoils / Nfp;
-   int ip;
-   //Set a length and width scale for placing the filements
-   //len and wid are the true length and width of the finite build
+   int ip; //used for rotations if periodicity is enforced
+   
+   //Half the spacing between filaments in radial and toroidal directions
+   //TODO: Check this for spacing considerations with different winding packs
    double gridlen = len_tor / (1*Nradfil);
    double gridwid = len_rad / (4*Ntorfil);
+   //for locating surface interp points
    double hlen_rad = len_rad / 2;
    double hlen_tor = len_tor / 2;
 
 
 
    int Nfils = Nradfil*Ntorfil;
+   
+   //The rotated normal and binormal vectors
    double* nxa;
    double* nya;
    double* nza;
@@ -161,9 +180,7 @@ void CalculateMultiFilaments(void){
    bxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
    bya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
    bza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   
-   //alp = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
- 
+    
    mfilx = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
    mfily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
    mfilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
@@ -173,9 +190,7 @@ void CalculateMultiFilaments(void){
    ffilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
    
    // Rotate the local basis using alpha parameter
-
    for(i=0;i<Ncoils*(Nseg+1);i++){
-      //*(alp+i) = 0.0;
       *(nxa+i) = *(nx+i)*cos(*(alp+i)) + *(bx+i)*sin(*(alp+i));
       *(nya+i) = *(ny+i)*cos(*(alp+i)) + *(by+i)*sin(*(alp+i));
       *(nza+i) = *(nz+i)*cos(*(alp+i)) + *(bz+i)*sin(*(alp+i));
@@ -185,19 +200,19 @@ void CalculateMultiFilaments(void){
       *(bza+i) = -*(nz+i)*sin(*(alp+i)) + *(bz+i)*cos(*(alp+i));
    
       for(j=0;j<5;j++){
-         *(ffilx + 5*i) =     *(sfilx+i) + hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i);
-         *(ffilx + 5*i + 1) = *(sfilx+i) - hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i);
-         *(ffilx + 5*i + 2) = *(sfilx+i) - hlen_rad * *(nxa+i) - hlen_tor * *(bxa+i);
-         *(ffilx + 5*i + 3) = *(sfilx+i) + hlen_rad * *(nxa+i) - hlen_tor * *(bxa+i);
-         *(ffilx + 5*i + 4) = *(sfilx+i) + hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i);
+         *(ffilx + 5*i) =     *(sfilx+i) + hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i); //top right x-coord
+         *(ffilx + 5*i + 1) = *(sfilx+i) - hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i); //top left
+         *(ffilx + 5*i + 2) = *(sfilx+i) - hlen_rad * *(nxa+i) - hlen_tor * *(bxa+i); //bottom left
+         *(ffilx + 5*i + 3) = *(sfilx+i) + hlen_rad * *(nxa+i) - hlen_tor * *(bxa+i); //bottom right
+         *(ffilx + 5*i + 4) = *(sfilx+i) + hlen_rad * *(nxa+i) + hlen_tor * *(bxa+i); //top right again
 
-         *(ffily + 5*i) =     *(sfily+i) + hlen_rad * *(nya+i) + hlen_tor * *(bya+i);
+         *(ffily + 5*i) =     *(sfily+i) + hlen_rad * *(nya+i) + hlen_tor * *(bya+i); //analogous y-coords
          *(ffily + 5*i + 1) = *(sfily+i) - hlen_rad * *(nya+i) + hlen_tor * *(bya+i);
          *(ffily + 5*i + 2) = *(sfily+i) - hlen_rad * *(nya+i) - hlen_tor * *(bya+i);
          *(ffily + 5*i + 3) = *(sfily+i) + hlen_rad * *(nya+i) - hlen_tor * *(bya+i);
          *(ffily + 5*i + 4) = *(sfily+i) + hlen_rad * *(nya+i) + hlen_tor * *(bya+i);
 
-         *(ffilz + 5*i)     = *(sfilz+i) + hlen_rad * *(nza+i) + hlen_tor * *(bza+i);
+         *(ffilz + 5*i)     = *(sfilz+i) + hlen_rad * *(nza+i) + hlen_tor * *(bza+i); //analogous z-coords
          *(ffilz + 5*i + 1) = *(sfilz+i) - hlen_rad * *(nza+i) + hlen_tor * *(bza+i);
          *(ffilz + 5*i + 2) = *(sfilz+i) - hlen_rad * *(nza+i) - hlen_tor * *(bza+i);
          *(ffilz + 5*i + 3) = *(sfilz+i) + hlen_rad * *(nza+i) - hlen_tor * *(bza+i);
@@ -205,13 +220,19 @@ void CalculateMultiFilaments(void){
       }    
    }
 
+   //Calculates the multi-filament coils
+   //Only one field period if enforcing periodicity
+   //TODO: made a change when adding comments, take a look in matlab to make sure everthing is okay
    for(i=0;i<iCoils;i++){
       for(j=0;j<Ntorfil;j++){
          for(k=0;k<Nradfil;k++){
             for(l=0;l<Nseg;l++){
-            *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilx +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nxa + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bxa + i*(Nseg+1) + l);
-            *(mfily + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfily +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nya + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bya + i*(Nseg+1) + l);
-	    *(mfilz + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilz +i*(Nseg+1) + l) + (gridlen* (-(Nradfil-1)+2*k))* *(nza + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bza + i*(Nseg+1) + l);
+            *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilx +i*(Nseg+1) + l) \
+                                       + (gridlen* (-(Nradfil-1)+2*k))* *(nxa + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bxa + i*(Nseg+1) + l);
+            *(mfily + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfily +i*(Nseg+1) + l) \
+				       + (gridlen* (-(Nradfil-1)+2*k))* *(nya + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bya + i*(Nseg+1) + l);
+	    *(mfilz + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + l) = *(sfilz +i*(Nseg+1) + l) \
+				       + (gridlen* (-(Nradfil-1)+2*k))* *(nza + i*(Nseg+1) + l) + (gridwid* (-(Ntorfil-1)+2*j))* *(bza + i*(Nseg+1) + l);
 	    }
            
  	    *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) + Nseg ) = *(mfilx + i*Nfils*(Nseg+1) + j*(Nseg+1)*Nradfil + k*(Nseg+1) );
@@ -220,7 +241,9 @@ void CalculateMultiFilaments(void){
          }
       }
    }
-
+   
+   //Calculates periodic coils when enforced
+   //TODO: this should maybe be flagged or at least print something like "No periodicity enforced -- calculating all coils."
    for(ip=2;ip<Nfp+1;ip++){
       for(j=0;j<iCoils*Nfils*(Nseg+1);j++){
          *(mfilx + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*cosnfp(ip) - *(mfily+j)*sinnfp(ip);
@@ -232,9 +255,15 @@ void CalculateMultiFilaments(void){
 
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void MultiFilField(void){
-  
+//----------------------------------------------------------------------------------------------------
+// Calculate the field due to the multi-filaments on magnetic boundary
+// Periodicity is not assumed
+// TODO: This is just nfp=1 version of multifilfieldsym, so delete this soon 
+//----------------------------------------------------------------------------------------------------
+ 
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bmfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bmfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -262,8 +291,13 @@ void MultiFilField(void){
 
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void MultiFilFieldSym(void){
+//----------------------------------------------------------------------------------------------------
+// Calculate the field due to multi-filament coils
+// Periodicity is assumed  
+//----------------------------------------------------------------------------------------------------
    
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bmfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -310,11 +344,16 @@ void MultiFilFieldSym(void){
 
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 #define MFILB_FILE_NAME "./outputfiles/mfilB.nc"
    
 void WriteMultiB(void){
-   //Write to NC
+//----------------------------------------------------------------------------------------------------
+// Old: writes the multifilament b field to an nc file
+// TODO: delete this after checking for it elsewhere, since done in outputnc function
+//----------------------------------------------------------------------------------------------------
+  //Write to NC
    int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
    int bxvarid, byvarid, bzvarid, bnvarid;
    int dimids[2];
@@ -347,8 +386,13 @@ void WriteMultiB(void){
    nc_close(ncid);
 }
 
-//TODO: Fix periods 4 !!
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
 void WriteMultiFilaments(void){
+//----------------------------------------------------------------------------------------------------
+// Writes a coils file containing multi-filament coordinates to a txt file
+// TODO: check what happens in symmetric case  
+//----------------------------------------------------------------------------------------------------
 
    int i,j,k;
    FILE* fb;
@@ -374,8 +418,5 @@ void WriteMultiFilaments(void){
    fprintf(fb,"end");
 }
 
-
-//void WriteFiniteBuild(void){}
-
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 

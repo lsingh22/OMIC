@@ -9,6 +9,8 @@
 #include "alpha.h"
 #include "single_fil.h"
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 // GLOBALS SCOPED IN SOURCE FILE
 
 double* alpampsinit;
@@ -34,7 +36,14 @@ double alp_const;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 double SingleFieldError(void){
+//----------------------------------------------------------------------------------------------------
+// Returns the single-filament normal error objective function value
+// TODO: normalize this to surface area 
+// TODO: may want to exclude unpack and singlefilfield function calls, will need to check
+//----------------------------------------------------------------------------------------------------
 
    int iCoils = Ncoils / Nfp;
    int size_fp = Nteta*Nzeta / Nfp;
@@ -54,9 +63,13 @@ double SingleFieldError(void){
 
 }
 
-
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 double MultiFieldError(void){  //TODO: Change CostFunction to MultiFieldError
+//----------------------------------------------------------------------------------------------------
+// Returns the multi-filament normal error objective function value
+// TODO: normalize to surface area 
+//----------------------------------------------------------------------------------------------------
 
    int iCoils = Ncoils / Nfp;
    int size_fp = Nteta*Nzeta / Nfp;
@@ -72,8 +85,13 @@ double MultiFieldError(void){  //TODO: Change CostFunction to MultiFieldError
    return feval;
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 double ComplexityPenalty(void){
+//----------------------------------------------------------------------------------------------------
+// Returns the spectral weighting objective function value
+// TODO: make the name SpectralWeight per discussion on 06/23//20  
+//----------------------------------------------------------------------------------------------------
 
    int iCoils = Ncoils / Nfp;
    int i,j;
@@ -106,8 +124,15 @@ double ComplexityPenalty(void){
    return feval;
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 double CostFunction(int case_opt, double fb_init) {
-//case opt = 0 is just fb, 1 is fb and fc.
+//----------------------------------------------------------------------------------------------------
+// Returns the value of the total objective function
+// case_opt: 0-fb only  1-fb and fsw 
+// TODO: fc --> fsw
+// TODO: to avoid confusion, should probably exclude other function calls 
+//----------------------------------------------------------------------------------------------------
    double fb, fc;
    double feval = 0.0;
 
@@ -132,8 +157,13 @@ double CostFunction(int case_opt, double fb_init) {
 
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 double SurfaceArea(void){
+//----------------------------------------------------------------------------------------------------
+// Returns the surface area of the magnetic boundary
+// TODO: is this correct? might be off by a factor of nfp 
+//----------------------------------------------------------------------------------------------------
    int i;
    double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
    int size_fp = Nteta*Nzeta / Nfp;
@@ -146,10 +176,13 @@ double SurfaceArea(void){
    return area;
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 void Central_diff( double *dof, double fb_init ){
+//----------------------------------------------------------------------------------------------------
+// Calculates the numerical derivative of the objective function with respect to alpha harmonics
+//----------------------------------------------------------------------------------------------------
 
-   //TODO: Change naming of this, and make two individual complexity and bn sections
    int iCoils = Ncoils / Nfp;
    int size_alpamp = iCoils*(2*NFalpha+1);   
    //int iCoils = Ncoils;
@@ -222,9 +255,13 @@ void Central_diff( double *dof, double fb_init ){
    }
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 void Steepest_descent( void ){
- //TODO: print statements here  
+//----------------------------------------------------------------------------------------------------
+// Calculates the negative gradient of the objective function
+// TODO: this should just be flagged in central_diff, no need for another function for adding a - sign
+//----------------------------------------------------------------------------------------------------
    int iCoils = Ncoils / Nfp;
    //int iCoils = Ncoils;
    int size_alpamp = iCoils*(2*NFalpha+1);  
@@ -238,7 +275,14 @@ void Steepest_descent( void ){
 
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 void Forward_track(double fb_init ){
+//----------------------------------------------------------------------------------------------------
+// Optimizes alpha harmonics using a forward-tracking line search
+// TODO: this should probably have a better exit flag on the while loop
+// Maybe just look at k+step*(1/2) where k+1 is the exit iteration
+//----------------------------------------------------------------------------------------------------
 
    //int iCoils = Ncoils;
    int iCoils = Ncoils / Nfp;
@@ -289,4 +333,4 @@ void Forward_track(double fb_init ){
 
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

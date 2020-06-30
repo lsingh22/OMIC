@@ -3,12 +3,12 @@
 
 #include "globals.h"
 
-void Central_diff(double* dof, double fb_init); // Calculate numerical derivatives
-void Steepest_descent(void); // Find descent direction 
-void Forward_track(double fb_init); // Start moving in descent direction 
-double CostFunction(int case_optimize, double fb_init); //Total cost function for optimization
+void Central_diff(double* dof, double fb_init);
+void Steepest_descent(void);  
+void Forward_track(double fb_init); 
+double CostFunction(int case_optimize, double fb_init); 
 double MultiFieldError(void);
 double ComplexityPenalty(void);
-double SurfaceArea(void); //Surface area of magnetic boundary
+double SurfaceArea(void); 
 double SingleFieldError(void);
 #endif

@@ -1,14 +1,13 @@
-//This file reads the FOCUS output 
-
 #include "read_focus.h"
 #include <stdlib.h>
 #include <stdio.h>
-// GLOBALS SCOPED IN SOURCE FILE
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 #define ERRCODE 2  
 #define ERR(e) {printf("Error: %s\n",nc_strerror(e)); exit(ERRCODE);}
 
+// GLOBALS SCOPED IN SOURCE FILE
 
 int Nseg;
 int Ncoils;
@@ -32,11 +31,14 @@ double* fbx;
 double* fby;
 double* fbz;
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
+void ReadFocusInts(char* output_file){  
+//----------------------------------------------------------------------------------------------------
 // READS AND STORES VARIOUS FOCUS COILSET PARAMETERS
 // DETERMINES SIZE TO ALLOCATE OUTPUT FOCUS DATA
-
-void ReadFocusInts(char* output_file){  
-  
+//----------------------------------------------------------------------------------------------------
+ 
    int ncid, varid, dimid, retval;  
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "Ncoils", &varid);
@@ -66,9 +68,13 @@ void ReadFocusInts(char* output_file){
       ERR(retval);
 }
 
-// ALLOCATES AND STORES FOCUS DATA
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
 void ReadFocusArrays(char* output_file){
-   
+//----------------------------------------------------------------------------------------------------
+// ALLOCATES AND STORES FOCUS DATA
+//----------------------------------------------------------------------------------------------------
+  
    int ncid, varid, dimid;
    coilspace = (double*) malloc(size_coilspace*sizeof(double));   
    xsurf = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
@@ -85,6 +91,9 @@ void ReadFocusArrays(char* output_file){
 
    //NOTE: Assuming that there is only a single row of data; if evolution 
    //is a seg fault    
+ 
+   //TODO: small coilspace error when not a row vector
+
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "coilspace", &varid);
    nc_get_var_double(ncid, varid, coilspace);
@@ -117,8 +126,14 @@ void ReadFocusArrays(char* output_file){
 
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
 void WriteBoundary(void){
-  
+//----------------------------------------------------------------------------------------------------
+// Writes the boundary to a txt file (debug)
+// TODO: can probably delete this
+//----------------------------------------------------------------------------------------------------
+ 
    int i,j;
    FILE* fb;
    fb = fopen("./outputfiles/boundary.out","w");
@@ -129,8 +144,14 @@ void WriteBoundary(void){
 }
 
 #define FILE_NAME "./outputfiles/boundary.nc"
-   
+
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+  
 void WriteBoundaryNC(void){
+//----------------------------------------------------------------------------------------------------
+// Writes the boundary to a netcdf file (debug)
+// TODO: probably can delete
+//----------------------------------------------------------------------------------------------------
 
    int ncid, xvarid, yvarid, zvarid, xdimid, ydimid;
    int dimids[2];
@@ -151,4 +172,4 @@ void WriteBoundaryNC(void){
    nc_close(ncid);
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

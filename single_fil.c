@@ -8,13 +8,15 @@
 #include <omp.h>
 #include <unistd.h>
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 // GLOBALS SCOPED IN SOURCE FILE
 
 int Ncoils;
 int Nseg;
 int Nfp;
 int isSym;
-int NFcoil; //TODO
+int NFcoil; 
 
 int Nzeta;
 int Nteta;
@@ -44,8 +46,13 @@ double* xsurf;
 double* ysurf;
 double* zsurf;
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 void UnpackSingleFilaments(void){
+//----------------------------------------------------------------------------------------------------
+// Calculate single filament positions and centroids from Fourier series harmonics
+// TODO: check speed on this; might be able to make this more efficient
+//----------------------------------------------------------------------------------------------------
 
    int ind = 0;
    ind_arr = malloc(Ncoils*sizeof(int));
@@ -109,8 +116,14 @@ void UnpackSingleFilaments(void){
    }
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 void SingleFilField(void){
-//TODO:   
+//----------------------------------------------------------------------------------------------------
+// Calculate the magnetic field due to single-filament coils
+// TODO: will want to mpi parallelize this like multifilfield
+//----------------------------------------------------------------------------------------------------
+
    Bsfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bsfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bsfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -123,9 +136,8 @@ void SingleFilField(void){
    double startBfield, endBfield;
 
    omp_set_num_threads(Nthreads);
-
    startBfield = omp_get_wtime(); //clock();
-   // for(i=0;i<size_surf*size_surf;i++){
+   
    //OpenMP parallelization 
    #pragma omp parallel for
    for(i=0;i<Nzeta*Nteta;i++){
@@ -142,10 +154,15 @@ void SingleFilField(void){
    printf("\nTotal time of single fil field calculation: %f\n\n", endBfield-startBfield);//timeBfield);  
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 #define SFILB_FILE_NAME "./outputfiles/sfilB.nc"
    
 void WriteSingleB(void){
-   //Write to NC
+//----------------------------------------------------------------------------------------------------
+// Old: Write single filament field to a netcdf file
+//----------------------------------------------------------------------------------------------------
+   
    int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
    int bxvarid, byvarid, bzvarid;
    int dimids[2];
@@ -177,9 +194,14 @@ void WriteSingleB(void){
    nc_close(ncid);
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+ 
 void WriteSingleFilaments(void){
-  //THERE IS AN INDEXING ISSUE
+//----------------------------------------------------------------------------------------------------
+// Old: output single filaments to a txt file
+// TODO: there might be an indexing issue
+//----------------------------------------------------------------------------------------------------
+ 
    int i,j;
    FILE* fb;
    //fb = fopen("./outputfiles/sfil.out","w");
@@ -197,4 +219,4 @@ void WriteSingleFilaments(void){
 
 }
 
-
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

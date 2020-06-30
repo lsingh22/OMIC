@@ -21,13 +21,13 @@ int main(int argc, char **argv){
    clock_t start, end;
    // At some point use higher resolution timer 
    
-   start = clock(); 
+   start = clock();
    //printf("This is 1 \n");
    SetInputs();
    //printf("This is 2 \n");
    ReadFocusInts(focus_output);
 
-   printf("\nThis is OMIC...\n\n");
+   printf("\nThis is the stellarator coil tool OMIC...\n\n");
    printf("The number of iterations is: %d\n",niter);
    printf("The number of alpha harmonics is: %d\n",NFalpha);
    printf("The number of segments is: %d\n", Nseg);
@@ -37,17 +37,17 @@ int main(int argc, char **argv){
    printf("The complexity weighting is: %.6f \n", weight_comp);  
 
 
-//   printf("This is 3 \n");
+   printf("This is 3 \n");
    ReadFocusArrays(focus_output);
-//   printf("This is 4 \n");
+   printf("This is 4 \n");
    UnpackSingleFilaments();
-//   printf("This is 5 \n");
+   printf("This is 5 \n");
    Init_alpha(case_alpha);
-//   printf("This is 6 \n");
+   printf("This is 6 \n");
    CalculateMultiFilaments();
    
    MultiFilFieldSym();
-   //printf("This is 7 \n");
+   printf("This is 7 \n");
 
    double sfil_error = SingleFieldError();
    printf("The single-filament error is %.15f\n", sfil_error);
