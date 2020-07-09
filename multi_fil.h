@@ -8,10 +8,12 @@ void WriteBuildDirections(void);
 void CalculateMultiFilaments(void);
 void MultiFilField(void);
 void MultiFilFieldSym(void);
+void MultiFilFieldmpi(void);
 void WriteMultiB(void);
 void WriteMultiFilaments(void);
 void CalculateFiniteBuild(void);
 void WriteFiniteBuild(void);
+void GatherFieldData(void);
 
 #endif
  

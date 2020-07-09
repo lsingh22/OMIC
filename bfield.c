@@ -1,4 +1,3 @@
-
 #include "bfield.h"
 #include <math.h>
 #include <stdlib.h>
@@ -221,7 +220,6 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    bxx = 0.0;
    byy = 0.0;
    bzz = 0.0;
-
 
    for(ip=1;ip<Nfp+1;ip++){ //ip is used in cosnfp and sinnfp for finding the contribution to field at ip-th field period   
       xx =  x*cosnfp(ip) - y*sinnfp(ip); //find the x component of the periodic point at ip+1-th field period

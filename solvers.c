@@ -8,6 +8,7 @@
 #include "single_fil.h"
 #include "alpha.h"
 #include "single_fil.h"
+#include <mpi.h>
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -26,6 +27,8 @@ double weight_comp;
 double nvals_scaling;
 double comp_penalty_init;
 
+int nproc;
+int pn;
 
 int case_alpha;
 int Ncoils;
@@ -137,9 +140,6 @@ double CostFunction(int case_opt, double fb_init) {
    double feval = 0.0;
 
    //Calculate the filaments and the field
-   CalculateMultiFilaments();
-   MultiFilFieldSym();
-
    //Calculate the objective functions
    fb = MultiFieldError();
    fc = ComplexityPenalty();  
@@ -222,7 +222,7 @@ void Central_diff( double *dof, double fb_init ){
       }
    }
    
-   init_bn = MultiFieldError();
+   if(pn==0){init_bn = MultiFieldError();}
 
    for(i=0;i<size_alpamp;i++){
       minus_bn = 0.0;
@@ -232,29 +232,43 @@ void Central_diff( double *dof, double fb_init ){
       *(alpamps+i) += h;
       CalculateMultiFilaments();
       MultiFilFieldSym();
-      plus_bn = MultiFieldError();
+      if(nproc > 1){GatherFieldData();}
+
+      if(pn==0){plus_bn = MultiFieldError();}
 
       *(alpamps+i) -= 2*h;
       CalculateMultiFilaments();
       MultiFilFieldSym();
-      minus_bn = MultiFieldError(); 
+      if(nproc > 1){GatherFieldData();}
+
+      if(pn==0){minus_bn = MultiFieldError();} 
 
       *(alpamps+i) += h;
-
-//      printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
-//      printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
-//      printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
-      if(case_opt==1)
+      
+      if(pn==0)
       {
-         *(derivs+i) = (1/fb_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
+         printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
+         printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
+         printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
       }
-      else if(case_opt==0)
+      
+      if(pn==0)
       {
-         *(derivs+i) = (plus_bn-minus_bn)/(2*h);
-      } 
+         if(case_opt==1)
+         {
+            *(derivs+i) = (1/fb_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
+         }
+         else if(case_opt==0)
+         {
+            *(derivs+i) = (plus_bn-minus_bn)/(2*h);
+         }
+      printf("Stored some derivatives ... broadcasting them to other nodes! \n"); 
+         
+      }   
    }
+   MPI_Bcast(derivs,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+   MPI_Barrier(MPI_COMM_WORLD); 
 }
-
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 void Steepest_descent( void ){
@@ -267,12 +281,12 @@ void Steepest_descent( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);  
    descent_dir = (double*) malloc( size_alpamp*sizeof(double) );
    int i,j;
-
-   for(i=0;i<size_alpamp;i++){
-      *(descent_dir+i) = -1.0 * (*(derivs+i));
-      printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
+      
+   for(i=0;i<size_alpamp;i++)
+   {
+         *(descent_dir+i) = -1.0 * (*(derivs+i));
+         printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
    }   
-
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
@@ -288,49 +302,72 @@ void Forward_track(double fb_init ){
    int iCoils = Ncoils / Nfp;
    int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
-   
+   int k=0;
+
    double step = .000000001; // There is small error, I fix later
    double init_bn = 0.0;
    double fb_now=0.0, fc_now=0.0;
    double search_bn;
    double hold_bn;
 
-   init_bn = CostFunction(case_opt,fb_init);
-   hold_bn = init_bn;
-   search_bn = 0.0;
+     
+   CalculateMultiFilaments();
+   MultiFilFieldSym();
+   if(nproc > 1){GatherFieldData();}
    
-   int k=0;
-   while( hold_bn - search_bn > 0.0 ){
-      if(k==0){
+   if(pn==0)
+   {
+      init_bn = CostFunction(case_opt,fb_init);
+      hold_bn = init_bn;
+      search_bn = 0.0;
+   }
+
+   while( hold_bn - search_bn > 0.0 )
+   {
+    
+        if(k==0)
+      {
          search_bn = init_bn;
       }
+
       hold_bn = search_bn;
       search_bn = 0.0;
       printf("Step size is %f\n", 1000.0*step);
       
-      for(j=0;j<size_alpamp;j++){
-	 //printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
+      for(j=0;j<size_alpamp;j++)
+      {   
+         printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
          *(alpamps+j) += step*(*(descent_dir+j));      
       }
-    
+
+      MPI_Bcast(alpamps,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);    
+      CalculateMultiFilaments();
+      MultiFilFieldSym();
+      if(nproc > 1){GatherFieldData();}
+
       search_bn = CostFunction(case_opt,fb_init);
       fb_now = MultiFieldError();
       fc_now = ComplexityPenalty();
 
-      printf("Total cost function value, tracking iter: %.9f   %d\n",search_bn,k);
-      printf("The fB value is: %.9f   \n",fb_now,k);
-      printf("The fC value is: %.9f   \n",fc_now,k);
-      step = step*2.0;
+      printf("Total cost function value, tracking iter: %.9f   %d\n", search_bn, k);
+      printf("The fB value is: %.9f   \n", fb_now, k);
+      printf("The fC value is: %.9f   \n", fc_now, k);
+      
+      step = step * 2.0;
       k++;
    }
    
-   for(j=0;j<size_alpamp;j++){
+   for(j=0;j<size_alpamp;j++)
+   {
       *(alpamps+j) -= step*(*(descent_dir+j))/2.0;
-   }
- 
+   }      
+   
+   
+   MPI_Bcast(alpamps,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);  
+   MPI_Barrier(MPI_COMM_WORLD);
    CalculateMultiFilaments();
    MultiFilFieldSym();
-
+   if(nproc > 1){GatherFieldData();}
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

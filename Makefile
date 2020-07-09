@@ -6,11 +6,11 @@ PROGRAM = multi
 
 FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
 
-FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.c bfield.h globals.h alpha.h output.h solvers.h
+FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
 
 FILES.o = ${FILES.c:.c=.o}
 
-CC      = gcc
+CC      = mpicc
 
 SFLAGS  = -std=c11
 
@@ -36,7 +36,7 @@ NETCDF_HOME = ${NETCDF_C_HOME}
 
 NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf
 
-CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp
+CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp 
 
 LDFLAGS =
 

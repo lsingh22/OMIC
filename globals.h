@@ -155,4 +155,12 @@ extern double* fbz;
 
 // STELLARATOR SYMMETRY
 
+
+// MPI 
+
+extern int pn;
+extern int nproc;
+extern int* startind;
+extern int* endind;
+
 #endif

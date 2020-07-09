@@ -151,7 +151,7 @@ void SingleFilField(void){
    }
 
    endBfield = omp_get_wtime(); //clock();
-   printf("\nTotal time of single fil field calculation: %f\n\n", endBfield-startBfield);//timeBfield);  
+   //printf("\nTotal time of single fil field calculation: %f\n\n", endBfield-startBfield);//timeBfield);  
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
