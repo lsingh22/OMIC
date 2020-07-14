@@ -327,17 +327,23 @@ void MultiFilFieldSym(void){
    for(i=first;i<last+1;i++){      
       CalculateMultiFieldSym( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
                             Bmfilx+i, Bmfily+i, Bmfilz+i );    
-      *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
-                    *(Bmfilz+i) * *(nsurfz+i);  // Need to add in area element
-      *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
    }
    
 //TODO: this reflection will now go in gather section if nproc>1
    //Reflect to the rest of the field periods
    if(nproc==1)
    {
-      for(ip=2;ip<Nfp+1;ip++){
-         for(i=0;i<size_fp;i++){
+      for(i=0;i<size_fp;i++)
+      {
+         *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
+                    *(Bmfilz+i) * *(nsurfz+i);  // Need to add in area element
+         *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
+       }
+
+    for(ip=2;ip<Nfp+1;ip++)
+    {
+         for(i=0;i<size_fp;i++)
+         {
             *(Bmfil  + (ip-1)*size_fp+i) = *(Bmfil+i);       
             *(Bmfiln + (ip-1)*size_fp+i) = *(Bmfiln+i);
             *(Bmfilx + (ip-1)*size_fp+i) = *(Bmfilx+i)*cosnfp(ip) - *(Bmfily+i)*sinnfp(ip);
@@ -362,8 +368,8 @@ void GatherFieldData(void){
    double* temp_Bmfilx;
    double* temp_Bmfily;
    double* temp_Bmfilz;
-   double* temp_Bmfiln;
-   double* temp_Bmfil;
+//   double* temp_Bmfiln;
+//   double* temp_Bmfil;
    double t1,t2;
    MPI_Status status; 
 
@@ -383,8 +389,8 @@ void GatherFieldData(void){
          temp_Bmfilx = (double*) malloc(sizepn*sizeof(double));
          temp_Bmfily = (double*) malloc(sizepn*sizeof(double));
          temp_Bmfilz = (double*) malloc(sizepn*sizeof(double));
-         temp_Bmfiln = (double*) malloc(sizepn*sizeof(double));
-          temp_Bmfil = (double*) malloc(sizepn*sizeof(double));
+//         temp_Bmfiln = (double*) malloc(sizepn*sizeof(double));
+//          temp_Bmfil = (double*) malloc(sizepn*sizeof(double));
  
          first = *(startind+pi);
           last = *(endind+pi);
@@ -398,19 +404,19 @@ void GatherFieldData(void){
          MPI_Recv(temp_Bmfilz, sizepn, MPI_DOUBLE, pi, 12+100*pi, MPI_COMM_WORLD, &status);
          for(j=0;j<sizepn; *(Bmfilz+first+j) = *(temp_Bmfilz+j),j++);
 
-         MPI_Recv(temp_Bmfiln, sizepn, MPI_DOUBLE, pi, 13+100*pi, MPI_COMM_WORLD, &status);
-         for(j=0;j<sizepn; *(Bmfiln+first+j) = *(temp_Bmfiln+j),j++);
+//         MPI_Recv(temp_Bmfiln, sizepn, MPI_DOUBLE, pi, 13+100*pi, MPI_COMM_WORLD, &status);
+//         for(j=0;j<sizepn; *(Bmfiln+first+j) = *(temp_Bmfiln+j),j++);
 
-         MPI_Recv(temp_Bmfil, sizepn, MPI_DOUBLE, pi, 14+100*pi, MPI_COMM_WORLD, &status);
-         for(j=0;j<sizepn; *(Bmfil+first+j) = *(temp_Bmfil+j),j++);
+//         MPI_Recv(temp_Bmfil, sizepn, MPI_DOUBLE, pi, 14+100*pi, MPI_COMM_WORLD, &status);
+//         for(j=0;j<sizepn; *(Bmfil+first+j) = *(temp_Bmfil+j),j++);
 
          //printf("Magnetic field calculated!\n");
 
          free(temp_Bmfilx);
          free(temp_Bmfily);
          free(temp_Bmfilz);
-         free(temp_Bmfiln);
-         free(temp_Bmfil);
+//         free(temp_Bmfiln);
+//         free(temp_Bmfil);
       }
       
       //Reflect to each period of the plasma boundary
@@ -418,14 +424,20 @@ void GatherFieldData(void){
       {
          for(k=0;k<size_fp;k++)
          {
-            *(Bmfil  + (ip-1)*size_fp+k) = *(Bmfil+k);       
-            *(Bmfiln + (ip-1)*size_fp+k) = *(Bmfiln+k);
             *(Bmfilx + (ip-1)*size_fp+k) = *(Bmfilx+k)*cosnfp(ip) - *(Bmfily+k)*sinnfp(ip);
             *(Bmfily + (ip-1)*size_fp+k) = *(Bmfilx+k)*sinnfp(ip) + *(Bmfily+k)*cosnfp(ip);
             *(Bmfilz + (ip-1)*size_fp+k) = *(Bmfilz+k);
          }
       }
-    
+      
+      //Finally, calculate the field and normal field strength.
+      for(i=0;i<size_fp;i++)
+      {
+         *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
+                    *(Bmfilz+i) * *(nsurfz+i); 
+         *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
+      }
+
    }else //Not HEAD
    {
       sizepn = 1 + *(endind+pn) - *(startind+pn);  
@@ -433,8 +445,8 @@ void GatherFieldData(void){
       temp_Bmfilx = (double*) malloc(sizepn*sizeof(double));
       temp_Bmfily = (double*) malloc(sizepn*sizeof(double));
       temp_Bmfilz = (double*) malloc(sizepn*sizeof(double));
-      temp_Bmfiln = (double*) malloc(sizepn*sizeof(double));
-       temp_Bmfil = (double*) malloc(sizepn*sizeof(double));
+//      temp_Bmfiln = (double*) malloc(sizepn*sizeof(double));
+//       temp_Bmfil = (double*) malloc(sizepn*sizeof(double));
 
       first = *(startind+pn);
        last = *(endind+pn);
@@ -448,17 +460,17 @@ void GatherFieldData(void){
       for(j=0;j<sizepn; *(temp_Bmfilz+j) = *(Bmfilz + first + j), j++);
       MPI_Send(temp_Bmfilz, sizepn, MPI_DOUBLE, 0, 12+100*pn, MPI_COMM_WORLD);
  
-      for(j=0;j<sizepn; *(temp_Bmfiln+j) = *(Bmfiln + first + j), j++);
-      MPI_Send(temp_Bmfiln, sizepn, MPI_DOUBLE, 0, 13+100*pn, MPI_COMM_WORLD);
+//      for(j=0;j<sizepn; *(temp_Bmfiln+j) = *(Bmfiln + first + j), j++);
+//      MPI_Send(temp_Bmfiln, sizepn, MPI_DOUBLE, 0, 13+100*pn, MPI_COMM_WORLD);
  
-      for(j=0;j<sizepn; *(temp_Bmfil+j) = *(Bmfil + first + j), j++);
-      MPI_Send(temp_Bmfil , sizepn, MPI_DOUBLE, 0, 14+100*pn, MPI_COMM_WORLD);
+//      for(j=0;j<sizepn; *(temp_Bmfil+j) = *(Bmfil + first + j), j++);
+//      MPI_Send(temp_Bmfil , sizepn, MPI_DOUBLE, 0, 14+100*pn, MPI_COMM_WORLD);
  
       free(temp_Bmfilx);
       free(temp_Bmfily);
       free(temp_Bmfilz);
-      free(temp_Bmfiln);
-       free(temp_Bmfil); 
+//      free(temp_Bmfiln);
+//       free(temp_Bmfil); 
    }  
 
    MPI_Barrier(MPI_COMM_WORLD);

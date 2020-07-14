@@ -61,7 +61,7 @@ void SetInputs(void){
    case_opt = 1; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
-   Nradfil = 7;
+   Nradfil = 2;
    Ntorfil = 2;
 
    len_rad = 0.120; // 1/2 hsx 

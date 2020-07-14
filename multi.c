@@ -20,8 +20,27 @@ int main(int argc, char **argv){
    int i, ierr;
    double tot_time;
    double sfil_error, multi_error_init, comp_penalty_init;
-   clock_t start, end;
-  // int pn, nproc;
+   double start, end;
+   // int pn, nproc;
+
+   //Testbed for speed improvements
+   double sum=0;
+   double ok = 5;
+   double t1,t2;
+   int y;
+/*
+   t1 = MPI_Wtime();
+   
+   t2 = MPI_Wtime();
+
+   if(pn==0){printf("\nTotal time for pow is: %f\n\n", t2-t1);} 
+
+   t1 = MPI_Wtime();
+   sum = pow(ok,ok);
+   t2 = MPI_Wtime();
+
+   if(pn==0){printf("\nTotal time for explicit is: %f\n\n", 1000*(t2-t1));} 
+*/
 
    //Initialize and prepare MPI stuff
    MPI_Init(&argc, &argv);   
