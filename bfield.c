@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <netcdf.h>
-
+#include <omp.h>
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 //GLOBALS SCOPED IN SOURCE FILE
@@ -141,7 +141,9 @@ void CalculateMultiField(double x, double y, double z, \
    bx = 0.0;
    by = 0.0;
    bz = 0.0;
-   
+  
+   omp_set_num_threads(Nthreads);
+   #pragma omp parallel for  
    for(i=0;i<Ncoils;i++){
       for(j=0;j<Nfils;j++){ //index over each filament comprising the multi-filament coil
          for(k=0;k<Nseg;k++){
@@ -221,6 +223,8 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    byy = 0.0;
    bzz = 0.0;
 
+   //omp_set_num_threads(Nthreads);
+   //#pragma omp parallel for  
    for(ip=1;ip<Nfp+1;ip++){ //ip is used in cosnfp and sinnfp for finding the contribution to field at ip-th field period   
       xx =  x*cosnfp(ip) - y*sinnfp(ip); //find the x component of the periodic point at ip+1-th field period
       yy =  x*sinnfp(ip) + y*cosnfp(ip); //find the y component of the periodic point at ip+1-th field period

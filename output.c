@@ -20,13 +20,13 @@ double* ffily;
 double* ffilz;
   
 double* alpamps;
-
+/*
 double* Bsfilx;
 double* Bsfily;
 double* Bsfilz;
 double* Bsfil;
 double* Bsfiln;
-
+*/
 double* Bmfilx;
 double* Bmfily;
 double* Bmfilz;
@@ -71,7 +71,7 @@ void WriteOutputNC(void){
    int mxvarid, myvarid, mzvarid;
    int fxvarid, fyvarid, fzvarid;
    int alpvarid, alpampdimid;
-   int sbxvarid, sbyvarid, sbzvarid, sbvarid, sbnvarid;
+//   int sbxvarid, sbyvarid, sbzvarid, sbvarid, sbnvarid;
    int mbxvarid, mbyvarid, mbzvarid, mbvarid, mbnvarid;
    int NFalphavarid, len_radvarid, len_torvarid, nitervarid, Ntorfilvarid, Nradfilvarid, Nfpvarid;
    int Nfils = Ntorfil*Nradfil;
@@ -154,11 +154,12 @@ void WriteOutputNC(void){
    nc_def_var(ncid, "alpha", NC_DOUBLE, 2, alpdims, &alpvarid);
 
    //Output the centroid single filament field
-   nc_def_var(ncid, "sB", NC_DOUBLE, 2, dimids, &sbvarid);  
+/*   nc_def_var(ncid, "sB", NC_DOUBLE, 2, dimids, &sbvarid);  
    nc_def_var(ncid, "sBx", NC_DOUBLE, 2, dimids, &sbxvarid);
    nc_def_var(ncid, "sBy", NC_DOUBLE, 2, dimids, &sbyvarid);
    nc_def_var(ncid, "sBz", NC_DOUBLE, 2, dimids, &sbzvarid);  
    nc_def_var(ncid, "sBn", NC_DOUBLE, 2, dimids, &sbnvarid);  
+*/
 
    //Output the final multi filament field
    nc_def_var(ncid, "mB", NC_DOUBLE, 2, dimids, &mbvarid);  
@@ -213,13 +214,13 @@ void WriteOutputNC(void){
    nc_put_var_double(ncid, fzvarid, &ffilz[0]);
 
    nc_put_var_double(ncid, alpvarid, &alpamps[0]);
-
+/*
    nc_put_var_double(ncid, sbvarid,  &Bsfil[0]);
    nc_put_var_double(ncid, sbxvarid, &Bsfilx[0]);
    nc_put_var_double(ncid, sbyvarid, &Bsfily[0]);
    nc_put_var_double(ncid, sbzvarid, &Bsfilz[0]);
    nc_put_var_double(ncid, sbnvarid, &Bsfiln[0]);
- 
+*/ 
    nc_put_var_double(ncid, mbvarid,  &Bmfil[0]);
    nc_put_var_double(ncid, mbxvarid, &Bmfilx[0]);
    nc_put_var_double(ncid, mbyvarid, &Bmfily[0]);

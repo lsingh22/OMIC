@@ -302,12 +302,15 @@ void MultiFilFieldSym(void){
 // Calculate the field due to multi-filament coils
 // Periodicity is assumed  
 //----------------------------------------------------------------------------------------------------
-   
+  
+   double t1,t2;
+
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bmfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bmfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bmfiln = (double*) malloc(Nzeta*Nteta*sizeof(double));
     Bmfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
+
 
    int i,ip,first,last;
    double timefield;
@@ -316,10 +319,11 @@ void MultiFilFieldSym(void){
 
    first = *(startind+pn);
     last = *(endind+pn);
-//   omp_set_num_threads(Nthreads); // do omp_num_threads
-//   startfield = omp_get_wtime();
  
-//   #pragma omp parallel for  TODO: exclude for now while testing mpi
+   //omp_set_num_threads(Nthreads); // do omp_num_threads
+   startfield = MPI_Wtime();
+ 
+//   #pragma omp parallel for // TODO: exclude for now while testing mpi
    for(i=first;i<last+1;i++){      
       CalculateMultiFieldSym( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
                             Bmfilx+i, Bmfily+i, Bmfilz+i );    
@@ -342,9 +346,8 @@ void MultiFilFieldSym(void){
          }
       }
    }
-//   endfield = omp_get_wtime();      
-//   printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);   
-   printf("Magnetic field calculated!");
+   endfield = MPI_Wtime();      
+   if(pn==0){printf("\nTotal time for multi fil field calculation: %f\n\n", endfield-startfield);}   
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
@@ -361,11 +364,14 @@ void GatherFieldData(void){
    double* temp_Bmfilz;
    double* temp_Bmfiln;
    double* temp_Bmfil;
+   double t1,t2;
    MPI_Status status; 
 
    size_fp = Nteta*Nzeta / Nfp;
 
    MPI_Barrier(MPI_COMM_WORLD);   
+
+   t1 = MPI_Wtime();
 
    if(pn==0) //HEAD
    {
@@ -397,6 +403,8 @@ void GatherFieldData(void){
 
          MPI_Recv(temp_Bmfil, sizepn, MPI_DOUBLE, pi, 14+100*pi, MPI_COMM_WORLD, &status);
          for(j=0;j<sizepn; *(Bmfil+first+j) = *(temp_Bmfil+j),j++);
+
+         //printf("Magnetic field calculated!\n");
 
          free(temp_Bmfilx);
          free(temp_Bmfily);
@@ -454,6 +462,9 @@ void GatherFieldData(void){
    }  
 
    MPI_Barrier(MPI_COMM_WORLD);
+   t2 = MPI_Wtime();
+   if(pn==0){printf("\nTotal time for gathering results is: %f\n\n", t2-t1);}   
+
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

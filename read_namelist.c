@@ -36,43 +36,42 @@ void SetInputs(void){
 // Write inputs to globals
 //----------------------------------------------------------------------------------------------------
 
-   focus_output = "./inputfiles/focus_hsx.m12_07_debug.nc";
-   //focus_output = "./inputfiles/focus_hsx.m12_07_51264.nc";
+   focus_output = "./inputfiles/focus_hsx.m12_07_51264.nc";
    //focus_output = "./inputfiles/focus_wista_53.nc";   
    //focus_output = "./inputfiles/focus_ellipse.nc";  
-
-   multi_output = "./runs/multi_debug2.nc";
-   //multi_output = "./runs/hsx/multi_hsx.m12_07_test.nc";
+   //focus_output = "./inputfiles/focus_hsx.m12_07_debug.nc";
+   
+   multi_output = "./runs/hsx/multi_hsx.m12_07_mpi3.nc";
    //multi_output = "./runs/wista_ss/multi_wista_ss_00.nc";
    //multi_output = "./runs/ell/multi_ell_01.nc";
+   //multi_output = "./runs/multi_debug2.nc";
    
-   mfil_output = "./runs/coils.test";
-   //mfil_output = "./runs/hsx/coils.hsx.m12_07_test";
+   mfil_output = "./runs/hsx/coils.hsx.m12_07_mpi3";
    //mfil_output = "./runs/wista_ss/coils.wista_ss_00";
    //mfil_output = "./runs/ell/coils.ell_01";
+   //mfil_output = "./runs/coils.test";
 
-   niter = 2;
+   niter = 0;
    case_alpha = 0;
-   NFalpha = 1;
+   NFalpha = 5;
    alp_const = 0.000;
-   Nseg = 16;
+   Nseg = 128;
 
-   weight_comp = 0.001; //complexity weighting
+   weight_comp = 0.01; //complexity weighting
    case_opt = 1; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
-   Nradfil = 3;
+   Nradfil = 7;
    Ntorfil = 2;
 
-   //len_rad = 0.120; // 1/2 hsx 
-   //len_tor = 0.060;
-   len_rad = 0.1500; // wista
-   len_tor = 0.0750;
+   len_rad = 0.120; // 1/2 hsx 
+   len_tor = 0.060;
+   //len_rad = 0.1500; // wista
+   //len_tor = 0.0750;
    //len_rad = 0.3500; // ellipse
    //len_tor = 0.7000;
 
-   Nthreads = 16;
-//   Nturns = 0;  not currently supported
+   Nthreads = 32;
 //   DEBUG = 0; 
 }
 

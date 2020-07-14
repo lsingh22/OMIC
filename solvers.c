@@ -54,9 +54,6 @@ double SingleFieldError(void){
    double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
    double feval = 0.0;
 
-   UnpackSingleFilaments();
-   SingleFilField();
-
    for(i=0;i<size_fp;i++){
       feval += (0.5)*pow(*(Bsfiln+i),2) * (1/(pow(*(Bsfilx+i),2)+pow(*(Bsfily+i),2)+pow(*(Bsfilz+i),2))) * (*(nsurfn+i))*dsfactor;
    }
@@ -123,7 +120,7 @@ double ComplexityPenalty(void){
    {
       feval += pow(*(alpamps+i),2) * pow( *(nvals+i), nvals_scaling);
    }
-   printf("The complexity function is %.9f\n", feval);
+//   printf("The complexity function is %.9f\n", feval);
    return feval;
 }
 
@@ -223,7 +220,7 @@ void Central_diff( double *dof, double fb_init ){
    }
    
    if(pn==0){init_bn = MultiFieldError();}
-
+   
    for(i=0;i<size_alpamp;i++){
       minus_bn = 0.0;
       plus_bn = 0.0;
@@ -245,12 +242,12 @@ void Central_diff( double *dof, double fb_init ){
 
       *(alpamps+i) += h;
       
-      if(pn==0)
-      {
-         printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
-         printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
-         printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
-      }
+//      if(pn==0)
+//      {
+//         printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
+//         printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
+//         printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
+//      }
       
       if(pn==0)
       {
@@ -262,12 +259,15 @@ void Central_diff( double *dof, double fb_init ){
          {
             *(derivs+i) = (plus_bn-minus_bn)/(2*h);
          }
-      printf("Stored some derivatives ... broadcasting them to other nodes! \n"); 
+//      printf("Stored some derivatives ... broadcasting them to other nodes! \n"); 
          
       }   
    }
-   MPI_Bcast(derivs,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-   MPI_Barrier(MPI_COMM_WORLD); 
+ 
+//   if(pn==1){printf("\n Prior to broadcast, the 3rd derivative stored on proc 2 is %.9f \n",*(derivs+2));}
+//   MPI_Bcast(derivs,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+//   if(pn==1){printf("\n After the broadcast, the 3rd derivative stored on proc 2 is %.9f \n",*(derivs+2));}
+//   MPI_Barrier(MPI_COMM_WORLD); 
 }
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -281,14 +281,16 @@ void Steepest_descent( void ){
    int size_alpamp = iCoils*(2*NFalpha+1);  
    descent_dir = (double*) malloc( size_alpamp*sizeof(double) );
    int i,j;
-      
-   for(i=0;i<size_alpamp;i++)
-   {
-         *(descent_dir+i) = -1.0 * (*(derivs+i));
-         printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
-   }   
+   
+   if(pn==0)
+   {     
+      for(i=0;i<size_alpamp;i++)
+      {
+            *(descent_dir+i) = -1.0 * (*(derivs+i));
+//            printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
+      }    
+   }
 }
-
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 void Forward_track(double fb_init ){
@@ -322,49 +324,70 @@ void Forward_track(double fb_init ){
       search_bn = 0.0;
    }
 
+   MPI_Bcast(&hold_bn, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
+   MPI_Bcast(&search_bn, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
+ 
    while( hold_bn - search_bn > 0.0 )
    {
-    
-        if(k==0)
+      if(pn==0)
       {
-         search_bn = init_bn;
-      }
+         if(k==0)
+         {
+            search_bn = init_bn;
+         }
 
-      hold_bn = search_bn;
-      search_bn = 0.0;
-      printf("Step size is %f\n", 1000.0*step);
+         hold_bn = search_bn;
+         search_bn = 0.0;
+         printf("Step size is %f\n", 1000.0*step);
       
-      for(j=0;j<size_alpamp;j++)
-      {   
-         printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
-         *(alpamps+j) += step*(*(descent_dir+j));      
+         for(j=0;j<size_alpamp;j++)
+         {   
+//            printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
+            *(alpamps+j) += step*(*(descent_dir+j));      
+         }
       }
-
+      
       MPI_Bcast(alpamps,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);    
       CalculateMultiFilaments();
       MultiFilFieldSym();
       if(nproc > 1){GatherFieldData();}
 
-      search_bn = CostFunction(case_opt,fb_init);
-      fb_now = MultiFieldError();
-      fc_now = ComplexityPenalty();
-
-      printf("Total cost function value, tracking iter: %.9f   %d\n", search_bn, k);
-      printf("The fB value is: %.9f   \n", fb_now, k);
-      printf("The fC value is: %.9f   \n", fc_now, k);
+      if(pn==0)
+      {
+         search_bn = CostFunction(case_opt,fb_init);
+         fb_now = MultiFieldError();
+         fc_now = ComplexityPenalty();
+ 
+         printf("\nTotal cost function value, tracking iter: %.9f   %d\n", search_bn, k);
+         printf("The fB value is: %.9f   \n", fb_now, k);
+         printf("The fC value is: %.9f   \n", fc_now, k);
+      } 
       
       step = step * 2.0;
       k++;
+      
+//  if(pn==1){printf("Prior to broadcast: The hold value is: %.9f and the search value is: %.9f \n");}
+      
+      // These two lines allow each processor to exit the loop
+      MPI_Bcast(&hold_bn, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
+      MPI_Bcast(&search_bn, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
+   
+//  if(pn==1){printf("After the broadcast: The hold value is: %.9f and the search value is: %.9f \n");}
    }
    
-   for(j=0;j<size_alpamp;j++)
+   if(pn==0)
    {
-      *(alpamps+j) -= step*(*(descent_dir+j))/2.0;
-   }      
-   
-   
+      for(j=0;j<size_alpamp;j++)
+      {
+         *(alpamps+j) -= step*(*(descent_dir+j))/2.0;
+      }        
+   }
+
+//   if(pn==1){printf("\nPrior to broadcast, the 3rd alpamp stored on proc 2 is %.9f \n",*(alpamps+2));}
    MPI_Bcast(alpamps,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);  
-   MPI_Barrier(MPI_COMM_WORLD);
+//   if(pn==1){printf("\nAfter the broadcast, the 3rd alpamp stored on proc 2 is %.9f \n",*(alpamps+2));}
+   
+//   MPI_Barrier(MPI_COMM_WORLD);
    CalculateMultiFilaments();
    MultiFilFieldSym();
    if(nproc > 1){GatherFieldData();}
