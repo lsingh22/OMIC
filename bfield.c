@@ -215,10 +215,8 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    double factor = muc * two / Nfils;
    double l, ex, ey, ez, bx, by, bz, bxx, byy, bzz;
    double xx, yy, zz;
-   double ri, rix, riy, riz;
-   double rf, rfx, rfy, rfz;
-   double temp_mfilx, temp_mfily, temp_mfilz;
-   double temp_ri, temp_rf;
+   double ri, xi, yi, zi;
+   double rf, xf, yf, zf;
    double cur, eps, eta;
 
    bx = 0.0;
@@ -230,46 +228,53 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    bzz = 0.0;
 
    for(ip=1;ip<Nfp+1;ip++)
-   { //ip is used in cosnfp and sinnfp for finding the contribution to field at ip-th field period   
-      xx =  x*cosnfp(ip) - y*sinnfp(ip); //find the x component of the periodic point at ip+1-th field period
-      yy =  x*sinnfp(ip) + y*cosnfp(ip); //find the y component of the periodic point at ip+1-th field period
-      zz =  z; //no change in the z component
+   { 
+      //Find symmetric point on other field periods
+      xx =  x*cosnfp(ip) - y*sinnfp(ip); 
+      yy =  x*sinnfp(ip) + y*cosnfp(ip); 
+      zz =  z; 
       for(i=0;i<iCoils;i++)
       {
+         //Store current of i-th coil 
          cur = *(currents+i);
          for(j=0;j<Nfils;j++)
          {
-         //Store first point of current filament in temp:
-            for(k=0;k<Nseg;k++)
+            //Store first point of current filament before main loop
+            xi = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1));
+            yi = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1));
+            zi = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1));
+            ri = sqrt( xi*xi + yi*yi + zi*zi );           
+
+            for(k=0;k<Nseg;k++) //TODO: this assumes that we have even nseg!
             {
-               l = sqrt( pow( ((*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) + \
-                         pow( ((*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) + \
-                         pow( ((*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1)) - (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) ,2) ); 
+               xf = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+ k + 1);
+               yf = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+ k + 1);
+               zf = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+ k + 1);
+               rf = sqrt( xf*xf + yf*yf + zf*zf);
                
-               ex = ( (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;  
-               ey = ( (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;    
-               ez = ( (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ) - (*(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k)) ) / l;   
+               l = sqrt( pow((xf-xi),2) + pow((yf-yi),2) + pow((zf-zi),2));  
 
-               rix = xx - ( *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k) );
-               riy = yy - ( *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k) );
-               riz = zz - ( *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k) );
-                ri = sqrt( pow(rix,2) + pow(riy,2) + pow(riz,2) );
-
-               rfx = xx - ( *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) ); 
-               rfy = yy - ( *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) );  
-               rfz = zz - ( *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1) );   
-                rf = sqrt( pow(rfx,2) + pow(rfy,2) + pow(rfz,2) ); 
-        
+               ex = ( xf - xi ) / l;  
+               ey = ( yf - yi ) / l;  
+               ez = ( zf - zi ) / l;  
+       
                eps = l / (ri + rf);
                eta = ri*rf;
 
-               bx = cur * (ey*riz-ez*riy) * eps / (eta * (one - eps * eps));
-               by = cur * (ez*rix-ex*riz) * eps / (eta * (one - eps * eps));
-               bz = cur * (ex*riy-ey*rix) * eps / (eta * (one - eps * eps));
+               bx = cur * (ey*zi-ez*yi) * eps / (eta * (one - eps * eps));
+               by = cur * (ez*xi-ex*zi) * eps / (eta * (one - eps * eps));
+               bz = cur * (ex*yi-ey*xi) * eps / (eta * (one - eps * eps));
 
-               bxx += bx*cosnfp(ip) + by*sinnfp(ip);  //rotate bx back to the 1st field period
-               byy += -bx*sinnfp(ip) + by*cosnfp(ip); //rotate by back to the 1st field period
-               bzz += bz;        
+               //Find equivalent contribution to field period 1
+               bxx +=  bx*cosnfp(ip) + by*sinnfp(ip);  
+               byy += -bx*sinnfp(ip) + by*cosnfp(ip); 
+               bzz +=  bz;        
+               
+               //End of segment k becomes beginning of segment k+1
+               xi = xf;
+               yi = yf;
+               zi = zf;
+               ri = rf;
             }
          }
       }
