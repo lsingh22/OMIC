@@ -41,19 +41,19 @@ void SetInputs(void){
    //focus_output = "./inputfiles/focus_ellipse.nc";  
    //focus_output = "./inputfiles/focus_hsx.m12_07_debug.nc";
    
-   multi_output = "./runs/hsx/multi_hsx.m12_07_mpi3.nc";
+   multi_output = "./runs/hsx/multi_hsx.m12_07_41.nc";
    //multi_output = "./runs/wista_ss/multi_wista_ss_00.nc";
    //multi_output = "./runs/ell/multi_ell_01.nc";
    //multi_output = "./runs/multi_debug2.nc";
    
-   mfil_output = "./runs/hsx/coils.hsx.m12_07_mpi3";
+   mfil_output = "./runs/hsx/coils.hsx.m12_07_41";
    //mfil_output = "./runs/wista_ss/coils.wista_ss_00";
    //mfil_output = "./runs/ell/coils.ell_01";
    //mfil_output = "./runs/coils.test";
 
-   niter = 0;
+   niter = 10;
    case_alpha = 0;
-   NFalpha = 5;
+   NFalpha = 10;
    alp_const = 0.000;
    Nseg = 128;
 

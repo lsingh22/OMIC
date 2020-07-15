@@ -50,11 +50,12 @@ double SingleFieldError(void){
 
    int iCoils = Ncoils / Nfp;
    int size_fp = Nteta*Nzeta / Nfp;
-   int i;
+   register int i;
    double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
    double feval = 0.0;
 
-   for(i=0;i<size_fp;i++){
+   for(i=0;i<size_fp;i++)
+   {
       feval += (0.5)*pow(*(Bsfiln+i),2) * (1/(pow(*(Bsfilx+i),2)+pow(*(Bsfily+i),2)+pow(*(Bsfilz+i),2))) * (*(nsurfn+i))*dsfactor;
    }
 
@@ -73,11 +74,12 @@ double MultiFieldError(void){  //TODO: Change CostFunction to MultiFieldError
 
    int iCoils = Ncoils / Nfp;
    int size_fp = Nteta*Nzeta / Nfp;
-   int i;
+   register int i;
    double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
    double feval = 0.0;
  
-   for(i=0;i<size_fp;i++){
+   for(i=0;i<size_fp;i++)
+   {
       feval += (0.5)*pow(*(Bmfiln+i),2) * (1/(pow(*(Bmfilx+i),2)+pow(*(Bmfily+i),2)+pow(*(Bmfilz+i),2))) * (*(nsurfn+i))*dsfactor;
    }
 
@@ -94,13 +96,14 @@ double ComplexityPenalty(void){
 //----------------------------------------------------------------------------------------------------
 
    int iCoils = Ncoils / Nfp;
-   int i,j;
+   register int i,j;
    double feval = 0.0;
    int size_alpamp = iCoils*(2*NFalpha+1);   
    double* nvals = (double*) malloc( size_alpamp*sizeof(double) );
    int alp_per_coil = 2*NFalpha+1;
    
    *(nvals+0) = 0.0;
+ 
    for(i=1;i<NFalpha+1;i++)
    {
       *(nvals+i) = (double) i;
@@ -114,13 +117,12 @@ double ComplexityPenalty(void){
          *(nvals+j*alp_per_coil+i) = *(nvals+i);
       }
    }
-   
- 
+  
    for(i=0;i<size_alpamp;i++)
    {
       feval += pow(*(alpamps+i),2) * pow( *(nvals+i), nvals_scaling);
-   }
-//   printf("The complexity function is %.9f\n", feval);
+   }   
+   //printf("The complexity function is %.9f\n", feval);
    return feval;
 }
 
@@ -161,15 +163,17 @@ double SurfaceArea(void){
 // Returns the surface area of the magnetic boundary
 // TODO: is this correct? might be off by a factor of nfp 
 //----------------------------------------------------------------------------------------------------
-   int i;
-   double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
-   int size_fp = Nteta*Nzeta / Nfp;
+   register int i;
+   double dsfactor = 4 * pow(M_PI,2) / (Nteta*Nzeta);
+   int size_fp = Nteta * Nzeta / Nfp;
    double area = 0.0;
 
-   for(i=0;i<size_fp;i++){
+   for(i=0;i<size_fp;i++)
+   {
       area += *(nsurfn+i);   
    }
    area = area*dsfactor; 
+ 
    return area;
 }
 
@@ -182,14 +186,12 @@ void Central_diff( double *dof, double fb_init ){
 
    int iCoils = Ncoils / Nfp;
    int size_alpamp = iCoils*(2*NFalpha+1);   
-   //int iCoils = Ncoils;
    int size_fp = Nteta*Nzeta / Nfp;
    int i,j;
-
+   double h = 0.000001;
+   
    double* nvals = (double*) malloc( size_alpamp*sizeof(double) );
    derivs = (double*) malloc( size_alpamp*sizeof(double) );
-   double h = 0.000001;
-
    
    double minus_bn;
    double plus_bn;
@@ -221,7 +223,8 @@ void Central_diff( double *dof, double fb_init ){
    
    if(pn==0){init_bn = MultiFieldError();}
    
-   for(i=0;i<size_alpamp;i++){
+   for(i=0;i<size_alpamp;i++)
+   {
       minus_bn = 0.0;
       plus_bn = 0.0;
       // Move alpha positive and redo x,y,z coil calc
@@ -242,12 +245,12 @@ void Central_diff( double *dof, double fb_init ){
 
       *(alpamps+i) += h;
       
-//      if(pn==0)
-//      {
-//         printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
-//         printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
-//         printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
-//      }
+      //if(pn==0)
+      //{
+      //   printf("The value of multi_errror_init is %.9f and weight_comp is %.9f.\n", fb_init, weight_comp);
+      //   printf("The value of plus_bn is %.9f and minus_bn is %.9f.\n", plus_bn, minus_bn);
+      //   printf("The value of alp_amps+i is %.9f and nvals+i is %.9f.\n", *(alpamps+i), *(nvals+i));
+      //}
       
       if(pn==0)
       {
@@ -259,15 +262,8 @@ void Central_diff( double *dof, double fb_init ){
          {
             *(derivs+i) = (plus_bn-minus_bn)/(2*h);
          }
-//      printf("Stored some derivatives ... broadcasting them to other nodes! \n"); 
-         
       }   
    }
- 
-//   if(pn==1){printf("\n Prior to broadcast, the 3rd derivative stored on proc 2 is %.9f \n",*(derivs+2));}
-//   MPI_Bcast(derivs,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-//   if(pn==1){printf("\n After the broadcast, the 3rd derivative stored on proc 2 is %.9f \n",*(derivs+2));}
-//   MPI_Barrier(MPI_COMM_WORLD); 
 }
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -277,17 +273,17 @@ void Steepest_descent( void ){
 // TODO: this should just be flagged in central_diff, no need for another function for adding a - sign
 //----------------------------------------------------------------------------------------------------
    int iCoils = Ncoils / Nfp;
-   //int iCoils = Ncoils;
    int size_alpamp = iCoils*(2*NFalpha+1);  
-   descent_dir = (double*) malloc( size_alpamp*sizeof(double) );
-   int i,j;
+   register int i,j;
    
+   descent_dir = (double*) malloc( size_alpamp*sizeof(double) );
+  
    if(pn==0)
    {     
       for(i=0;i<size_alpamp;i++)
       {
             *(descent_dir+i) = -1.0 * (*(derivs+i));
-//            printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
+      //printf("The descent of amp %d is %.12f \n",i,*(descent_dir+i));
       }    
    }
 }
@@ -342,7 +338,7 @@ void Forward_track(double fb_init ){
       
          for(j=0;j<size_alpamp;j++)
          {   
-//            printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
+         //printf("NF:   %dAlphas   %f\n",j,*(alpamps+j));
             *(alpamps+j) += step*(*(descent_dir+j));      
          }
       }
@@ -366,13 +362,9 @@ void Forward_track(double fb_init ){
       step = step * 2.0;
       k++;
       
-//  if(pn==1){printf("Prior to broadcast: The hold value is: %.9f and the search value is: %.9f \n");}
-      
       // These two lines allow each processor to exit the loop
       MPI_Bcast(&hold_bn, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
       MPI_Bcast(&search_bn, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD); 
-   
-//  if(pn==1){printf("After the broadcast: The hold value is: %.9f and the search value is: %.9f \n");}
    }
    
    if(pn==0)
@@ -383,11 +375,8 @@ void Forward_track(double fb_init ){
       }        
    }
 
-//   if(pn==1){printf("\nPrior to broadcast, the 3rd alpamp stored on proc 2 is %.9f \n",*(alpamps+2));}
    MPI_Bcast(alpamps,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);  
-//   if(pn==1){printf("\nAfter the broadcast, the 3rd alpamp stored on proc 2 is %.9f \n",*(alpamps+2));}
    
-//   MPI_Barrier(MPI_COMM_WORLD);
    CalculateMultiFilaments();
    MultiFilFieldSym();
    if(nproc > 1){GatherFieldData();}

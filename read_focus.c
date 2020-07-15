@@ -127,26 +127,9 @@ void ReadFocusArrays(char* output_file){
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-void WriteBoundary(void){
-//----------------------------------------------------------------------------------------------------
-// Writes the boundary to a txt file (debug)
-// TODO: can probably delete this
-//----------------------------------------------------------------------------------------------------
- 
-   int i,j;
-   FILE* fb;
-   fb = fopen("./outputfiles/boundary.out","w");
-
-   for(i=0;i<Nzeta*Nteta/4;i++){
-      fprintf(fb,"%.15f %.15f %.15f \n", *(xsurf+i),*(ysurf+i) ,*(zsurf+i));         
-   }
-}
-
+  
 #define FILE_NAME "./outputfiles/boundary.nc"
 
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-  
 void WriteBoundaryNC(void){
 //----------------------------------------------------------------------------------------------------
 // Writes the boundary to a netcdf file (debug)

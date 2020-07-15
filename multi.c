@@ -16,37 +16,18 @@
 
 int pn, nproc;
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
 int main(int argc, char **argv){
    int i, ierr;
    double tot_time;
    double sfil_error, multi_error_init, comp_penalty_init;
    double start, end;
-   // int pn, nproc;
 
-   //Testbed for speed improvements
-   double sum=0;
-   double ok = 5;
-   double t1,t2;
-   int y;
-/*
-   t1 = MPI_Wtime();
-   
-   t2 = MPI_Wtime();
-
-   if(pn==0){printf("\nTotal time for pow is: %f\n\n", t2-t1);} 
-
-   t1 = MPI_Wtime();
-   sum = pow(ok,ok);
-   t2 = MPI_Wtime();
-
-   if(pn==0){printf("\nTotal time for explicit is: %f\n\n", 1000*(t2-t1));} 
-*/
-
-   //Initialize and prepare MPI stuff
+   //Initialize MPI, store node configuration and current node
    MPI_Init(&argc, &argv);   
    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &pn);
    ierr = MPI_Comm_size(MPI_COMM_WORLD, &nproc);   
-
    start = MPI_Wtime();
 
 //   if(pn==0){printf("This is 0 \n");}
@@ -63,7 +44,6 @@ int main(int argc, char **argv){
       printf("\n*********************************************************"); 
       printf("\n         This is the stellarator coil tool OMIC.\n          Authors: Luquant Singh, Thomas Kruger");
       printf("\n*********************************************************\n"); 
-      printf("\n*********************************************************"); 
       printf("\n                      USER INPUTS               ");
       printf("\n*********************************************************\n\n"); 
       printf("The number of iterations is:                           %d\n",niter);
@@ -100,7 +80,6 @@ int main(int argc, char **argv){
 
    if(pn==0)
    {
-      printf("\n*********************************************************"); 
       printf("\n                      INITIAL VALUES             ");
       printf("\n*********************************************************\n\n"); 
 //      sfil_error = SingleFieldError();
@@ -114,9 +93,6 @@ int main(int argc, char **argv){
       printf("\nThe surface area is %.15f\n", surface_area);
    }
    
-//   MPI_Bcast(&multi_error_init, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
-   
-
 //TODO: This should really just be calling something like OptimizeCoils or something to match the rest of the file...
 
 //   if(pn==0){printf("This is 10 \n");} 
@@ -144,12 +120,12 @@ int main(int argc, char **argv){
       WriteOutputNC(); 
    }  
 
-//   if(pn==0){printf("This is end \n");} 
-
    end = MPI_Wtime();
-   tot_time = ((double) (end-start)) / CLOCKS_PER_SEC;
+   tot_time = end - start;
    if(pn==0){printf("\nTotal time taken is: %f\n\n", tot_time);} 
 
    ierr = MPI_Finalize();
 }
+
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
