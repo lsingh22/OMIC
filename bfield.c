@@ -183,7 +183,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
             yi = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1));
             zi = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1));
             ri = sqrt( xi*xi + yi*yi + zi*zi );           
-
+            
             for(k=0;k<Nseg;k++) //TODO: check if this works for odd nseg
             {
                xf = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
@@ -201,15 +201,10 @@ void CalculateMultiFieldSym(double x, double y, double z, \
                eta = ri * rf;
                coef = cur * eps / (eta * (one - eps * eps)); 
    
-               bx = coef * (ey*zi-ez*yi);
-               by = coef * (ez*xi-ex*zi);
-               bz = coef * (ex*yi-ey*xi);
-
-               //Find equivalent contribution to field period 1
-               bxx +=  bx * rot_cos + by * rot_sin;  
-               byy += -bx * rot_sin + by * rot_cos; 
-               bzz +=  bz;        
-               
+               bx += coef * (ey*zi-ez*yi);
+               by += coef * (ez*xi-ex*zi);
+               bz += coef * (ex*yi-ey*xi);
+              
                //End of segment k becomes beginning of segment k+1
                xi = xf;
                yi = yf;
@@ -217,7 +212,15 @@ void CalculateMultiFieldSym(double x, double y, double z, \
                ri = rf;
             }
          }
-      }
+      }    
+      //Rotate back to first field period
+      bxx +=  bx * rot_cos + by * rot_sin;  
+      byy += -bx * rot_sin + by * rot_cos; 
+      bzz +=  bz;
+
+      bx = 0;
+      by = 0;
+      bz = 0;          
    }
    *Bx = bxx * factor;
    *By = byy * factor;

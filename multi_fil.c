@@ -283,6 +283,7 @@ void MultiFilFieldSym(void){
    int first,last;
    double timefield;
    double startfield, endfield;
+   double rot_cos, rot_sin;
    int size_fp = Nzeta*Nteta / Nfp;
 
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -314,18 +315,22 @@ void MultiFilFieldSym(void){
 
       for(ip=2;ip<Nfp+1;ip++)
       {
+         rot_cos = cosnfp(ip);
+         rot_sin = sinnfp(ip);
+       
          for(i=0;i<size_fp;i++)
          {
             *(Bmfil  + (ip-1)*size_fp+i) = *(Bmfil+i);       
             *(Bmfiln + (ip-1)*size_fp+i) = *(Bmfiln+i);
-            *(Bmfilx + (ip-1)*size_fp+i) = *(Bmfilx+i)*cosnfp(ip) - *(Bmfily+i)*sinnfp(ip);
-            *(Bmfily + (ip-1)*size_fp+i) = *(Bmfilx+i)*sinnfp(ip) + *(Bmfily+i)*cosnfp(ip);
+            *(Bmfilx + (ip-1)*size_fp+i) = *(Bmfilx+i) * rot_cos - *(Bmfily+i) * rot_sin;
+            *(Bmfily + (ip-1)*size_fp+i) = *(Bmfilx+i) * rot_sin + *(Bmfily+i) * rot_cos;
             *(Bmfilz + (ip-1)*size_fp+i) = *(Bmfilz+i);
          }
       }
    }
+   
    endfield = MPI_Wtime();      
-   if(pn==0){printf("\nTotal time for field calculation: %f\n\n", endfield-startfield);}   
+//   if(pn==0){printf("\nTotal time for field calculation: %f\n\n", endfield-startfield);}   
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
@@ -342,6 +347,7 @@ void GatherFieldData(void){
    double* temp_Bmfily;
    double* temp_Bmfilz;
    double t1,t2;
+   double rot_cos, rot_sin;
    MPI_Status status; 
    size_fp = Nteta*Nzeta / Nfp;
 
@@ -380,10 +386,13 @@ void GatherFieldData(void){
       //Reflect to each period of the plasma boundary
       for(ip=2;ip<Nfp+1;ip++)
       {
+         rot_cos = cosnfp(ip);
+         rot_sin = sinnfp(ip);
+ 
          for(k=0;k<size_fp;k++)
          {
-            *(Bmfilx + (ip-1)*size_fp+k) = *(Bmfilx+k)*cosnfp(ip) - *(Bmfily+k)*sinnfp(ip);
-            *(Bmfily + (ip-1)*size_fp+k) = *(Bmfilx+k)*sinnfp(ip) + *(Bmfily+k)*cosnfp(ip);
+            *(Bmfilx + (ip-1)*size_fp+k) = *(Bmfilx+k) * rot_cos - * (Bmfily+k) * rot_sin;
+            *(Bmfily + (ip-1)*size_fp+k) = *(Bmfilx+k) * rot_sin + * (Bmfily+k) * rot_cos;
             *(Bmfilz + (ip-1)*size_fp+k) = *(Bmfilz+k);
          }
       }

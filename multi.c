@@ -20,7 +20,7 @@ int pn, nproc;
 
 int main(int argc, char **argv){
    int i, ierr;
-   double tot_time;
+   double t1,t2,tot_time;
    double sfil_error, multi_error_init, comp_penalty_init;
    double start, end;
 
@@ -71,8 +71,10 @@ int main(int argc, char **argv){
    CalculateMultiFilaments();
    
 //   if(pn==0){printf("This is 7 \n");}
+   t1 = MPI_Wtime();
    MultiFilFieldSym();
-
+   t2 = MPI_Wtime();
+   if(pn==0){printf("Field calculation on processor takes %.4f sec.\n",t2-t1);}
 //   if(pn==0){printf("This is 8 \n");}
    if(nproc > 1){GatherFieldData();}
 
