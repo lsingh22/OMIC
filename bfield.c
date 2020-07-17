@@ -17,13 +17,14 @@ double* nsurfx;
 double* nsurfy;
 double* nsurfz;
 
+int Ncoil;
+int iCoil;
 int Nzeta;
 int Nteta;
 int Nfp;
 
 double* currents;
 int Nseg;
-int Ncoils;
 
 double* sfilx;
 double* sfily;
@@ -31,11 +32,13 @@ double* sfilz;
 
 int Nradfil;
 int Ntorfil;
+int Nfils;
 
 double* mfilx;
 double* mfily;
 double* mfilz;
 
+int Ns;
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 double cosnfp(int ip){ 
@@ -82,7 +85,7 @@ void CalculateSingleField(double x, double y, double z, \
    by = 0.0;
    bz = 0.0;
    
-   for(i=0;i<Ncoils;i++){
+   for(i=0;i<Ncoil;i++){
       for(j=0;j<Nseg;j++){
 
          l = sqrt( pow( ((*(sfilx+i*(Nseg+1)+j+1)) - (*(sfilx+i*(Nseg+1)+j))) ,2) + \
@@ -140,12 +143,10 @@ void CalculateMultiFieldSym(double x, double y, double z, \
 // Rotations are 'swept under the rug' by the cosnfp,sinnfp functions. 
 //----------------------------------------------------------------------------------------------------  
    
-   int iCoils = Ncoils / Nfp;   
    double muc = 1.0e-7;
    double one = 1.00000000000000000000; //these should probably be global
    double two = 2.00000000000000000000;
    register int ip,i,j,k;
-   int Nfils = Nradfil*Ntorfil; 
    double factor = muc * two / Nfils;
    double l, ex, ey, ez, bx, by, bz, bxx, byy, bzz;
    double xx, yy, zz;
@@ -172,7 +173,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
       //Find symmetric point on other field periods
       xx =  x * rot_cos - y * rot_sin; 
       yy =  x * rot_sin + y * rot_cos; 
-      for(i=0;i<iCoils;i++)
+      for(i=0;i<iCoil;i++)
       {
          //Store current of i-th coil 
          cur = *(currents+i);

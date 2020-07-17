@@ -49,7 +49,7 @@ double* nx;
 double* ny;
 double* nz;
 
-int Nseg, Ntorfil, Nradfil, Nzeta, Nteta, Ncoils, NFalpha, Nfp;
+int Nseg, Ntorfil, Nradfil, Nfils, Nzeta, Nteta, Ncoil, iCoil, NFalpha, Nfp;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -74,7 +74,6 @@ void WriteOutputNC(void){
 //   int sbxvarid, sbyvarid, sbzvarid, sbvarid, sbnvarid;
    int mbxvarid, mbyvarid, mbzvarid, mbvarid, mbnvarid;
    int NFalphavarid, len_radvarid, len_torvarid, nitervarid, Ntorfilvarid, Nradfilvarid, Nfpvarid;
-   int Nfils = Ntorfil*Nradfil;
    int dimids[2], sfildims[2], mfildims[2], ffildims[2], alpdims[2];
    int singledims[2], ncoildims[2];
  
@@ -89,8 +88,8 @@ void WriteOutputNC(void){
    nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
    nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
    nc_def_dim(ncid, "Nseg", Nseg, &nsegdimid);
-   nc_def_dim(ncid, "Ncoil", Ncoils, &coildimid);
-   nc_def_dim(ncid, "iCoil", (Ncoils / Nfp) , &symcoildimid);
+   nc_def_dim(ncid, "Ncoil", Ncoil, &coildimid);
+   nc_def_dim(ncid, "iCoil", iCoil, &symcoildimid);
 
    dimids[0] = xdimid;
    dimids[1] = ydimid;

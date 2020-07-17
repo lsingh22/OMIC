@@ -59,6 +59,7 @@ int main(int argc, char **argv){
 //   if(pn==0){printf("This is 3 \n");}
    ReadFocusArrays(focus_output);
    
+   Initialize();
 //   if(pn==0){printf("This is 4 \n");}
    UnpackSingleFilaments();
    

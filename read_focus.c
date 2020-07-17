@@ -10,7 +10,7 @@
 // GLOBALS SCOPED IN SOURCE FILE
 
 int Nseg;
-int Ncoils;
+int Ncoil;
 int Nfp;
 int isSym;
 int NFcoil; //TODO: Update when bug is fixed 
@@ -42,7 +42,7 @@ void ReadFocusInts(char* output_file){
    int ncid, varid, dimid, retval;  
    nc_open(output_file, NC_NOWRITE, &ncid);
    nc_inq_varid(ncid, "Ncoils", &varid);
-   nc_get_var_int(ncid, varid, &Ncoils);
+   nc_get_var_int(ncid, varid, &Ncoil);
    nc_inq_varid(ncid, "Nfp", &varid);
    nc_get_var_int(ncid, varid, &Nfp);
    nc_inq_varid(ncid, "IsSymmetric", &varid);

@@ -19,6 +19,7 @@ double len_tor;
 int Nseg;
 int Nradfil;
 int Ntorfil;
+int Nfils;
 int Nfp;
 
 int Nzeta;
@@ -61,6 +62,11 @@ double* Bmfilz;
 double* Bmfil;
 double* Bmfiln;
 
+int Ncoil;
+int iCoil;
+int size_fp;
+int Ns;
+
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void CalculateBuildDirections(void){
@@ -72,22 +78,22 @@ void CalculateBuildDirections(void){
    double theta, x,y,z;
    double pi = M_PI;
 
-   tx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   ty = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   tz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   nx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   ny = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   nz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bx = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   by = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bz = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   tx = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   ty = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   tz = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   nx = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   ny = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   nz = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   bx = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   by = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   bz = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
       
    register int i,j;
    int k; 
    double dot; //used to store dot products
 
    //Calculate unit tangent vector by taking the derivative of the single-filament position vector
-   for(i=0;i<Ncoils;i++)
+   for(i=0;i<Ncoil;i++)
    {
       for(j=0;j<Nseg+1;j++)
       { //consider a coil as Nseg unique points (the Nseg-th point is just the starting point)
@@ -115,11 +121,11 @@ void CalculateBuildDirections(void){
 
    //Calculate vector pointing from coil centroid to point on coil for each coil
    //In the JPP 2020 publication, this is the delta vector used to determine coil-centroid normal vector
-   double* sfilxa; sfilxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   double* sfilya; sfilya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   double* sfilza; sfilza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   double* sfilxa; sfilxa = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   double* sfilya; sfilya = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   double* sfilza; sfilza = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
 
-   for(i=0;i<Ncoils;i++)
+   for(i=0;i<Ncoil;i++)
    {
       for(j=0;j<Nseg+1;j++)
       {
@@ -130,7 +136,7 @@ void CalculateBuildDirections(void){
       }
    }
 
-   for(i=0;i<Ncoils*(Nseg+1);i++)
+   for(i=0;i<Ncoil*(Nseg+1);i++)
    {
       x=0;y=0;z=0;
       //Dot product of delta and tangent vector
@@ -165,7 +171,6 @@ void CalculateMultiFilaments(void){
    CalculateBuildDirections();
    
    register int i,j,k,l;
-   int iCoils = Ncoils / Nfp;
    int ip; //used for rotations if periodicity is enforced
    
    //Half the spacing between filaments in radial and toroidal directions
@@ -175,8 +180,6 @@ void CalculateMultiFilaments(void){
    //for locating surface interp points
    double hlen_rad = len_rad / 2;
    double hlen_tor = len_tor / 2;
-
-   int Nfils = Nradfil*Ntorfil;
    
    //The rotated normal and binormal vectors
    double* nxa;
@@ -186,23 +189,23 @@ void CalculateMultiFilaments(void){
    double* bya;
    double* bza;
 
-   nxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   nya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   nza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bxa = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bya = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
-   bza = (double *) malloc((Ncoils)*(Nseg+1)*sizeof(double));
+   nxa = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   nya = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   nza = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   bxa = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   bya = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
+   bza = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
     
-   mfilx = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
-   mfily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
-   mfilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*sizeof(double));
+   mfilx = (double*) malloc(Ncoil*Nfils*(Nseg+1)*sizeof(double));
+   mfily = (double*) malloc(Ncoil*Nfils*(Nseg+1)*sizeof(double));
+   mfilz = (double*) malloc(Ncoil*Nfils*(Nseg+1)*sizeof(double));
  
-   ffilx = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
-   ffily = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
-   ffilz = (double*) malloc(Ncoils*Nfils*(Nseg+1)*5*sizeof(double));
+   ffilx = (double*) malloc(Ncoil*Nfils*(Nseg+1)*5*sizeof(double));
+   ffily = (double*) malloc(Ncoil*Nfils*(Nseg+1)*5*sizeof(double));
+   ffilz = (double*) malloc(Ncoil*Nfils*(Nseg+1)*5*sizeof(double));
    
    // Rotate the local basis using alpha parameter
-   for(i=0;i<Ncoils*(Nseg+1);i++)
+   for(i=0;i<Ncoil*(Nseg+1);i++)
    {
       *(nxa+i) = *(nx+i)*cos(*(alp+i)) + *(bx+i)*sin(*(alp+i));
       *(nya+i) = *(ny+i)*cos(*(alp+i)) + *(by+i)*sin(*(alp+i));
@@ -237,7 +240,7 @@ void CalculateMultiFilaments(void){
    //Calculates the multi-filament coils
    //Only one field period if enforcing periodicity
    
-   for(i=0;i<iCoils;i++)
+   for(i=0;i<iCoil;i++)
    {
       for(j=0;j<Ntorfil;j++)
       {
@@ -262,10 +265,10 @@ void CalculateMultiFilaments(void){
    //Calculates periodic coils when enforced
    //TODO: this should maybe be flagged or at least print something like "No periodicity enforced -- calculating all coils."
    for(ip=2;ip<Nfp+1;ip++){
-      for(j=0;j<iCoils*Nfils*(Nseg+1);j++){
-         *(mfilx + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*cosnfp(ip) - *(mfily+j)*sinnfp(ip);
-         *(mfily + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilx+j)*sinnfp(ip) + *(mfily+j)*cosnfp(ip);
-         *(mfilz + (ip-1)*(iCoils*Nfils*(Nseg+1))+j) = *(mfilz+j);
+      for(j=0;j<iCoil*Nfils*(Nseg+1);j++){
+         *(mfilx + (ip-1)*(iCoil*Nfils*(Nseg+1))+j) = *(mfilx+j)*cosnfp(ip) - *(mfily+j)*sinnfp(ip);
+         *(mfily + (ip-1)*(iCoil*Nfils*(Nseg+1))+j) = *(mfilx+j)*sinnfp(ip) + *(mfily+j)*cosnfp(ip);
+         *(mfilz + (ip-1)*(iCoil*Nfils*(Nseg+1))+j) = *(mfilz+j);
       }
    }
 }
@@ -284,7 +287,6 @@ void MultiFilFieldSym(void){
    double timefield;
    double startfield, endfield;
    double rot_cos, rot_sin;
-   int size_fp = Nzeta*Nteta / Nfp;
 
    Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bmfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -341,7 +343,7 @@ void GatherFieldData(void){
 // Gathers data from each node and stores it in the global Bx,By,Bz,Bn,B
 //----------------------------------------------------------------------------------------------------
    
-   int size_fp, pi, sizepn, first, last;
+   int pri, sizepn, first, last;
    register int ip, i, j, k;
    double* temp_Bmfilx;
    double* temp_Bmfily;
@@ -349,7 +351,6 @@ void GatherFieldData(void){
    double t1,t2;
    double rot_cos, rot_sin;
    MPI_Status status; 
-   size_fp = Nteta*Nzeta / Nfp;
 
    MPI_Barrier(MPI_COMM_WORLD);   
 
@@ -359,23 +360,23 @@ void GatherFieldData(void){
    {
       for(int i=2;i<nproc+1;i++)
       {
-         pi = i-1;
-         sizepn = 1 + *(endind+pi) - *(startind+pi);
+         pri = i - 1;
+         sizepn = 1 + *(endind+pri) - *(startind+pri);
 
          temp_Bmfilx = (double*) malloc(sizepn*sizeof(double));
          temp_Bmfily = (double*) malloc(sizepn*sizeof(double));
          temp_Bmfilz = (double*) malloc(sizepn*sizeof(double));
  
-         first = *(startind+pi);
-          last = *(endind+pi);
+         first = *(startind+pri);
+          last = *(endind+pri);
 
-         MPI_Recv(temp_Bmfilx, sizepn, MPI_DOUBLE, pi, 10+100*pi, MPI_COMM_WORLD, &status);
+         MPI_Recv(temp_Bmfilx, sizepn, MPI_DOUBLE, pri, 10+100*pri, MPI_COMM_WORLD, &status);
          for(j=0;j<sizepn; *(Bmfilx+first+j) = *(temp_Bmfilx+j),j++);
 
-         MPI_Recv(temp_Bmfily, sizepn, MPI_DOUBLE, pi, 11+100*pi, MPI_COMM_WORLD, &status);
+         MPI_Recv(temp_Bmfily, sizepn, MPI_DOUBLE, pri, 11+100*pri, MPI_COMM_WORLD, &status);
          for(j=0;j<sizepn; *(Bmfily+first+j) = *(temp_Bmfily+j),j++);
 
-         MPI_Recv(temp_Bmfilz, sizepn, MPI_DOUBLE, pi, 12+100*pi, MPI_COMM_WORLD, &status);
+         MPI_Recv(temp_Bmfilz, sizepn, MPI_DOUBLE, pri, 12+100*pri, MPI_COMM_WORLD, &status);
          for(j=0;j<sizepn; *(Bmfilz+first+j) = *(temp_Bmfilz+j),j++);
 
          free(temp_Bmfilx);
@@ -493,7 +494,7 @@ void WriteMultiFilaments(void){
    fprintf(fb, "periods %d \nbegin filament\nmirror NIL\n", Nfp);
    int Nfils = Ntorfil*Nradfil;
    
-   for(i=0;i<Ncoils;i++)
+   for(i=0;i<Ncoil;i++)
    {
       for(j=0;j<Nfils;j++)
       {

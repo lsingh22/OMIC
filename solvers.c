@@ -31,11 +31,14 @@ int nproc;
 int pn;
 
 int case_alpha;
-int Ncoils;
+int Ncoil;
 int Nfp;
 int NFalpha;
 int size_alpamp;
 double alp_const;
+
+int size_fp;
+int iCoil;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
@@ -48,8 +51,6 @@ double SingleFieldError(void){
 // TODO: may want to exclude unpack and singlefilfield function calls, will need to check
 //----------------------------------------------------------------------------------------------------
 
-   int iCoils = Ncoils / Nfp;
-   int size_fp = Nteta*Nzeta / Nfp;
    register int i;
    double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
    double feval = 0.0;
@@ -72,8 +73,6 @@ double MultiFieldError(void){  //TODO: Change CostFunction to MultiFieldError
 // TODO: normalize to surface area 
 //----------------------------------------------------------------------------------------------------
 
-   int iCoils = Ncoils / Nfp;
-   int size_fp = Nteta*Nzeta / Nfp;
    register int i;
    double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
    double feval = 0.0;
@@ -95,12 +94,10 @@ double ComplexityPenalty(void){
 // TODO: make the name SpectralWeight per discussion on 06/23//20  
 //----------------------------------------------------------------------------------------------------
 
-   int iCoils = Ncoils / Nfp;
    register int i,j;
    double feval = 0.0;
-   int size_alpamp = iCoils*(2*NFalpha+1);   
    double* nvals = (double*) malloc( size_alpamp*sizeof(double) );
-   int alp_per_coil = 2*NFalpha+1;
+   int alp_per_coil = 2 * NFalpha + 1;
    
    *(nvals+0) = 0.0;
  
@@ -112,7 +109,7 @@ double ComplexityPenalty(void){
       
    for(i=0;i<alp_per_coil;i++)
    {
-      for(j=1;j<iCoils;j++)
+      for(j=1;j<iCoil;j++)
       {
          *(nvals+j*alp_per_coil+i) = *(nvals+i);
       }
@@ -163,9 +160,9 @@ double SurfaceArea(void){
 // Returns the surface area of the magnetic boundary
 // TODO: is this correct? might be off by a factor of nfp 
 //----------------------------------------------------------------------------------------------------
+
    register int i;
    double dsfactor = 4 * pow(M_PI,2) / (Nteta*Nzeta);
-   int size_fp = Nteta * Nzeta / Nfp;
    double area = 0.0;
 
    for(i=0;i<size_fp;i++)
@@ -184,9 +181,6 @@ void Central_diff( double *dof, double fb_init ){
 // Calculates the numerical derivative of the objective function with respect to alpha harmonics
 //----------------------------------------------------------------------------------------------------
 
-   int iCoils = Ncoils / Nfp;
-   int size_alpamp = iCoils*(2*NFalpha+1);   
-   int size_fp = Nteta*Nzeta / Nfp;
    int i,j;
    double h = 0.000001;
    
@@ -214,7 +208,7 @@ void Central_diff( double *dof, double fb_init ){
       
       for(i=0;i<alp_per_coil;i++)
       {
-         for(j=1;j<iCoils;j++)
+         for(j=1;j<iCoil;j++)
          {
             *(nvals+j*alp_per_coil+i) = *(nvals+i);
          }
@@ -272,8 +266,7 @@ void Steepest_descent( void ){
 // Calculates the negative gradient of the objective function
 // TODO: this should just be flagged in central_diff, no need for another function for adding a - sign
 //----------------------------------------------------------------------------------------------------
-   int iCoils = Ncoils / Nfp;
-   int size_alpamp = iCoils*(2*NFalpha+1);  
+   
    register int i,j;
    
    descent_dir = (double*) malloc( size_alpamp*sizeof(double) );
@@ -296,9 +289,6 @@ void Forward_track(double fb_init ){
 // Maybe just look at k+step*(1/2) where k+1 is the exit iteration
 //----------------------------------------------------------------------------------------------------
 
-   //int iCoils = Ncoils;
-   int iCoils = Ncoils / Nfp;
-   int size_alpamp = iCoils*(2*NFalpha+1);   
    int i,j;
    int k=0;
 

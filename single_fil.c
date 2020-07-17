@@ -12,7 +12,7 @@
  
 // GLOBALS SCOPED IN SOURCE FILE
 
-int Ncoils;
+int Ncoil;
 int Nseg;
 int Nfp;
 int isSym;
@@ -46,6 +46,8 @@ double* xsurf;
 double* ysurf;
 double* zsurf;
 
+int Ns;
+
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 void UnpackSingleFilaments(void){
@@ -60,20 +62,20 @@ void UnpackSingleFilaments(void){
    double theta; //TODO: insert theta directly to improve speed
    double pi = M_PI;
 
-   ind_arr = malloc(Ncoils*sizeof(int));
-   currents = (double*) malloc(Ncoils*sizeof(double));
-         cx = (double*) malloc(Ncoils*sizeof(double));
-         cy = (double*) malloc(Ncoils*sizeof(double));
-         cz = (double*) malloc(Ncoils*sizeof(double));
+   ind_arr = malloc(Ncoil*sizeof(int));
+   currents = (double*) malloc(Ncoil*sizeof(double));
+         cx = (double*) malloc(Ncoil*sizeof(double));
+         cy = (double*) malloc(Ncoil*sizeof(double));
+         cz = (double*) malloc(Ncoil*sizeof(double));
 
-   sfilx = (double*) malloc(Ncoils*(Nseg+1)*sizeof(double));
-   sfily = (double*) malloc(Ncoils*(Nseg+1)*sizeof(double));
-   sfilz = (double*) malloc(Ncoils*(Nseg+1)*sizeof(double));
+   sfilx = (double*) malloc(Ncoil*(Nseg+1)*sizeof(double));
+   sfily = (double*) malloc(Ncoil*(Nseg+1)*sizeof(double));
+   sfilz = (double*) malloc(Ncoil*(Nseg+1)*sizeof(double));
 
 
-   coilamps = malloc(Ncoils*(NFcoil+3)*6*sizeof(double));
+   coilamps = malloc(Ncoil*(NFcoil+3)*6*sizeof(double));
    
-   for(i=0;i<Ncoils;i++)
+   for(i=0;i<Ncoil;i++)
    {
       if (i==0) 
       {
@@ -89,18 +91,18 @@ void UnpackSingleFilaments(void){
       }
       
       ind_arr[i] = ind;
-      ind = ind + NFcoil*6+3;
+      ind = ind + NFcoil * 6 + 3;
    }
    
    //Store centroids from coilamps array//
-   for(i=0;i<Ncoils;i++)
+   for(i=0;i<Ncoil;i++)
    {
         cx[i] = coilamps[ind_arr[i]];
         cy[i] = coilamps[ind_arr[i] + 2*(NFcoil + 1)-1];
         cz[i] = coilamps[ind_arr[i] + 4*(NFcoil + 1)-2];
    } 
 
-   for(i=0;i<Ncoils;i++)
+   for(i=0;i<Ncoil;i++)
    {   
       for(j=0;j<Nseg+1;j++)
       {
@@ -139,7 +141,6 @@ void SingleFilField(void){
    double timeBfield;
    double startBfield, endBfield;
 
-   omp_set_num_threads(Nthreads);
    startBfield = omp_get_wtime(); //clock();
    
    Bsfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -150,6 +151,7 @@ void SingleFilField(void){
 
    //OpenMP parallelization 
    #pragma omp parallel for
+   //TODO: MPI Parallelize!
    for(i=0;i<Nzeta*Nteta;i++){
 
       CalculateSingleField( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
@@ -165,6 +167,13 @@ void SingleFilField(void){
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
+void AverageMultiFilaments(void){
+
+//TODO
+
+}
+
  
 #define SFILB_FILE_NAME "./outputfiles/sfilB.nc"
    
@@ -218,7 +227,7 @@ void WriteSingleFilaments(void){
    fb = fopen(sfil_output, "w");
    fprintf(fb, "periods 1\n begin filament\n mirror NIL\n");
 
-   for(i=0;i<Ncoils;i++)
+   for(i=0;i<Ncoil;i++)
    {
       for(j=0;j<Nseg;j++)
       {

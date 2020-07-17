@@ -6,5 +6,7 @@ void UnpackSingleFilaments(void);
 void WriteSingleFilaments(void);
 void SingleFilField(void);
 void WriteSingleB(void);
+void AverageMultiFilaments(void);
+
 #endif
          

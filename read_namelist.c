@@ -8,17 +8,17 @@
 double len_rad;
 double len_tor;
 double Nturns;
-int DEBUG;
+
 char* focus_output;
 char* multi_output;
 char* sfil_output;
 char* mfil_output;
+
 double* alp;
 int Nradfil;
 int Ntorfil;
 int Nseg;
 int isVaryRotation;
-int Nthreads;
 int case_alpha;
 int case_objfun;
 int NFalpha;
@@ -30,6 +30,11 @@ int* startind;
 int* endind;
 int isStellSym;
 int case_optimize;
+int iCoil;
+int size_alpamp;
+int size_fp;
+int Nfils; 
+int Ns;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -54,20 +59,20 @@ void SetInputs(void){
    //mfil_output = "./runs/coils.test";
 
    case_optimize = 0;
-   niter = 10;
+   niter = 2;
  
    case_alpha = 0;
-   NFalpha = 10;
+   NFalpha = 1;
    alp_const = 0.000;
  
    isStellSym = 0;
-   Nseg = 128;
+   Nseg = 16;
 
    weight_comp = 0.01; //complexity weighting
    case_objfun = 1; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
-   Nradfil = 7;
+   Nradfil = 2;
    Ntorfil = 2;
 
    len_rad = 0.120; // 1/2 hsx 
@@ -77,11 +82,30 @@ void SetInputs(void){
    //len_rad = 0.3500; // ellipse
    //len_tor = 0.7000;
 
-   Nthreads = 32;
 //   DEBUG = 0; 
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
+void Initialize(void){
+
+   if(isStellSym == 1)
+   {
+      iCoil = Ncoil / (2 * Nfp);
+      size_fp = Nteta * Nzeta / (2 * Nfp); 
+      Ns = 1; 
+   }
+   else
+   {
+      iCoil = Ncoil / Nfp;
+      size_fp = Nteta * Nzeta / Nfp; 
+      Ns = 0;
+   }
+
+   size_alpamp = iCoil * (2 * NFalpha + 1); 
+   Nfils = Nradfil * Ntorfil; 
+}
+
 
 void MPInit(void){
 //----------------------------------------------------------------------------------------------------

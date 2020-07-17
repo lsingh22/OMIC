@@ -4,6 +4,7 @@
 #include "globals.h"
 
 extern void SetInputs(void);
+extern void Initialize(void);
 extern void MPInit(void);
 
 #endif

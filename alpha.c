@@ -15,11 +15,12 @@ char* multi_output;
 double* alpampsinit;
 double* alpamps;
 int case_alpha;
-int Ncoils;
+int iCoil;
 int Nfp;
 int NFalpha;
 double alp_const;
 double* alp;
+int size_alpamp;
 
 //TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
 
@@ -35,8 +36,6 @@ void Init_alpha( int option ){
 // Be careful with option 2, as the output is overridden (best to copy output to another file name)
 //----------------------------------------------------------------------------------------------------
 
-   int iCoils = Ncoils/ Nfp; 
-   int size_alpamp = iCoils*(2*NFalpha+1); 
    register int i;
 
    alpamps = (double*) malloc( size_alpamp*sizeof(double) ); //stores all Fourier components of alpha angle for all coils
@@ -57,7 +56,7 @@ void Init_alpha( int option ){
    }
    else if(option == 2)
    {
-      int size_amp = iCoils*(2*NFalpha+1)/Nfp;
+      int size_amp = iCoil * (2*NFalpha+1);
       int ncid, varid, dimid,retval;
       nc_open(multi_output, NC_NOWRITE, &ncid); //multi_output is the path to the .nc output file
       nc_inq_varid(ncid, "alpha", &varid);
@@ -80,17 +79,15 @@ void Unpack_alpha( void ){
 // Calculate the coil rotation angle alpha based on its Fourier series
 //----------------------------------------------------------------------------------------------------
   
-   int iCoils = Ncoils / Nfp;
-   int size_alpamp = iCoils*(2*NFalpha+1); //total number of Fourier amplitudes for all coils  
-   int size_alp = iCoils*(Nseg+1); //total number of points for all coils
+   int size_alp = iCoil*(Nseg+1); //total number of points for all coils
    register int i,j;
    int k;
    double theta, a;  
    double pi = M_PI;
     
-   alp = (double*) malloc(iCoils*(Nseg+1)*sizeof(double)); //all alpha angles at each position on each coil
+   alp = (double*) malloc(iCoil*(Nseg+1)*sizeof(double)); //all alpha angles at each position on each coil
 
-   for(i=0;i<iCoils;i++)
+   for(i=0;i<iCoil;i++)
    {
       for(j=0;j<(Nseg+1);j++)
       {

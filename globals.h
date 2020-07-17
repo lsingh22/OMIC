@@ -22,8 +22,6 @@ extern char* namelist;
 extern char* mfil_output; // The multfilament coils file
 extern char* sfil_output; // The single filament coils file
 
-extern int Nthreads; // Threads to use in OpenMP field calculation, not current supported
-extern int DEBUG; // Option to suppress output
 extern int case_alpha; // Determines where to get initial alpha amps ( 0 =all 0,  1 =all const, 2 =file)
 extern int case_objfun;
 extern int case_optimize; 
@@ -38,6 +36,8 @@ extern int isStellSym;
 extern int Nteta;
 extern int Nzeta;
 extern size_t size_surf;
+extern int size_fp;
+extern int Ns;
 
 extern double* xsurf;
 extern double* ysurf;
@@ -53,7 +53,8 @@ extern double surface_area;
 // SINGLE FILAMENT COIL DATA 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-extern int Ncoils;
+extern int Ncoil;
+extern int iCoil;
 extern int NFcoil;
 extern double* coilspace;
 extern size_t size_coilspace;
@@ -80,6 +81,7 @@ extern double* cz;
 
 // Winding pack dimensions and packing data
 
+extern int Nfils;
 extern int Nradfil;
 extern int Ntorfil;
 extern double len_rad; 
@@ -106,6 +108,7 @@ extern double* malp;
 extern double  alp_const;
 extern double* alpamps; // Stores the degrees of freedom for rotation function
 extern double* alp; // Stores the rotation function values for all coils for each segment
+extern int size_alpamp;
 
 // Multi-Filament XYZ points
 
