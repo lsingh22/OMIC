@@ -25,7 +25,8 @@ extern char* sfil_output; // The single filament coils file
 extern int Nthreads; // Threads to use in OpenMP field calculation, not current supported
 extern int DEBUG; // Option to suppress output
 extern int case_alpha; // Determines where to get initial alpha amps ( 0 =all 0,  1 =all const, 2 =file)
-extern int case_opt;
+extern int case_objfun;
+extern int case_optimize; 
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 // PLASMA EQUILIBRIUM DATA 
@@ -33,6 +34,7 @@ extern int case_opt;
 
 extern int Nfp;
 extern int isSym;
+extern int isStellSym;
 extern int Nteta;
 extern int Nzeta;
 extern size_t size_surf;

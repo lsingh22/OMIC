@@ -74,7 +74,7 @@ int main(int argc, char **argv){
    t1 = MPI_Wtime();
    MultiFilFieldSym();
    t2 = MPI_Wtime();
-   if(pn==0){printf("Field calculation on processor takes %.4f sec.\n",t2-t1);}
+   if(pn==0){printf("\nField calculation on HEAD takes %.4f sec.\n",t2-t1);}
 //   if(pn==0){printf("This is 8 \n");}
    if(nproc > 1){GatherFieldData();}
 
@@ -92,7 +92,7 @@ int main(int argc, char **argv){
       printf("Complexity error is:                    %.15f\n", comp_penalty_init);
       printf("\n*********************************************************\n\n"); 
       surface_area = SurfaceArea();
-      printf("\nThe surface area is %.15f\n", surface_area);
+      printf("The surface area is %.15f\n", surface_area);
    }
    
 //TODO: This should really just be calling something like OptimizeCoils or something to match the rest of the file...

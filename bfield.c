@@ -142,7 +142,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    
    int iCoils = Ncoils / Nfp;   
    double muc = 1.0e-7;
-   double one = 1.00000000000000000000;
+   double one = 1.00000000000000000000; //these should probably be global
    double two = 2.00000000000000000000;
    register int ip,i,j,k;
    int Nfils = Nradfil*Ntorfil; 

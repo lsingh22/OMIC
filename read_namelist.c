@@ -20,7 +20,7 @@ int Nseg;
 int isVaryRotation;
 int Nthreads;
 int case_alpha;
-int case_opt;
+int case_objfun;
 int NFalpha;
 double alp_const;
 int niter;
@@ -28,6 +28,8 @@ double surface_area;
 int nproc;
 int* startind;
 int* endind;
+int isStellSym;
+int case_optimize;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -51,14 +53,18 @@ void SetInputs(void){
    //mfil_output = "./runs/ell/coils.ell_01";
    //mfil_output = "./runs/coils.test";
 
+   case_optimize = 0;
    niter = 10;
+ 
    case_alpha = 0;
    NFalpha = 10;
    alp_const = 0.000;
+ 
+   isStellSym = 0;
    Nseg = 128;
 
    weight_comp = 0.01; //complexity weighting
-   case_opt = 1; //0 for fbn , 1 for both fbn and fc
+   case_objfun = 1; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
    Nradfil = 7;

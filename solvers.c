@@ -128,10 +128,10 @@ double ComplexityPenalty(void){
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
-double CostFunction(int case_opt, double fb_init) {
+double CostFunction(int case_objfun, double fb_init) {
 //----------------------------------------------------------------------------------------------------
 // Returns the value of the total objective function
-// case_opt: 0-fb only  1-fb and fsw 
+// case_objfun: 0-fb only  1-fb and fsw 
 // TODO: fc --> fsw
 // TODO: to avoid confusion, should probably exclude other function calls 
 //----------------------------------------------------------------------------------------------------
@@ -143,11 +143,11 @@ double CostFunction(int case_opt, double fb_init) {
    fb = MultiFieldError();
    fc = ComplexityPenalty();  
 
-   if(case_opt==0)
+   if(case_objfun==0)
    {   
       feval = fb;
    }
-   else if(case_opt==1)
+   else if(case_objfun==1)
    {  
       feval = fb / fb_init + weight_comp * fc;
    }
@@ -203,7 +203,7 @@ void Central_diff( double *dof, double fb_init ){
       *(alpamps+i) = dof[i];
    }
 
-   if(case_opt==1)
+   if(case_objfun==1)
    {
       *(nvals+0) = 0.0;
       for(i=1;i<NFalpha;i++)
@@ -254,11 +254,11 @@ void Central_diff( double *dof, double fb_init ){
       
       if(pn==0)
       {
-         if(case_opt==1)
+         if(case_objfun==1)
          {
             *(derivs+i) = (1/fb_init)* ((plus_bn-minus_bn)/(2*h)) + 2 * weight_comp * *(alpamps+i) * pow(*(nvals+i),nvals_scaling);
          }
-         else if(case_opt==0)
+         else if(case_objfun==0)
          {
             *(derivs+i) = (plus_bn-minus_bn)/(2*h);
          }
@@ -315,7 +315,7 @@ void Forward_track(double fb_init ){
    
    if(pn==0)
    {
-      init_bn = CostFunction(case_opt,fb_init);
+      init_bn = CostFunction(case_objfun,fb_init);
       hold_bn = init_bn;
       search_bn = 0.0;
    }
@@ -350,7 +350,7 @@ void Forward_track(double fb_init ){
 
       if(pn==0)
       {
-         search_bn = CostFunction(case_opt,fb_init);
+         search_bn = CostFunction(case_objfun,fb_init);
          fb_now = MultiFieldError();
          fc_now = ComplexityPenalty();
  
