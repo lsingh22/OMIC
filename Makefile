@@ -4,9 +4,9 @@
 PROGRAM = multi
 
 
-FILES.c = read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
+FILES.c = startup.c read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
 
-FILES.h = read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
+FILES.h = startup.h read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
 
 FILES.o = ${FILES.c:.c=.o}
 
@@ -65,6 +65,8 @@ alpha.o: alpha.c alpha.h globals.h
 #output.o: output.c output.h globals.h
 #	${CC} -c $< -o $@
 solvers.o: solvers.c solvers.h globals.h
+	${CC} -c $< -o $@
+startup.o: startup.c startup.h globals.h
 	${CC} -c $< -o $@
 
 DEBRIS = a.out core *~ *.dSYM

@@ -66,7 +66,7 @@ void SetInputs(void){
    alp_const = 0.000;
  
    isStellSym = 0;
-   Nseg = 16;
+   Nseg = 128;
 
    weight_comp = 0.01; //complexity weighting
    case_objfun = 1; //0 for fbn , 1 for both fbn and fc
@@ -91,18 +91,18 @@ void Initialize(void){
 
    if(isStellSym == 1)
    {
-      iCoil = Ncoil / (2 * Nfp);
-      size_fp = Nteta * Nzeta / (2 * Nfp); 
+      iCoil = Ncoil / ( 2 * Nfp );
+      size_fp = Nteta * Nzeta / ( 2 * Nfp ); 
       Ns = 1; 
    }
-   else
+   else if(isStellSym == 0)
    {
       iCoil = Ncoil / Nfp;
       size_fp = Nteta * Nzeta / Nfp; 
       Ns = 0;
    }
 
-   size_alpamp = iCoil * (2 * NFalpha + 1); 
+   size_alpamp = iCoil * ( 2 * NFalpha + 1 ); 
    Nfils = Nradfil * Ntorfil; 
 }
 

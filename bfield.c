@@ -147,12 +147,13 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    double one = 1.00000000000000000000; //these should probably be global
    double two = 2.00000000000000000000;
    register int ip,i,j,k;
+   int is;
    double factor = muc * two / Nfils;
    double l, ex, ey, ez, bx, by, bz, bxx, byy, bzz;
    double xx, yy, zz;
    double ri, xi, yi, zi;
    double rf, xf, yf, zf;
-   double cur, eps, eta, coef;
+   double cur, eps, eta, coef,symfac;
    double rot_cos, rot_sin;
 
    bx = 0.0;
@@ -162,67 +163,76 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    bxx = 0.0;
    byy = 0.0;
    bzz = 0.0;
-   zz = z;
    
+   zz = z;
+
    for(ip=1;ip<Nfp+1;ip++)
    { 
       //Find coefficients of transformation matrix
       rot_cos = cosnfp(ip);
       rot_sin = sinnfp(ip);
-
-      //Find symmetric point on other field periods
-      xx =  x * rot_cos - y * rot_sin; 
-      yy =  x * rot_sin + y * rot_cos; 
-      for(i=0;i<iCoil;i++)
-      {
-         //Store current of i-th coil 
-         cur = *(currents+i);
-         for(j=0;j<Nfils;j++)
+      is = Ns; 
+      while(is>-1)
+      {  
+         symfac = pow(-1,is);         
+ 
+         //Find symmetric point on other field periods
+         xx = (  x * rot_cos + y * rot_sin ); 
+         yy = ( -x * rot_sin + y * rot_cos ) * symfac; 
+         zz = z * symfac;
+         for(i=0;i<iCoil;i++)
          {
-            //Store first point of current filament before main loop
-            xi = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1));
-            yi = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1));
-            zi = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1));
-            ri = sqrt( xi*xi + yi*yi + zi*zi );           
-            
-            for(k=0;k<Nseg;k++) //TODO: check if this works for odd nseg
+            //Store current of i-th coil 
+            cur = *(currents+i);
+            for(j=0;j<Nfils;j++)
             {
-               xf = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
-               yf = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
-               zf = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
-               rf = sqrt( xf*xf + yf*yf + zf*zf);
+               //Store first point of current filament before main loop
+               xi = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1));
+               yi = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1));
+               zi = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1));
+               ri = sqrt( xi*xi + yi*yi + zi*zi );           
+            
+               for(k=0;k<Nseg;k++) //TODO: check if this works for odd nseg
+               {
+                  xf = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
+                  yf = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
+                  zf = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
+                  rf = sqrt( xf*xf + yf*yf + zf*zf);
                
-               l = sqrt( (xf-xi)*(xf-xi) + (yf-yi)*(yf-yi) + (zf-zi)*(zf-zi));  
+                  l = sqrt( (xf-xi)*(xf-xi) + (yf-yi)*(yf-yi) + (zf-zi)*(zf-zi));  
 
-               ex = ( xf - xi ) / l;  
-               ey = ( yf - yi ) / l;  
-               ez = ( zf - zi ) / l;  
+                  ex = ( xf - xi ) / l;  
+                  ey = ( yf - yi ) / l;  
+                  ez = ( zf - zi ) / l;  
        
-               eps = l / (ri + rf);
-               eta = ri * rf;
-               coef = cur * eps / (eta * (one - eps * eps)); 
+                  eps = l / (ri + rf);
+                  eta = ri * rf;
+                  coef = cur * eps / (eta * (one - eps * eps)); 
    
-               bx += coef * (ey*zi-ez*yi);
-               by += coef * (ez*xi-ex*zi);
-               bz += coef * (ex*yi-ey*xi);
+                  bx += coef * (ey*zi-ez*yi);
+                  by += coef * (ez*xi-ex*zi);
+                  bz += coef * (ex*yi-ey*xi);
               
-               //End of segment k becomes beginning of segment k+1
-               xi = xf;
-               yi = yf;
-               zi = zf;
-               ri = rf;
+                  //End of segment k becomes beginning of segment k+1
+                  xi = xf;
+                  yi = yf;
+                  zi = zf;
+                  ri = rf;
+               }
             }
-         }
-      }    
-      //Rotate back to first field period
-      bxx +=  bx * rot_cos + by * rot_sin;  
-      byy += -bx * rot_sin + by * rot_cos; 
-      bzz +=  bz;
+         }     
+         //Rotate back to first field period
+         bxx += ( bx * rot_cos - by * rot_sin  ) * symfac;  
+         byy += ( bx * rot_sin + by * rot_cos ); 
+         bzz += bz;
 
-      bx = 0;
-      by = 0;
-      bz = 0;          
-   }
+         bx = 0;
+         by = 0;
+         bz = 0;          
+
+         is = is - 1;
+      }
+   }  
    *Bx = bxx * factor;
    *By = byy * factor;
    *Bz = bzz * factor;

@@ -13,22 +13,33 @@
 #include "alpha.h"
 #include "output.h"
 #include "solvers.h"
+#include "startup.h"
 
 int pn, nproc;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 int main(int argc, char **argv){
+      printf("\n*********************************************************"); 
+      printf("\n         This is the stellarator coil tool OMIC.\n          Authors: Luquant Singh, Thomas Kruger");
+      printf("\n*********************************************************\n"); 
+ 
+   if(argc==1){printf("\nERROR: File extension not provided for 'ext.input', please try again.\n\n"); exit(0);}
+
+   Startup(*(argv+1)); 
+
    int i, ierr;
    double t1,t2,tot_time;
    double sfil_error, multi_error_init, comp_penalty_init;
    double start, end;
-
+   
+   
    //Initialize MPI, store node configuration and current node
    MPI_Init(&argc, &argv);   
    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &pn);
    ierr = MPI_Comm_size(MPI_COMM_WORLD, &nproc);   
    start = MPI_Wtime();
+   
 
 //   if(pn==0){printf("This is 0 \n");}
    SetInputs();
