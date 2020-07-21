@@ -24,16 +24,16 @@ int main(int argc, char **argv){
       printf("\n         This is the stellarator coil tool OMIC.\n          Authors: Luquant Singh, Thomas Kruger");
       printf("\n*********************************************************\n"); 
  
-   if(argc==1){printf("\nERROR: File extension not provided for 'ext.input', please try again.\n\n"); exit(0);}
-
-   Startup(*(argv+1)); 
+   if(argc==1){printf("\nERROR: File extension for 'prefix.input' not specified.\n\n"); exit(0);}
+   char *ext = *(argv+1);
+ 
+   Startup(ext); 
 
    int i, ierr;
    double t1,t2,tot_time;
    double sfil_error, multi_error_init, comp_penalty_init;
    double start, end;
-   
-   
+      
    //Initialize MPI, store node configuration and current node
    MPI_Init(&argc, &argv);   
    ierr = MPI_Comm_rank(MPI_COMM_WORLD, &pn);
@@ -46,15 +46,11 @@ int main(int argc, char **argv){
 
 //   if(pn==0){printf("This is 1 \n");}
    ReadFocusInts(focus_output);
-
 //   if(pn==0){printf("This is 2 \n");}      
    MPInit();
 
    if(pn==0)
    {
-      printf("\n*********************************************************"); 
-      printf("\n         This is the stellarator coil tool OMIC.\n          Authors: Luquant Singh, Thomas Kruger");
-      printf("\n*********************************************************\n"); 
       printf("\n                      USER INPUTS               ");
       printf("\n*********************************************************\n\n"); 
       printf("The number of iterations is:                           %d\n",niter);

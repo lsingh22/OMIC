@@ -43,30 +43,15 @@ void SetInputs(void){
 // Write inputs to globals
 //----------------------------------------------------------------------------------------------------
 
-   focus_output = "./inputfiles/focus_hsx.m12_07_51264.nc";
-   //focus_output = "./inputfiles/focus_wista_53.nc";   
-   //focus_output = "./inputfiles/focus_ellipse.nc";  
-   //focus_output = "./inputfiles/focus_hsx.m12_07_debug.nc";
-   
-   multi_output = "./runs/hsx/multi_hsx.m12_07_41.nc";
-   //multi_output = "./runs/wista_ss/multi_wista_ss_00.nc";
-   //multi_output = "./runs/ell/multi_ell_01.nc";
-   //multi_output = "./runs/multi_debug2.nc";
-   
-   mfil_output = "./runs/hsx/coils.hsx.m12_07_41";
-   //mfil_output = "./runs/wista_ss/coils.wista_ss_00";
-   //mfil_output = "./runs/ell/coils.ell_01";
-   //mfil_output = "./runs/coils.test";
-
    case_optimize = 0;
-   niter = 2;
+   niter = 1;
  
    case_alpha = 0;
    NFalpha = 1;
    alp_const = 0.000;
  
    isStellSym = 0;
-   Nseg = 128;
+   Nseg = 12;
 
    weight_comp = 0.01; //complexity weighting
    case_objfun = 1; //0 for fbn , 1 for both fbn and fc
@@ -81,8 +66,6 @@ void SetInputs(void){
    //len_tor = 0.0750;
    //len_rad = 0.3500; // ellipse
    //len_tor = 0.7000;
-
-//   DEBUG = 0; 
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

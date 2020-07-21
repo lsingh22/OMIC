@@ -18,7 +18,7 @@ extern int* endind;
 
 extern char* focus_output;  // The input single filament focus file
 extern char* multi_output; 
-extern char* namelist; 
+extern char* omic_input; 
 extern char* mfil_output; // The multfilament coils file
 extern char* sfil_output; // The single filament coils file
 

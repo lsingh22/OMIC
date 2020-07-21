@@ -3,10 +3,9 @@
 
 PROGRAM = multi
 
-
 FILES.c = startup.c read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
 
-FILES.h = startup.h read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
+FILES.h = config.h startup.h read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
 
 FILES.o = ${FILES.c:.c=.o}
 
@@ -36,9 +35,9 @@ NETCDF_HOME = ${NETCDF_C_HOME}
 
 NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf
 
-CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp 
+CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp #'pkg-config --cflag libfyaml'
 
-LDFLAGS =
+LDFLAGS = #'pkg-config --libs libfyaml'
 
 LDLIBS  =
 
@@ -66,7 +65,7 @@ alpha.o: alpha.c alpha.h globals.h
 #	${CC} -c $< -o $@
 solvers.o: solvers.c solvers.h globals.h
 	${CC} -c $< -o $@
-startup.o: startup.c startup.h globals.h
+startup.o: startup.c startup.h globals.h config.h
 	${CC} -c $< -o $@
 
 DEBRIS = a.out core *~ *.dSYM
