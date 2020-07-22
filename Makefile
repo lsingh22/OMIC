@@ -5,7 +5,7 @@ PROGRAM = multi
 
 FILES.c = startup.c read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
 
-FILES.h = config.h startup.h read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
+FILES.h = libfyaml.h config.h startup.h read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
 
 FILES.o = ${FILES.c:.c=.o}
 

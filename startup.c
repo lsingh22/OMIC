@@ -1,15 +1,16 @@
-/*
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
-*/
+
 
 #include "read_namelist.h"
 #include "alpha.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <assert.h>
 #include <string.h>
-//#include <libfyaml.h>
+#include "libfyaml.h"
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -124,13 +125,29 @@ void Startup(char *ext){
    free(ext_sfil_out); */
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
 void ReadInputFile(void){
    /* Read YAML input file */
-//   struct fy_document *fyd = fy_document_build_from_file(NULL, multi_output);
-  
-//   case_optimize = fy_document_scanf(fyd, 
-   niter = 2;
- 
+   int count;
+   struct fy_document *fyd;
+//   fyd = fy_document_build_from_file(NULL, multi_output);
+
+//   if(!fyd)
+//   {
+//      printf("ERROR: Failed to build input file.\n");
+//      exit(0);
+//   }  
+     
+//   Try this before writing everything incorrectly...
+     
+//   count = fy_document_scanf(fyd,"/case_optimize %d ", &case_optimize); 
+//   if(count!=1){printf("ERROR: Please specify case_optimize input parameter.\n");
+
+
+//   Rest of the parameters to assign to globals
+/* 
+   niter = fy_document_scanf(fyd, "/niter %d ");
    case_alpha = 0;
    NFalpha = 1;
    alp_const = 0.000;
@@ -147,13 +164,13 @@ void ReadInputFile(void){
 
    len_rad = 0.120; // 1/2 hsx 
    len_tor = 0.060;
- 
+*/ 
 
-
-
-
+//   count = EXIT_SUCCESS;
 
 }
+
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 /*
 void Initialize(void){
@@ -175,6 +192,7 @@ void Initialize(void){
    Nfils = Nradfil * Ntorfil; 
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void MPInit(void){
 //----------------------------------------------------------------------------------------------------

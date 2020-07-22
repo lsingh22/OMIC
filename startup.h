@@ -2,6 +2,7 @@
 #define _MULTI_FIL_H
 
 #include "globals.h"
+#include "libfyaml.h"
 
 void Startup(char* ext);
 void ReadInputFile(void);
