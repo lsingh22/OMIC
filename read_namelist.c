@@ -44,20 +44,20 @@ void SetInputs(void){
 //----------------------------------------------------------------------------------------------------
 
    case_optimize = 0;
-   niter = 1;
+   niter = 0;
  
    case_alpha = 0;
    NFalpha = 1;
    alp_const = 0.000;
  
    isStellSym = 0;
-   Nseg = 12;
+   Nseg = 128;
 
    weight_comp = 0.01; //complexity weighting
    case_objfun = 1; //0 for fbn , 1 for both fbn and fc
    nvals_scaling = 2; // the beta in the complexity formulation   
 
-   Nradfil = 2;
+   Nradfil = 7;
    Ntorfil = 2;
 
    len_rad = 0.120; // 1/2 hsx 
