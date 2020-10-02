@@ -1,24 +1,6 @@
-This is a multifilament coil optimization code developed by Luquant Singh and Thomas Kruger at the University of Wisconsin, HSX Laboratory.
+This is a multi-filament coil optimization code developed primarily by Luquant Singh and Thomas Kruger at the University of Wisconsin, HSX Laboratory.
 
-Input files: wout, .focus, .input, .alpha 
-wout file is used to load in boundary and axis and toroidal flux on boundary
-Convert HDF5 file to NetCDF file using nccopy -3 <HDF5_File> <NetCDF_File.nc>
-.input file sets all variables and options, of course
-.alpha file gives alpha modes
-sample input files are provided 
+Input files: FOCUS-formatted output file (for initial filament positions), read_namelist.c is currently a hard-coded input file.
+Output files: multi-filament and single-filament positions, rotation profile, B-field and errors on boundary for filament/multi-filament sets
 
-main method found in multi.c file
-
-First step is optimizing for alphas and leaving coil aspect ratio, centroids, and currents constant
-optimizing for more parameters coming after summer, unless we are productive
-
-Initial optimization method will be either steepest descent (which is garbage) or some easy to impliment trust region method that does not require backtracking like Conjugate gradient (I think this is the right one)
-
-Before PPPL goals:
-produce the alpha = 0 filaments
-plot the filaments, and finite build with python script
-
-To compile with gcc: "gcc multi.c -o xmulti -lm"
-To compile with netcdf: " gcc load_wout.c -I$NETCDF_HOME/include -L$NETCDF_HOME/lib -lnetcdf -lm -o xread
-
-We will worry about linking other files when they are completed
+More detailed information coming soon.
