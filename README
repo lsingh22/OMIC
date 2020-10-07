@@ -3,4 +3,3 @@ This is a multi-filament coil optimization code developed primarily by Luquant S
 Input files: FOCUS-formatted output file (for initial filament positions), read_namelist.c is currently a hard-coded input file.
 Output files: multi-filament and single-filament positions, rotation profile, B-field and errors on boundary for filament/multi-filament sets
 
-More detailed information coming soon.
