@@ -3,51 +3,17 @@
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
-double* xsurf;
-double* ysurf;
-double* zsurf;
-
-double* sfilx;
-double* sfily;
-double* sfilz;
+double* xsurf; double* ysurf; double* zsurf; double* sfilx; double* sfily; double* sfilz;
  
-double* mfilx;
-double* mfily;
-double* mfilz;
-
-double* ffilx;
-double* ffily;
-double* ffilz;
+double* mfilx; double* mfily; double* mfilz; double* ffilx; double* ffily; double* ffilz;
   
-double* alpamps;
-/*
-double* Bsfilx;
-double* Bsfily;
-double* Bsfilz;
-double* Bsfil;
-double* Bsfiln;
-*/
-double* Bmfilx;
-double* Bmfily;
-double* Bmfilz;
-double* Bmfil;
-double* Bmfiln;
+double* alpamps; /* double* Bsfilx; double* Bsfily; double* Bsfilz; double* Bsfil; double* Bsfiln;*/
 
-double* cx;
-double* cy;
-double* cz;
+double* Bmfilx; double* Bmfily; double* Bmfilz; double* Bmfil; double* Bmfiln;
 
-double* bx;
-double* by;
-double* bz;
+double* cx; double* cy; double* cz; double* bx; double* by; double* bz;
 
-double* tx;
-double* ty;
-double* tz;
-
-double* nx;
-double* ny;
-double* nz;
+double* tx; double* ty; double* tz; double* nx; double* ny; double* nz;
 
 int Nseg, Ntorfil, Nradfil, Nfils, Nzeta, Nteta, Ncoil, iCoil, NFalpha, Nfp;
 

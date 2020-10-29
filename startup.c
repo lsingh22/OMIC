@@ -1,9 +1,3 @@
-
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
-
-
 #include "read_namelist.h"
 #include "alpha.h"
 #include <stdlib.h>
@@ -14,36 +8,13 @@
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 // GLOBALS SCOPED IN SOURCE FILE
-double len_rad;
-double len_tor;
-double Nturns;
+double len_rad; double len_tor; double Nturns;
 
-char* focus_output;
-char* multi_output;
-char* sfil_output;
-char* mfil_output;
-char* omic_input;
+char* focus_output; char* multi_output; char* sfil_output; char* mfil_output; char* omic_input;
+double* alp; int Nradfil; int Ntorfil; int Nseg; int isVaryRotation; int case_alpha; int case_objfun;
 
-double* alp;
-int Nradfil;
-int Ntorfil;
-int Nseg;
-int isVaryRotation;
-int case_alpha;
-int case_objfun;
-int NFalpha;
-double alp_const;
-int niter;
-double surface_area;
-int nproc;
-int* startind;
-int* endind;
-int isStellSym;
-int iCoil;
-int size_alpamp;
-int size_fp;
-int Nfils; 
-int Ns;
+int NFalpha; double alp_const; int niter; double surface_area; int nproc; int* startind; int* endind;
+int isStellSym; int iCoil; int size_alpamp; int size_fp; int Nfils; int Ns;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  

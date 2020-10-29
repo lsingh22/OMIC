@@ -1,28 +1,16 @@
-//This is for initializing user inputs
-
 #include "alpha.h"
 #include <stdlib.h>
 #include <math.h>
 #include <stdio.h>
-// GLOBALS SCOPED IN SOURCE FILE
 
 #define ERRCODE 2  
 #define ERR(e) {printf("Error: %s\n",nc_strerror(e)); exit(ERRCODE);}
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-char* multi_output;
-double* alpampsinit;
-double* alpamps;
-int case_alpha;
-int iCoil;
-int Nfp;
-int NFalpha;
-double alp_const;
-double* alp;
-int size_alpamp;
-
-//TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
+// GLOBALS SCOPED IN SOURCE FILE
+char* multi_output; double* alpampsinit; double* alpamps; int case_alpha; int iCoil;
+int Nfp; int NFalpha; double alp_const; double* alp; int size_alpamp;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -33,7 +21,7 @@ void Init_alpha( int option ){
 //  0 - initialize all amplitudes to zero 
 //  1 - set the amplitudes to a constant value 
 //  2 - set the amplitudes to those given in a previous .nc output file
-// Be careful with option 2, as the output is overridden (best to copy output to another file name)
+// Be careful with option 2, as the output is overridden (best to copy output to another file first)
 //----------------------------------------------------------------------------------------------------
 
    register int i;
@@ -99,7 +87,7 @@ void Unpack_alpha( void ){
          }
          for(k=1;k<NFalpha+1;k++)
          {
-            a = a + alpamps[(2*NFalpha+1)*i+NFalpha+k] * sin(k*theta); //and then the sine terms...
+            a = a + alpamps[(2*NFalpha+1)*i+NFalpha+k] * sin(k*theta);
          }
          *(alp + i*(Nseg+1) + j ) = a; 
       }

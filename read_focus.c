@@ -9,27 +9,11 @@
 
 // GLOBALS SCOPED IN SOURCE FILE
 
-int Nseg;
-int Ncoil;
-int Nfp;
-int isSym;
-int NFcoil; //TODO: Update when bug is fixed 
-int Nteta;
-int Nzeta;
-size_t size_coilspace;
-size_t size_surf;
-double* coilspace;
-double* xsurf;
-double* ysurf;
-double* zsurf;
-double* nsurfx;
-double* nsurfy;
-double* nsurfz;
-double* nsurfn;
-double* fbn;
-double* fbx;
-double* fby;
-double* fbz;
+int Nseg; int Ncoil; int Nfp; int isSym; int NFcoil; int Nteta; int Nzeta;
+
+size_t size_coilspace; size_t size_surf; double* coilspace; double* xsurf; double* ysurf; double* zsurf;
+
+double* nsurfx; double* nsurfy; double* nsurfz; double* nsurfn; double* fbn; double* fbx; double* fby; double* fbz;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -127,32 +111,4 @@ void ReadFocusArrays(char* output_file){
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-  
-#define FILE_NAME "./outputfiles/boundary.nc"
-
-void WriteBoundaryNC(void){
-//----------------------------------------------------------------------------------------------------
-// Writes the boundary to a netcdf file (debug)
-// TODO: probably can delete
-//----------------------------------------------------------------------------------------------------
-
-   int ncid, xvarid, yvarid, zvarid, xdimid, ydimid;
-   int dimids[2];
-   
-   nc_create(FILE_NAME, NC_CLOBBER, &ncid); 
-   nc_def_dim(ncid, "size_surf1", Nzeta, &xdimid);
-   nc_def_dim(ncid, "size_surf2", Nteta, &ydimid);
-   dimids[0] = xdimid;
-   dimids[1] = ydimid;
-   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
-   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
-   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
-
-   nc_enddef(ncid);
-   nc_put_var_double(ncid, xvarid, &xsurf[0]);
-   nc_put_var_double(ncid, yvarid, &ysurf[0]);
-   nc_put_var_double(ncid, zvarid, &zsurf[0]);
-   nc_close(ncid);
-}
-
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

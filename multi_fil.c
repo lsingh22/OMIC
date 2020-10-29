@@ -1,4 +1,3 @@
-
 #include "multi_fil.h"
 #include "alpha.h"
 #include <math.h>
@@ -12,60 +11,17 @@
 
 //GLOBALS SCOPED IN SOURCE FILE
 
-int Nthreads;
-double len_rad;
-double len_tor;
+int Nthreads; double len_rad; double len_tor; int Nseg; int Nradfil; int Ntorfil; int Nfils; int Nfp;
 
-int Nseg;
-int Nradfil;
-int Ntorfil;
-int Nfils;
-int Nfp;
+int Nzeta; int Nteta; int nproc; int pn; int Ncoil; int iCoil; int size_fp; int Ns;
 
-int Nzeta;
-int Nteta;
+double* tx; double* ty; double* tz; double* nx; double* ny; double* nz; double* bx; double* by; double* bz; 
 
-int nproc;
-int pn;
+double* alp; double* cx; double* cy; double* cz; double* sfilx; double* sfily; double* sfilz;
 
-double* tx;
-double* ty;
-double* tz;
-double* nx;
-double* ny;
-double* nz;
-double* bx; 
-double* by; 
-double* bz; 
+double* mfilx; double* mfily; double* mfilz; double* finx; double* finy; double* finz;
 
-double* alp;   
-
-double* cx;
-double* cy;
-double* cz;
-
-double* sfilx;
-double* sfily;
-double* sfilz;
-
-double* mfilx;
-double* mfily;
-double* mfilz;
-
-double* finx;
-double* finy;
-double* finz;
-
-double* Bmfilx;
-double* Bmfily;
-double* Bmfilz;
-double* Bmfil;
-double* Bmfiln;
-
-int Ncoil;
-int iCoil;
-int size_fp;
-int Ns;
+double* Bmfilx; double* Bmfily; double* Bmfilz; double* Bmfil; double* Bmfiln;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -435,48 +391,6 @@ void GatherFieldData(void){
 //   t2 = MPI_Wtime();
 //   if(pn==0){printf("\nTotal time for gathering results is: %f\n\n", t2-t1);}   
 
-}
-
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-#define MFILB_FILE_NAME "./outputfiles/mfilB.nc"
-   
-void WriteMultiB(void){
-//----------------------------------------------------------------------------------------------------
-// Old: writes the multifilament b field to an nc file
-// TODO: delete this after checking for it elsewhere, since done in outputnc function
-//----------------------------------------------------------------------------------------------------
-  //Write to NC
-   int ncid, xvarid, yvarid, zvarid, bvarid, xdimid, ydimid;
-   int bxvarid, byvarid, bzvarid, bnvarid;
-   int dimids[2];
-   
-   nc_create(MFILB_FILE_NAME, NC_CLOBBER, &ncid); 
-   nc_def_dim(ncid, "Nzeta", Nzeta, &xdimid);
-   nc_def_dim(ncid, "Nteta", Nteta, &ydimid);
-   dimids[0] = xdimid;
-   dimids[1] = ydimid;
-   
-   nc_def_var(ncid, "xsurf", NC_DOUBLE, 2, dimids, &xvarid);
-   nc_def_var(ncid, "ysurf", NC_DOUBLE, 2, dimids, &yvarid);
-   nc_def_var(ncid, "zsurf", NC_DOUBLE, 2, dimids, &zvarid);  
-   nc_def_var(ncid, "B", NC_DOUBLE, 2, dimids, &bvarid);  
-   nc_def_var(ncid, "Bx", NC_DOUBLE, 2, dimids, &bxvarid);
-   nc_def_var(ncid, "By", NC_DOUBLE, 2, dimids, &byvarid);
-   nc_def_var(ncid, "Bz", NC_DOUBLE, 2, dimids, &bzvarid);  
-   nc_def_var(ncid, "Bn", NC_DOUBLE, 2, dimids, &bnvarid);
-
-   nc_enddef(ncid);
-   nc_put_var_double(ncid, xvarid, &xsurf[0]);
-   nc_put_var_double(ncid, yvarid, &ysurf[0]);
-   nc_put_var_double(ncid, zvarid, &zsurf[0]);
-   nc_put_var_double(ncid, bvarid, &Bmfil[0]);
-   nc_put_var_double(ncid, bxvarid, &Bmfilx[0]);
-   nc_put_var_double(ncid, byvarid, &Bmfily[0]);
-   nc_put_var_double(ncid, bzvarid, &Bmfilz[0]);
-   nc_put_var_double(ncid, bnvarid, &Bmfiln[0]);
-
-   nc_close(ncid);
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

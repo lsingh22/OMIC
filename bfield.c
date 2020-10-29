@@ -7,38 +7,15 @@
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 //GLOBALS SCOPED IN SOURCE FILE
-//See globals.h for description of parameters and arrays
 
-double* xsurf;
-double* ysurf;
-double* zsurf;
+double* xsurf; double* ysurf; double* zsurf; double* nsurfx; double* nsurfy; double* nsurfz;
 
-double* nsurfx;
-double* nsurfy;
-double* nsurfz;
+int Ncoil; int iCoil; int Nzeta; int Nteta; int Nfp; double* currents; int Nseg;
 
-int Ncoil;
-int iCoil;
-int Nzeta;
-int Nteta;
-int Nfp;
+double* sfilx; double* sfily; double* sfilz; int Nradfil; int Ntorfil; int Nfils;
 
-double* currents;
-int Nseg;
+double* mfilx; double* mfily; double* mfilz; int Ns;
 
-double* sfilx;
-double* sfily;
-double* sfilz;
-
-int Nradfil;
-int Ntorfil;
-int Nfils;
-
-double* mfilx;
-double* mfily;
-double* mfilz;
-
-int Ns;
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 double cosnfp(int ip){ 

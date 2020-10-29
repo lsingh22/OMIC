@@ -1,4 +1,3 @@
-
 #include "single_fil.h"
 #include "bfield.h"
 #include <math.h>
@@ -12,41 +11,13 @@
  
 // GLOBALS SCOPED IN SOURCE FILE
 
-int Ncoil;
-int Nseg;
-int Nfp;
-int isSym;
-int NFcoil; 
+int Ncoil; int Nseg; int Nfp; int isSym; int NFcoil; int Nzeta; int Nteta;
 
-int Nzeta;
-int Nteta;
+double* coilspace; double* currents; double* cx; double* cy; double* cz;
+double* sfilx; double* sfily; double* sfilz; double* coilamps; int* ind_arr;
 
-double* coilspace;
-double* currents;
-double* cx;
-double* cy;
-double* cz;
-double* sfilx;
-double* sfily;
-double* sfilz;
-double* coilamps;
-int* ind_arr;
-
-double* Bsfilx;
-double* Bsfily;
-double* Bsfilz;
-double* Bsfiln;
-double* Bsfil;
- 
-double* nsurfx;
-double* nsurfy;
-double* nsurfz;
-
-double* xsurf;
-double* ysurf;
-double* zsurf;
-
-int Ns;
+double* Bsfilx; double* Bsfily; double* Bsfilz; double* Bsfiln; double* Bsfil;
+double* nsurfx; double* nsurfy; double* nsurfz; double* xsurf; double* ysurf; double* zsurf; int Ns;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -170,7 +141,7 @@ void SingleFilField(void){
 
 void AverageMultiFilaments(void){
 
-//TODO
+//TODO: will be added when we allow cross section to translate
 
 }
 
@@ -218,7 +189,6 @@ void WriteSingleB(void){
 void WriteSingleFilaments(void){
 //----------------------------------------------------------------------------------------------------
 // Old: output single filaments to a txt file
-// TODO: there might be an indexing issue
 //----------------------------------------------------------------------------------------------------
  
    register int i,j;

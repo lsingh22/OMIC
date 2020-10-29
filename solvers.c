@@ -1,5 +1,3 @@
-//This is for initializing user inputs
-
 #include "solvers.h"
 #include <stdlib.h>
 #include <math.h>
@@ -14,41 +12,17 @@
  
 // GLOBALS SCOPED IN SOURCE FILE
 
-double* alpampsinit;
-double* derivs;
-double* alpamps;
-double* derivs;
-double* descent_dir;
-double* Bmfiln;
-double* nsurfn;
-double* fbn;
+double* alpampsinit; double* derivs; double* alpamps; double* derivs; double* descent_dir; double* Bmfiln; double* nsurfn; double* fbn;
+double weight_comp; double nvals_scaling; double comp_penalty_init;
 
-double weight_comp;
-double nvals_scaling;
-double comp_penalty_init;
-
-int nproc;
-int pn;
-
-int case_alpha;
-int Ncoil;
-int Nfp;
-int NFalpha;
-int size_alpamp;
-double alp_const;
-
-int size_fp;
-int iCoil;
-
-//TODO: In the future, will need to change indexing if want NFalpha to differ for each coil
+int nproc; int pn;
+int case_alpha; int Ncoil; int Nfp; int NFalpha; int size_alpamp; double alp_const; int size_fp; int iCoil;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 double SingleFieldError(void){
 //----------------------------------------------------------------------------------------------------
 // Returns the single-filament normal error objective function value
-// TODO: normalize this to surface area 
-// TODO: may want to exclude unpack and singlefilfield function calls, will need to check
 //----------------------------------------------------------------------------------------------------
 
    register int i;
@@ -67,10 +41,9 @@ double SingleFieldError(void){
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
-double MultiFieldError(void){  //TODO: Change CostFunction to MultiFieldError
+double MultiFieldError(void){ 
 //----------------------------------------------------------------------------------------------------
 // Returns the multi-filament normal error objective function value
-// TODO: normalize to surface area 
 //----------------------------------------------------------------------------------------------------
 
    register int i;
@@ -128,14 +101,11 @@ double ComplexityPenalty(void){
 double CostFunction(int case_objfun, double fb_init) {
 //----------------------------------------------------------------------------------------------------
 // Returns the value of the total objective function
-// case_objfun: 0-fb only  1-fb and fsw 
-// TODO: fc --> fsw
-// TODO: to avoid confusion, should probably exclude other function calls 
+// case_objfun: 0-fb only  1-fb and fc //TODO: toggle by value of weights to simplify
 //----------------------------------------------------------------------------------------------------
    double fb, fc;
    double feval = 0.0;
 
-   //Calculate the filaments and the field
    //Calculate the objective functions
    fb = MultiFieldError();
    fc = ComplexityPenalty();  
