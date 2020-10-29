@@ -3,3 +3,46 @@ This is a multi-filament coil optimization code developed primarily by Luquant S
 Input files: FOCUS-formatted output file (for initial filament positions), read_namelist.c is currently a hard-coded input file.
 Output files: multi-filament and single-filament positions, rotation profile, B-field and errors on boundary for filament/multi-filament sets
 
+---------------USAGE--------------
+
+   In a directory containing focus.output NetCDF file, execute
+
+   ./OMIC <prefix-for-inputfile>
+
+   to write a prefix.output and prefix.mcoils file. The .output file is a NetCDF formatted file containing relevant parameters in the optimization, and the .mcoils file is a text file containing the coil positions.
+
+   ex.) "./OMIC hsx_coils > log" will read in hsx_coils.input and focus.output from the active directory, and write hsx_coils.output and hsx_coils.mcoils to the same directory.
+    
+   
+   
+---------INPUT PARAMETERS----------
+
+   case_alpha (int): determines how coils initially rotate with respect to local basis
+   0- coils initialized with chosen local basis
+   1- coils displaced uniformly by alp_const from local basis
+   2- initial coil rotation profile read in from previous omic output file
+
+   NFalpha (double): spectral resolution of the rotation optimization function
+
+   alp_const (double): the initial uniform rotation for use with case_alpha = 1
+
+   isStellSym (int): determines if stellarator symmetry enforced
+   0- no stell sym
+   1- stell sym
+
+   Nseg (int): number of segments per filament in coil
+
+   weight_field (double): weighting on normal field error objective function
+   
+   weight_comp (double): weighting on coil complexity objective function
+
+   nvals_scaling (double): complexity weighting beta value (see 2020 JPP paper)
+
+   Nradfil (int): number of filaments along "radial" direction of winding pack
+
+   Ntorfil (int): number of filaments along "toroidal" direction of winding pack
+   
+   len_rad (double): dimension corresponding with Nradfil
+
+   len_tor (double): dimension corresponding with Ntorfil
+

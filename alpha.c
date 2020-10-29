@@ -44,7 +44,7 @@ void Init_alpha( int option ){
    }
    else if(option == 2)
    {
-      int size_amp = iCoil * (2*NFalpha+1);
+      int size_amp = iCoil * (2*NFalpha+1); //TODO: should probably override if NFalpha doesn't match previous optimization!
       int ncid, varid, dimid,retval;
       nc_open(multi_output, NC_NOWRITE, &ncid); //multi_output is the path to the .nc output file
       nc_inq_varid(ncid, "alpha", &varid);
