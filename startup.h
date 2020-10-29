@@ -1,13 +1,12 @@
-#ifndef _MULTI_FIL_H
-#define _MULTI_FIL_H
+#ifndef _STARTUP_H
+#define _STARTUP_H
 
 #include "globals.h"
-#include "libfyaml.h"
 
-void Startup(char* ext);
+void OMICStartup(char* ext);
 void ReadInputFile(void);
 void Initialize(void);
 void MPInit(void);
-int  CFileExists(char* filename)
+int CFileExists(char* file);
 
 #endif

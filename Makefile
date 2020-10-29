@@ -1,11 +1,11 @@
 # at PPPL, these modules are needed
 # module load gcc szip hdf hdf5-serial curl netcdf-c
 
-PROGRAM = multi
+PROGRAM = OMIC
 
-FILES.c = startup.c read_namelist.c multi.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
+FILES.c = startup.c read_namelist.c omic.c read_focus.c single_fil.c multi_fil.c bfield.c alpha.c output.c solvers.c
 
-FILES.h = libfyaml.h config.h startup.h read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
+FILES.h = startup.h read_namelist.h read_focus.h single_fil.h multi_fil.h bfield.h globals.h alpha.h output.h solvers.h
 
 FILES.o = ${FILES.c:.c=.o}
 
@@ -35,9 +35,9 @@ NETCDF_HOME = ${NETCDF_C_HOME}
 
 NETCDF = -I ${NETCDF_HOME}/include -L ${NETCDF_HOME}/lib -lnetcdf
 
-CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp #'pkg-config --cflag libfyaml'
+CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} -fopenmp 
 
-LDFLAGS = #'pkg-config --libs libfyaml'
+LDFLAGS = 
 
 LDLIBS  =
 
@@ -49,7 +49,7 @@ ${PROGRAM}: ${FILES.o}
 
 read_namelist.o: read_namelist.c globals.h read_namelist.h
 	${CC} ${NETCDF} -c $< -o $@
-multi.o: multi.c read_namelist.h 
+omic.o: omic.c read_namelist.h 
 	${CC}  -c $< -o $@
 read_focus.o: read_focus.c read_focus.h globals.h
 	${CC} ${NETCDF} -c $< -o $@
@@ -65,7 +65,7 @@ alpha.o: alpha.c alpha.h globals.h
 #	${CC} -c $< -o $@
 solvers.o: solvers.c solvers.h globals.h
 	${CC} -c $< -o $@
-startup.o: startup.c startup.h globals.h config.h
+startup.o: startup.c startup.h globals.h
 	${CC} -c $< -o $@
 
 DEBRIS = a.out core *~ *.dSYM

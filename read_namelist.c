@@ -29,7 +29,6 @@ int nproc;
 int* startind;
 int* endind;
 int isStellSym;
-int case_optimize;
 int iCoil;
 int size_alpamp;
 int size_fp;
@@ -43,7 +42,6 @@ void SetInputs(void){
 // Write inputs to globals
 //----------------------------------------------------------------------------------------------------
 
-   case_optimize = 0;
    niter = 0;
  
    case_alpha = 0;
@@ -90,7 +88,7 @@ void Initialize(void){
 }
 
 
-void MPInit(void){
+void MPISetup(void){
 //----------------------------------------------------------------------------------------------------
 // Allocate and write some useful arrays for mpi implementation
 //----------------------------------------------------------------------------------------------------

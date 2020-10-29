@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <assert.h>
 #include <string.h>
-#include "libfyaml.h"
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
@@ -40,7 +39,6 @@ int nproc;
 int* startind;
 int* endind;
 int isStellSym;
-int case_optimize;
 int iCoil;
 int size_alpamp;
 int size_fp;
@@ -62,7 +60,7 @@ int CFileExists(char *filename){
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-void Startup(char *ext){
+void OMICStartup(char *ext){
 /* Handle errors on startup */
    char *ext_omic_in = malloc(strlen(ext) + 1);
    strcpy(ext_omic_in, ext);
@@ -126,99 +124,4 @@ void Startup(char *ext){
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-void ReadInputFile(void){
-   /* Read YAML input file */
-   int count;
-   struct fy_document *fyd;
-//   fyd = fy_document_build_from_file(NULL, multi_output);
-
-//   if(!fyd)
-//   {
-//      printf("ERROR: Failed to build input file.\n");
-//      exit(0);
-//   }  
-     
-//   Try this before writing everything incorrectly...
-     
-//   count = fy_document_scanf(fyd,"/case_optimize %d ", &case_optimize); 
-//   if(count!=1){printf("ERROR: Please specify case_optimize input parameter.\n");
-
-
-//   Rest of the parameters to assign to globals
-/* 
-   niter = fy_document_scanf(fyd, "/niter %d ");
-   case_alpha = 0;
-   NFalpha = 1;
-   alp_const = 0.000;
- 
-   isStellSym = 0;
-   Nseg = 128;
-
-   weight_comp = 0.01; //complexity weighting
-   case_objfun = 1; //0 for fbn , 1 for both fbn and fc
-   nvals_scaling = 2; // the beta in the complexity formulation   
-
-   Nradfil = 2;
-   Ntorfil = 2;
-
-   len_rad = 0.120; // 1/2 hsx 
-   len_tor = 0.060;
-*/ 
-
-//   count = EXIT_SUCCESS;
-
-}
-
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-/*
-void Initialize(void){
-
-   if(isStellSym == 1)
-   {
-      iCoil = Ncoil / ( 2 * Nfp );
-      size_fp = Nteta * Nzeta / ( 2 * Nfp ); 
-      Ns = 1; 
-   }
-   else if(isStellSym == 0)
-   {
-      iCoil = Ncoil / Nfp;
-      size_fp = Nteta * Nzeta / Nfp; 
-      Ns = 0;
-   }
-
-   size_alpamp = iCoil * ( 2 * NFalpha + 1 ); 
-   Nfils = Nradfil * Ntorfil; 
-}
-
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-void MPInit(void){
-//----------------------------------------------------------------------------------------------------
-// Allocate and write some useful arrays for mpi implementation
-//----------------------------------------------------------------------------------------------------
- 
-   startind = (int*) malloc(nproc*sizeof(int));
-     endind = (int*) malloc(nproc*sizeof(int)); 
-
-   int size_fp = Nteta*Nzeta / Nfp;
-   int floor_points_per_proc = (size_fp - (size_fp % 2)) / nproc; //returns even average of points per processor
-   int endpn = nproc - 1; //the index value of last processor
-
-   for(int i=0;i<nproc;i++)
-   {
-      *(startind+i) = 0 + i*floor_points_per_proc;
-      *(endind+i)   = (i+1)*floor_points_per_proc - 1; 
-   }
-   
-   //increment the last index if there are an odd number of points
-   if(size_fp % 2 == 1)
-   {
-      *(endind+endpn) = *(endind+endpn) + 1;
-   }
-}
-*/
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
 
