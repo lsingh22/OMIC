@@ -2,6 +2,7 @@
 #include "alpha.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 // GLOBALS SCOPED IN SOURCE FILE
@@ -64,6 +65,40 @@ void Initialize(void){
 
    size_alpamp = iCoil * ( 2 * NFalpha + 1 ); 
    Nfils = Nradfil * Ntorfil; 
+}
+
+#define MAXCHAR 32
+
+void ReadInputs(void){
+
+   FILE *fp;
+   char str[MAXCHAR];
+   char* filename = "sample.input";
+
+   const char s[2] = "=";
+   const char t[2] = ";";
+   char *token;
+   
+   fp = fopen(filename, "r");
+   
+   if (fp == NULL)
+   {
+      printf("Could not open file %s",filename);
+      return;
+   }
+   
+   char *cut = "=";
+   int index;
+   char *strcopy = str;
+
+   while (fgets(str, MAXCHAR, fp) != NULL)
+   {
+      token = strtok(str, " ");
+      token = strtok(NULL, " "); 
+      //printf( "%s\n", token);
+   }
+
+   fclose(fp);
 }
 
 
