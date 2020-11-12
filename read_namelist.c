@@ -9,7 +9,7 @@
 double len_rad; double len_tor; double Nturns;
 char* focus_output; char* multi_output; char* sfil_output; char* mfil_output;
 
-double* alp; int Nradfil; int Ntorfil; int Nseg; int isVaryRotation; int case_alpha; int case_objfun;
+double* alp; int Nradfil; int Ntorfil; int Nseg; int isVaryRotation; int case_alpha; int case_objfun; double nvals_scaling;
 int NFalpha; double alp_const; int niter; double surface_area; 
 
 int nproc; int* startind; int* endind;
@@ -17,35 +17,92 @@ int isStellSym; int iCoil; int size_alpamp; int size_fp; int Nfils; int Ns;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
-void SetInputs(void){
+#define MAXCHAR 32
+
+void ReadInputs(void){
 //----------------------------------------------------------------------------------------------------
-// Write inputs to globals
+// Read in user-specified inputs
 //----------------------------------------------------------------------------------------------------
-
-   niter = 0;
  
-   case_alpha = 0;
-   NFalpha = 1;
-   alp_const = 0.000;
- 
-   isStellSym = 0;
-   Nseg = 128;
+   FILE *fp;
+   char str[MAXCHAR];
+   char* filename = omic_input;
 
-   weight_comp = 0.01; //complexity weighting
-   case_objfun = 1; //0 for fbn , 1 for both fbn and fc
-   nvals_scaling = 2; // the beta in the complexity formulation   
+   const char s[2] = "=";
+   const char t[2] = ";";
+   char *token;
+   
+   fp = fopen(filename, "r");
+   
+   if (fp == NULL)
+   {
+      printf("Could not open file %s",filename);
+      return;
+   }
 
-   Nradfil = 7;
-   Ntorfil = 2;
-
-   len_rad = 0.120; // 1/2 hsx 
-   len_tor = 0.060;
-   //len_rad = 0.1500; // wista
-   //len_tor = 0.0750;
-   //len_rad = 0.3500; // ellipse
-   //len_tor = 0.7000;
+   register int i; i=0;
+   
+   while (fgets(str, MAXCHAR, fp) != NULL)
+   {
+      i++;
+      token = strtok(str, " ");
+      token = strtok(NULL, " "); 
+   
+      if(i==1)
+      {
+         sscanf(token, "%d", &niter);         
+      }
+      if(i==2)
+      {
+         sscanf(token, "%d", &NFalpha);         
+      } 
+      if(i==3)
+      {
+         sscanf(token, "%d", &isStellSym);         
+      }
+      if(i==4)
+      {
+         sscanf(token, "%d", &case_alpha);         
+      }
+      if(i==5)
+      {
+         sscanf(token, "%lf", &alp_const);         
+      }
+      if(i==6)
+      {
+         sscanf(token, "%lf", &weight_comp);         
+      }
+      if(i==7)
+      {
+         sscanf(token, "%d", &case_objfun);         
+      }
+      if(i==8)
+      {
+         sscanf(token, "%lf", &nvals_scaling);         
+      }
+      if(i==9)
+      {
+         sscanf(token, "%d", &Nseg);         
+      }
+      if(i==10)
+      {
+         sscanf(token, "%d", &Nradfil);         
+      }
+      if(i==11)
+      {
+         sscanf(token, "%d", &Ntorfil);         
+      }
+      if(i==12)
+      {
+         sscanf(token, "%lf", &len_rad);         
+      }
+      if(i==13)
+      {
+         sscanf(token, "%lf", &len_tor);         
+      }
+   }
+   fclose(fp);
 }
-
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void Initialize(void){
@@ -66,41 +123,6 @@ void Initialize(void){
    size_alpamp = iCoil * ( 2 * NFalpha + 1 ); 
    Nfils = Nradfil * Ntorfil; 
 }
-
-#define MAXCHAR 32
-
-void ReadInputs(void){
-
-   FILE *fp;
-   char str[MAXCHAR];
-   char* filename = "sample.input";
-
-   const char s[2] = "=";
-   const char t[2] = ";";
-   char *token;
-   
-   fp = fopen(filename, "r");
-   
-   if (fp == NULL)
-   {
-      printf("Could not open file %s",filename);
-      return;
-   }
-   
-   char *cut = "=";
-   int index;
-   char *strcopy = str;
-
-   while (fgets(str, MAXCHAR, fp) != NULL)
-   {
-      token = strtok(str, " ");
-      token = strtok(NULL, " "); 
-      //printf( "%s\n", token);
-   }
-
-   fclose(fp);
-}
-
 
 void MPISetup(void){
 //----------------------------------------------------------------------------------------------------
