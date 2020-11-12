@@ -1,20 +1,21 @@
 This is a multi-filament coil optimization code developed primarily by Luquant Singh and Thomas Kruger at the University of Wisconsin, HSX Laboratory.
 
-Input files: FOCUS-formatted output file (for initial filament positions), read_namelist.c is currently a hard-coded input file.
+Input files: FOCUS-formatted output file (for initial filament positions), text file "<prefix>.input" with formatted input.
 Output files: multi-filament and single-filament positions, rotation profile, B-field and errors on boundary for filament/multi-filament sets
+
+To convert FOCUS output from .h5 -> .nc, use nccopy <path-to-existing-h5> <path-to-new-nc>.
 
 ---------------USAGE--------------
 
-   In a directory containing focus.output NetCDF file, execute
+In a directory containing focus.output NetCDF file, execute
 
    ./OMIC <prefix-for-inputfile>
 
-   to write a prefix.output and prefix.mcoils file. The .output file is a NetCDF formatted file containing relevant parameters in the optimization, and the .mcoils file is a text file containing the coil positions.
+to write a prefix.output and prefix.mcoils file. The .output file is a NetCDF formatted file containing relevant parameters in the optimization, and the .mcoils file is a text file containing the coil positions.
 
    ex.) "./OMIC hsx_coils > log" will read in hsx_coils.input and focus.output from the active directory, and write hsx_coils.output and hsx_coils.mcoils to the same directory.
     
-   
-   
+    
 ---------INPUT PARAMETERS----------
 
    case_alpha (int): determines how coils initially rotate with respect to local basis
