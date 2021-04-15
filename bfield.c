@@ -4,40 +4,24 @@
 #include <stdio.h>
 #include <netcdf.h>
 #include <omp.h>
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-//GLOBALS SCOPED IN SOURCE FILE
-
-double* xsurf; double* ysurf; double* zsurf; double* nsurfx; double* nsurfy; double* nsurfz;
-
-int Ncoil; int iCoil; int Nzeta; int Nteta; int Nfp; double* currents; int Nseg;
-
-double* sfilx; double* sfily; double* sfilz; int Nradfil; int Ntorfil; int Nfils;
-
-double* mfilx; double* mfily; double* mfilz; int Ns;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 double cosnfp(int ip){ 
 //----------------------------------------------------------------------------------------------------
-// Returns the cosine of a vector component at the ip-th field period
+// Cosine of vector component at the ip-th field period
 //----------------------------------------------------------------------------------------------------
-   double val;
-   double twopi = M_PI*2;
-   val = cos( (ip-1)*twopi / Nfp);
-   return val;
+   return cos((ip - 1) * M_PI * 2 / Nfp);
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 double sinnfp(int ip){ 
 //----------------------------------------------------------------------------------------------------
-// Returns the sine of a vector component at the ip-th field period
+// Sine of vector component at the ip-th field period
 //----------------------------------------------------------------------------------------------------
-   double val;
-   double twopi = M_PI*2;
-   val = sin( (ip-1)*twopi / Nfp);
-   return val;
+   return sin((ip - 1) * M_PI * 2 / Nfp);
+
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
@@ -104,28 +88,22 @@ void CalculateSingleField(double x, double y, double z, \
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-void CalculateMultiFieldSym(double x, double y, double z, \
-                          double* Bx, double* By, double* Bz){
+void CalculateMultiFieldSym(double x, double y, double z, 
+                            double* Bx, double* By, double* Bz){
 //----------------------------------------------------------------------------------------------------
 // Calculates the field due to multi-filament representation at the point (x,y,z)
-// Field components are implicitly stored in (Bx,By,Bz) in function call
-// Based on the method of Hanson and Hirschman
+// Based on the method of Hanson and Hirschman.
 // Periodicity is supported, but not stellarator symmetry
 //
-// Symmetry calculation taken straight from FOCUS:
 // The input point is used to find the same point on each period,
 // (x,y,z) --> (xxi_1,yy_1,zz_1) ... (xx_nfp-1,yy_nfp-1,zz_nfp-1)
-// The field is then calculated at each of the nfp points, and each contribution is superposed upon proper
-// rotation back to the initial field period. 
-// Rotations are 'swept under the rug' by the cosnfp,sinnfp functions. 
+// The field is then calculated at each of the nfp points and rotated back.
+// Rotations are handled by the cosnfp,sinnfp functions. 
 //----------------------------------------------------------------------------------------------------  
    
-   double muc = 1.0e-7;
-   double one = 1.00000000000000000000; //these should probably be global
-   double two = 2.00000000000000000000;
-   register int ip,i,j,k;
-   int is;
-   double factor = muc * two / Nfils;
+   double muc = 1.0e-7; // (mu / 4 * pi)
+   int ip, i, j, k, is;
+   double factor = muc * 2.0 / Nfils;
    double l, ex, ey, ez, bx, by, bz, bxx, byy, bzz;
    double xx, yy, zz;
    double ri, xi, yi, zi;
@@ -143,40 +121,45 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    
    zz = z;
 
-   for(ip=1;ip<Nfp+1;ip++)
-   { 
+   for(ip = 1; ip < Nfp + 1; ip++) { 
+
       //Find coefficients of transformation matrix
       rot_cos = cosnfp(ip);
       rot_sin = sinnfp(ip);
       is = Ns; 
-      while(is>-1)
-      {  
+
+      while(is>-1) {  
+
+         // For stellarator symmetry case 
          symfac = pow(-1,is);         
- 
-         //Find symmetric point on other field periods
+      
+         // Find symmetric point on other field periods
          xx = (  x * rot_cos + y * rot_sin ); 
          yy = ( -x * rot_sin + y * rot_cos ) * symfac; 
          zz = z * symfac;
-         for(i=0;i<iCoil;i++)
-         {
-            //Store current of i-th coil 
-            cur = *(currents+i);
-            for(j=0;j<Nfils;j++)
-            {
+
+         for(i = 0; i < iCoil; i++) {	
+
+            // Store current of i-th coil 
+            cur = currents[i];
+        
+	    for(j = 0; j < Nfils; j++) {
+
                //Store first point of current filament before main loop
-               xi = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1));
-               yi = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1));
-               zi = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1));
+               xi = xx - mfilx[i*Nfils*(Nseg+1)+j*(Nseg+1)];
+               yi = yy - mfily[i*Nfils*(Nseg+1)+j*(Nseg+1)];
+               zi = zz - mfilz[i*Nfils*(Nseg+1)+j*(Nseg+1)];
                ri = sqrt( xi*xi + yi*yi + zi*zi );           
             
-               for(k=0;k<Nseg;k++) //TODO: check if this works for odd nseg
-               {
-                  xf = xx - *(mfilx+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
-                  yf = yy - *(mfily+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
-                  zf = zz - *(mfilz+i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1);
-                  rf = sqrt( xf*xf + yf*yf + zf*zf);
+               for(k = 0; k < Nseg; k++) {
+
+                  // Calculate vector from input point to end of segment
+                  xf = xx - mfilx[i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1];
+                  yf = yy - mfily[i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1];
+                  zf = zz - mfilz[i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1];
+                  rf = sqrt(xf * xf + yf * yf + zf * zf);
                
-                  l = sqrt( (xf-xi)*(xf-xi) + (yf-yi)*(yf-yi) + (zf-zi)*(zf-zi));  
+                  l = sqrt( (xf-xi)*(xf-xi) + (yf-yi)*(yf-yi) + (zf-zi)*(zf-zi) );  
 
                   ex = ( xf - xi ) / l;  
                   ey = ( yf - yi ) / l;  
@@ -184,7 +167,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
        
                   eps = l / (ri + rf);
                   eta = ri * rf;
-                  coef = cur * eps / (eta * (one - eps * eps)); 
+                  coef = cur * eps / (eta * (1.0 - eps * eps)); 
    
                   bx += coef * (ey*zi-ez*yi);
                   by += coef * (ez*xi-ex*zi);
@@ -198,6 +181,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
                }
             }
          }     
+        
          //Rotate back to first field period
          bxx += ( bx * rot_cos - by * rot_sin  ) * symfac;  
          byy += ( bx * rot_sin + by * rot_cos ); 
@@ -210,6 +194,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
          is = is - 1;
       }
    }  
+   
    *Bx = bxx * factor;
    *By = byy * factor;
    *Bz = bzz * factor;
