@@ -104,16 +104,14 @@ void CalculateMultiFieldSym(double x, double y, double z,
    double muc = 1.0e-7; // (mu / 4 * pi)
    int ip, i, j, k, is;
    double factor = muc * 2.0 / Nfils;
-   double l, ex, ey, ez, bx, by, bz, bxx, byy, bzz;
-   double xx, yy, zz;
-   double ri, xi, yi, zi;
-   double rf, xf, yf, zf;
-   double cur, eps, eta, coef,symfac;
-   double rot_cos, rot_sin;
+   double l, ex, ey, ez; 
+   double bx, by, bz, bxx, byy, bzz;
+   double xx, yy, zz, ri, xi, yi, zi, rf, xf, yf, zf;
+   double cur, eps, eta, coef, symfac, rot_cos, rot_sin;
 
-   bx = 0.0;
-   by = 0.0;
-   bz = 0.0;
+	bx = 0.0;
+	by = 0.0;
+	bz = 0.0;
 
    bxx = 0.0;
    byy = 0.0;
@@ -131,48 +129,54 @@ void CalculateMultiFieldSym(double x, double y, double z,
       while(is>-1) {  
 
          // For stellarator symmetry case 
-         symfac = pow(-1,is);         
+         symfac = pow(-1, is);         
       
          // Find symmetric point on other field periods
          xx = (  x * rot_cos + y * rot_sin ); 
          yy = ( -x * rot_sin + y * rot_cos ) * symfac; 
          zz = z * symfac;
 
+			// Loop over all coils
          for(i = 0; i < iCoil; i++) {	
-
-            // Store current of i-th coil 
-            cur = currents[i];
-        
-	    for(j = 0; j < Nfils; j++) {
+	    		
+				// Loop over all filaments in coil
+				for(j = 0; j < Nfils; j++) {
 
                //Store first point of current filament before main loop
                xi = xx - mfilx[i*Nfils*(Nseg+1)+j*(Nseg+1)];
                yi = yy - mfily[i*Nfils*(Nseg+1)+j*(Nseg+1)];
                zi = zz - mfilz[i*Nfils*(Nseg+1)+j*(Nseg+1)];
-               ri = sqrt( xi*xi + yi*yi + zi*zi );           
+               ri = sqrt(pow(xi,2) + pow(yi,2) + pow(zi,2));           
             
+					// Loop over all segments in a filament
                for(k = 0; k < Nseg; k++) {
 
                   // Calculate vector from input point to end of segment
                   xf = xx - mfilx[i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1];
                   yf = yy - mfily[i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1];
                   zf = zz - mfilz[i*Nfils*(Nseg+1)+j*(Nseg+1)+k+1];
-                  rf = sqrt(xf * xf + yf * yf + zf * zf);
+                  rf = sqrt(pow(xf,2) + pow(yf,2) + pow(zf,2));
                
-                  l = sqrt( (xf-xi)*(xf-xi) + (yf-yi)*(yf-yi) + (zf-zi)*(zf-zi) );  
+                  l = sqrt( pow(xf-xi,2) + pow(yf-yi,2) + pow(zf-zi,2) );  
 
-                  ex = ( xf - xi ) / l;  
-                  ey = ( yf - yi ) / l;  
-                  ez = ( zf - zi ) / l;  
+                  ex = (xf - xi) / l;
+                  ey = (yf - yi) / l;  
+                  ez = (zf - zi) / l;  
        
-                  eps = l / (ri + rf);
-                  eta = ri * rf;
-                  coef = cur * eps / (eta * (1.0 - eps * eps)); 
-   
+						// Factor common to dBx, dBy and dBz
+						// Note that the factor of two and current are absent here
+	               coef = l * (ri+rf) / (ri*rf * (pow(ri + rf,2) - pow(l,2)) );	
+
+						bx += coef * (ey*zi-ez*yi); 
+                  by += coef * (ez*xi-ex*zi);
+                  bz += coef * (ex*yi-ey*xi);
+
+/* MODIFIED 04/14/21: get rid of unnecessary current multiplication in innermost loop (759) 
+ * This was implicit in how coef was defined previously 	
                   bx += coef * (ey*zi-ez*yi);
                   by += coef * (ez*xi-ex*zi);
                   bz += coef * (ex*yi-ey*xi);
-              
+*/              
                   //End of segment k becomes beginning of segment k+1
                   xi = xf;
                   yi = yf;
@@ -180,17 +184,20 @@ void CalculateMultiFieldSym(double x, double y, double z,
                   ri = rf;
                }
             }
-         }     
+         	bx *= currents[i];
+				by *= currents[i];
+				bz *= currents[i];
+			}     
         
          //Rotate back to first field period
-         bxx += ( bx * rot_cos - by * rot_sin  ) * symfac;  
-         byy += ( bx * rot_sin + by * rot_cos ); 
+         bxx += (bx * rot_cos - by * rot_sin) * symfac;  
+         byy += (bx * rot_sin + by * rot_cos); 
          bzz += bz;
 
          bx = 0;
          by = 0;
          bz = 0;          
-
+  
          is = is - 1;
       }
    }  
