@@ -238,57 +238,58 @@ void MultiFilFieldSym(void){
 //----------------------------------------------------------------------------------------------------
   
    double t1,t2;
-   register int i,ip;
-   int first,last;
-   double timefield;
-   double startfield, endfield;
+   int i, j, ip, nave;
    double rot_cos, rot_sin;
+   double start, end, total; 
 
-   Bmfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
-   Bmfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
-   Bmfilz = (double*) malloc(Nzeta*Nteta*sizeof(double));
-   Bmfiln = (double*) malloc(Nzeta*Nteta*sizeof(double));
-    Bmfil = (double*) malloc(Nzeta*Nteta*sizeof(double));
+   Bmfilx = (double*) malloc(Nzeta * Nteta * sizeof(double));
+   Bmfily = (double*) malloc(Nzeta * Nteta * sizeof(double));
+   Bmfilz = (double*) malloc(Nzeta * Nteta * sizeof(double));
+   Bmfiln = (double*) malloc(Nzeta * Nteta * sizeof(double));
+    Bmfil = (double*) malloc(Nzeta * Nteta * sizeof(double));
 
-   first = *(startind+pn);
-    last = *(endind+pn);
- 
-   startfield = MPI_Wtime();
- 
-   for(i=first;i<last+1;i++)
-   {      
-      CalculateMultiFieldSym( *(xsurf+i), *(ysurf+i), *(zsurf+i), \
-                            Bmfilx+i, Bmfily+i, Bmfilz+i );    
-   }
+	// MPI rank chunks
+   int first = startind[pn];
+   int last  = endind[pn];
+
+	// Number of times to run integration for averaging (759)
+	nave = 3;
+
+	// Calculate field ten times for averaging
+	for(j = 0; j < nave; j++) {   
+      start = MPI_Wtime();
+   	for(i = first; i < last + 1; i++) {      
+/*    	CalculateMagneticField(xsurf[i], ysurf[i], zsurf[i], \
+        	                       Bmfilx+i, Bmfily+i, Bmfilz+i);    
+*/			CalculateMultiFieldSym(xsurf[i], ysurf[i], zsurf[i], \
+      	                       Bmfilx+i, Bmfily+i, Bmfilz+i);    
+		}
+	   end = MPI_Wtime();
+		total += (end - start);
+	}
+	printf("Total time for field calculation: %f\n", total / nave);
    
    //Reflect to the rest of the field periods
-   if(nproc==1)
-   {
-      for(i=0;i<size_fp;i++)
-      {
-         *(Bmfiln+i) = *(Bmfilx+i) * *(nsurfx+i) + *(Bmfily+i) * *(nsurfy+i) + \
-                    *(Bmfilz+i) * *(nsurfz+i);  
-         *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
+   if(nproc == 1) {
+      for(i = 0;i < size_fp; i++) {
+         Bmfiln[i] = Bmfilx[i] * nsurfx[i] + Bmfily[i] * nsurfy[i] + Bmfilz[i] * nsurfz[i];  
+         Bmfil[i] =  sqrt( pow(Bmfilx[i], 2) + pow(Bmfily[i], 2) + pow(Bmfilz[i], 2) ); 
       }
 
-      for(ip=2;ip<Nfp+1;ip++)
-      {
+      for(ip = 2; ip < Nfp + 1; ip++) {
          rot_cos = cosnfp(ip);
          rot_sin = sinnfp(ip);
        
-         for(i=0;i<size_fp;i++)
-         {
-            *(Bmfil  + (ip-1)*size_fp+i) = *(Bmfil+i);       
-            *(Bmfiln + (ip-1)*size_fp+i) = *(Bmfiln+i);
-            *(Bmfilx + (ip-1)*size_fp+i) = *(Bmfilx+i) * rot_cos - *(Bmfily+i) * rot_sin;
-            *(Bmfily + (ip-1)*size_fp+i) = *(Bmfilx+i) * rot_sin + *(Bmfily+i) * rot_cos;
-            *(Bmfilz + (ip-1)*size_fp+i) = *(Bmfilz+i);
+         for(i = 0; i < size_fp; i++) {
+            Bmfil[  (ip-1) * size_fp +i] = Bmfil[i];       
+            Bmfiln[ (ip-1) * size_fp +i] = Bmfiln[i];
+            Bmfilx[ (ip-1) * size_fp +i] = Bmfilx[i] * rot_cos - Bmfily[i] * rot_sin;
+            Bmfily[ (ip-1) * size_fp +i] = Bmfilx[i] * rot_sin + Bmfily[i] * rot_cos;
+            Bmfilz[ (ip-1) * size_fp +i] = Bmfilz[i];
          }
       }
    }
-   
-   endfield = MPI_Wtime();      
-//   if(pn==0){printf("\nTotal time for field calculation: %f\n\n", endfield-startfield);}   
+
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
