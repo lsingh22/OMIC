@@ -30,10 +30,7 @@ void CalculateSingleField(double x, double y, double z, \
                           double* Bx, double* By, double* Bz){
 //----------------------------------------------------------------------------------------------------
 // Calculates the field due to single filament representation at the point (x,y,z)
-// Field components are implicitly stored in (Bx,By,Bz) in function call
 // Based on the method of Hanson and Hirschman
-// See publication for parameter definitions (TODO:insert url here)
-// TODO: this should be exactly the same as MultiFilFieldSym except for indexing
 //---------------------------------------------------------------------------------------------------- 
    double muc = 1.0e-7;
    int i,j;
@@ -88,15 +85,21 @@ void CalculateSingleField(double x, double y, double z, \
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-void CalculateMultiFieldSym(double x, double y, double z, \
-                          double* Bx, double* By, double* Bz){
+void CalculateFieldSerial(void) {
+
+	register int i;
+	
+   for(i = 0; i < size_fp; i++) {      
+		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
+	}
+}
+
+void CalculateFieldAtPoint(double x, double y, double z, \
+                           double* Bx, double* By, double* Bz){
 //----------------------------------------------------------------------------------------------------
 // Calculates the field due to multi-filament representation at the point (x,y,z)
 // Based on the method of Hanson and Hirschman
 // Periodicity is supported, but not stellarator symmetry
-//
-// The input point is used to find the same point on each period,
-// (x,y,z) --> (xxi_1,yy_1,zz_1) ... (xx_nfp-1,yy_nfp-1,zz_nfp-1)
 //----------------------------------------------------------------------------------------------------  
    
 	// Numerical prefactors and index variables
@@ -104,22 +107,14 @@ void CalculateMultiFieldSym(double x, double y, double z, \
    register int ip, i, j, k, is;
    double factor = muc * 2 / Nfils;
    
-	// Geometric and EM quantities
+	// Relevant geometric and EM quantities
 	double l, ex, ey, ez, bx, by, bz, bxx, byy, bzz;
-   double xx, yy, zz;
-   double ri, xi, yi, zi;
-   double rf, xf, yf, zf;
-   double cur, eps, eta, coef, symfac;
-   double rot_cos, rot_sin;
+   double xx, yy, zz, ri, xi, yi, zi, rf, xf, yf, zf;
+   double cur, coef, symfac, rot_cos, rot_sin;
 
 	// Initialize field components to zero 
-   bx = 0.0;
-   by = 0.0;
-   bz = 0.0;
-
-   bxx = 0.0;
-   byy = 0.0;
-   bzz = 0.0;
+   bx  = 0.0; by  = 0.0; bz  = 0.0;
+   bxx = 0.0; byy = 0.0; bzz = 0.0;
    
 	// True, except in the stellarator symmetric case
    zz = z;
@@ -173,6 +168,7 @@ void CalculateMultiFieldSym(double x, double y, double z, \
                   coef = cur * eps / (eta * (1.0 - eps * eps)); 
 						*/
 
+						// Prefactor for cross product 
                   coef = cur * l * (ri+rf) / (ri*rf * ((ri+rf) * (ri+rf) - l * l));   
 
                   bx += coef * (ey * zi - ez * yi);

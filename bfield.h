@@ -19,8 +19,10 @@ double* mfilx; double* mfily; double* mfilz; int Ns;
 void CalculateSingleField(double x, double y, double z, \
                           double* Bx, double* By, double* Bz); 
 
-void CalculateMultiFieldSym(double x, double y, double z, \
-                            double* Bx, double* By, double* Bz); 
+void CalculateFieldAtPoint(double x, double y, double z, \
+                    double* Bx, double* By, double* Bz); 
+
+void CalculateFieldSerial(void);
 
 double cosnfp(int ip);  
 double sinnfp(int ip); 

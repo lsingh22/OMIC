@@ -5,7 +5,8 @@
 
 void CalculateBuildDirections(void);
 void CalculateMultiFilaments(void);
-void MultiFilFieldSym(void);
+void MultifilamentField(void);
+void ReflectFieldPeriod(void);
 void WriteMultiFilaments(void);
 void GatherFieldData(void);
 

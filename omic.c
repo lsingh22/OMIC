@@ -75,11 +75,7 @@ int main(int argc, char **argv){
    
    CalculateMultiFilaments();
    
-//   t1 = MPI_Wtime(); NOTE: timer now in MultiFilFieldSym
-   MultiFilFieldSym();
-//   t2 = MPI_Wtime();
-
-   if(pn==0){printf("\nField calculation on HEAD takes %.4f sec.\n", t2 - t1);}
+   MultifilamentField();
 
    if(nproc > 1){GatherFieldData();}
 

@@ -231,15 +231,13 @@ void CalculateMultiFilaments(void){
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-void MultiFilFieldSym(void){
+void MultifilamentField(void){
 //----------------------------------------------------------------------------------------------------
 // Calculate the field due to multi-filament coils
 // Periodicity is assumed  
 //----------------------------------------------------------------------------------------------------
   
-   double t1,t2;
    int i, j, ip, nave;
-   double rot_cos, rot_sin;
    double start, end, total; 
 
    Bmfilx = (double*) malloc(Nzeta * Nteta * sizeof(double));
@@ -248,51 +246,62 @@ void MultiFilFieldSym(void){
    Bmfiln = (double*) malloc(Nzeta * Nteta * sizeof(double));
     Bmfil = (double*) malloc(Nzeta * Nteta * sizeof(double));
 
-	// MPI rank chunks
+   // MPI rank chunks
    int first = startind[pn];
    int last  = endind[pn];
 
 	// Number of times to run integration for averaging (759)
-	nave = 3;
+	nave = 5;
 
-	// Calculate field ten times for averaging
 	for(j = 0; j < nave; j++) {   
-      start = MPI_Wtime();
-   	for(i = first; i < last + 1; i++) {      
-/*    	CalculateMagneticField(xsurf[i], ysurf[i], zsurf[i], \
-        	                       Bmfilx+i, Bmfily+i, Bmfilz+i);    
-*/			CalculateMultiFieldSym(xsurf[i], ysurf[i], zsurf[i], \
-      	                       Bmfilx+i, Bmfily+i, Bmfilz+i);    
-		}
+	   start = MPI_Wtime();	
+		// Calculate magnetic field at all points on a single field period
+		CalculateFieldSerial();
+
 	   end = MPI_Wtime();
 		total += (end - start);
 	}
+
+	// Print the average time
 	printf("Total time for field calculation: %f\n", total / nave);
    
-   //Reflect to the rest of the field periods
+   //Calculate |B| and B*n on one field period
    if(nproc == 1) {
-      for(i = 0;i < size_fp; i++) {
+      for(i = 0; i < size_fp; i++) {
          Bmfiln[i] = Bmfilx[i] * nsurfx[i] + Bmfily[i] * nsurfy[i] + Bmfilz[i] * nsurfz[i];  
          Bmfil[i] =  sqrt( pow(Bmfilx[i], 2) + pow(Bmfily[i], 2) + pow(Bmfilz[i], 2) ); 
       }
-
-      for(ip = 2; ip < Nfp + 1; ip++) {
-         rot_cos = cosnfp(ip);
-         rot_sin = sinnfp(ip);
-       
-         for(i = 0; i < size_fp; i++) {
-            Bmfil[  (ip-1) * size_fp +i] = Bmfil[i];       
-            Bmfiln[ (ip-1) * size_fp +i] = Bmfiln[i];
-            Bmfilx[ (ip-1) * size_fp +i] = Bmfilx[i] * rot_cos - Bmfily[i] * rot_sin;
-            Bmfily[ (ip-1) * size_fp +i] = Bmfilx[i] * rot_sin + Bmfily[i] * rot_cos;
-            Bmfilz[ (ip-1) * size_fp +i] = Bmfilz[i];
-         }
-      }
+      
+		// Reflect magnetics to symmetric field periods
+		ReflectFieldPeriod();
    }
-
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
+void ReflectFieldPeriod(void) {
+//----------------------------------------------------------------------------------------------------
+// Write magnetics to symmetric field periods
+// Periodicity assumed, but not stellarator symmetry
+//----------------------------------------------------------------------------------------------------
+
+	register int i, ip;
+   double rot_cos, rot_sin;
+
+   // Reflect magnetics to all field periods
+   for(ip = 2; ip < Nfp + 1; ip++) {
+      rot_cos = cosnfp(ip);
+      rot_sin = sinnfp(ip);
+       
+      for(i = 0; i < size_fp; i++) {
+         Bmfil [(ip-1) * size_fp +i] = Bmfil[i];       
+         Bmfiln[(ip-1) * size_fp +i] = Bmfiln[i];
+         Bmfilx[(ip-1) * size_fp +i] = Bmfilx[i] * rot_cos - Bmfily[i] * rot_sin;
+         Bmfily[(ip-1) * size_fp +i] = Bmfilx[i] * rot_sin + Bmfily[i] * rot_cos;
+         Bmfilz[(ip-1) * size_fp +i] = Bmfilz[i];
+      }
+   }
+}
 
 void GatherFieldData(void){
 //----------------------------------------------------------------------------------------------------
@@ -396,10 +405,12 @@ void GatherFieldData(void){
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
+
+
+
 void WriteMultiFilaments(void){
 //----------------------------------------------------------------------------------------------------
 // Writes a coils file containing multi-filament coordinates to a txt file
-// TODO: check what happens in symmetric case  
 //----------------------------------------------------------------------------------------------------
 
    register int i,j,k;

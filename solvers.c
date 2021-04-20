@@ -195,14 +195,14 @@ void Central_diff( double *dof, double fb_init ){
       
       *(alpamps+i) += h;
       CalculateMultiFilaments();
-      MultiFilFieldSym();
+      MultifilamentField();
       if(nproc > 1){GatherFieldData();}
 
       if(pn==0){plus_bn = MultiFieldError();}
 
       *(alpamps+i) -= 2*h;
       CalculateMultiFilaments();
-      MultiFilFieldSym();
+      MultifilamentField();
       if(nproc > 1){GatherFieldData();}
 
       if(pn==0){minus_bn = MultiFieldError();} 
@@ -270,7 +270,7 @@ void Forward_track(double fb_init ){
 
      
    CalculateMultiFilaments();
-   MultiFilFieldSym();
+   MultifilamentField();
    if(nproc > 1){GatherFieldData();}
    
    if(pn==0)
@@ -305,7 +305,7 @@ void Forward_track(double fb_init ){
       
       MPI_Bcast(alpamps,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);    
       CalculateMultiFilaments();
-      MultiFilFieldSym();
+      MultifilamentField();
       if(nproc > 1){GatherFieldData();}
 
       if(pn==0)
@@ -338,7 +338,7 @@ void Forward_track(double fb_init ){
    MPI_Bcast(alpamps,size_alpamp, MPI_DOUBLE, 0, MPI_COMM_WORLD);  
    
    CalculateMultiFilaments();
-   MultiFilFieldSym();
+   MultifilamentField();
    if(nproc > 1){GatherFieldData();}
 }
 
