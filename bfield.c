@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <netcdf.h>
 #include <omp.h>
+#include <cuda.h>
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -87,7 +88,7 @@ void CalculateSingleField(double x, double y, double z, \
 
 void CalculateFieldSerial(void) {
 
-	register int i;
+   register int i;
 	
    for(i = 0; i < size_fp; i++) {      
 		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    

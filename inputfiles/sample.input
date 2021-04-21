@@ -1,0 +1,13 @@
+niter: 0
+NFalpha: 5
+isStellSym: 0
+case_alpha: 0
+alp_const: 0.000
+weight_comp: 0.01
+case_objfun: 1
+nvals_scaling: 2
+Nseg: 128
+Nradfil: 7
+Ntorfil: 2
+len_rad: 0.120
+len_tor: 0.060
