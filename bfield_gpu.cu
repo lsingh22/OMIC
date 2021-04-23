@@ -1,8 +1,9 @@
-
 #include <cuda.h>
 #include "bfield_gpu.cuh"
 
 __global__ void field_kernel(void) {
+
+	// Dynamically allocate shared memory
 
 	// Loads from constant memory
 
@@ -20,7 +21,7 @@ __global__ void field_kernel(void) {
 
 }
 
-__host__ void magnetic_field(double* bx, double* by, double* bz, const double* currents, const double* mfx, const double* mfy, const double* mfz, const int ncoil, const int nseg) {
+__host__ void magnetic_field(double* bx, double* by, double* bz, const double* currents, const double* mfx, const double* mfy, const double* mfz, const int ncoil, const int nseg, const int size_fp) {
 
 	// TODO: for purposes of parallel implementation, ncoil should be Ncoil * Nfils
 
@@ -28,32 +29,46 @@ __host__ void magnetic_field(double* bx, double* by, double* bz, const double* c
 	// A 2D block configuration enables easy tracking of coils, segments
 	// A 1D grid configuration is determined by ty, the number of coils / block
 	// Field kernel computes B-field due to tx-th segment of ty-th coil
+	// Shared memory holds coil positions, currents, and two reduction buffers
 
-	unsigned int ty_dim = (1024 + nseg - 1) / nseg; // number of coils per block
-	unsigned int tx_dim = ty_dim * nseg; // number of segments per coil
-	unsigned int DimGrid = (ncoil + ty_dim - 1) / ty_dim;
+	unsigned int coils_per_block = (1024 + nseg - 1) / nseg;
+	unsigned int segs_per_block  = coils_per_block * nseg;   
 
-	dim3 DimBlock(tx_dim, ty_dim);
+	dim3 DimBlock(coils_per_block, segs_per_block);
+	unsigned int DimGrid = (ncoil + coils_per_block - 1) / coils_per_block;
+	unsigned int field_shMem_size = (segs_per_block * 3 + 2 * (segs_per_block - 1) * 3 \
+										      + coils_per_block) * sizeof(double);
+	unsigned int scan_shMem_size = 2 * DimGrid * 3 * sizeof(double); 
 
-	// Create helper currents array that stores each filament's current
+	// Create helper currents and reduction buffer unified arrays
 	double* Icoil;
-	
-	// Fill with currents of each filament
+	double* dBx;
+	double* dBy;
+	double* dBz;
 
+	// TODO: fill Icoil array with values from currents
+	 
 	cudaMallocManaged((void**)&Icoil, ncoil * sizeof(double));
+	cudaMallocManaged((void**)&dBx, Dimgrid * sizeof(double));
+	cudaMallocManaged((void**)&dBy, Dimgrid * sizeof(double));
+	cudaMallocManaged((void**)&dBz, Dimgrid * sizeof(double));
 
 	// For each point on magnetic surface,
-
+	for(int i = 0; i < size_fp; i++) {
+		
 		// Call field kernel to get magnetic field
-		// field_kernel<<< >>>(mfx[i], mfy[i], mfz[i], Icoil);
-		// cudaDeviceSynchronize(); // synchronize to prepare for reduction
+		field_kernel<<<DimGrid, DimBlock, field_shMem_size>>>(mfx, mfy, mfz, Icoil, dBx, dBy, dBz);
+		cudaDeviceSynchronize(); // synchronize to prepare for reduction
+		
+		//Call Hillis_Steele kernel to scan the partial sums and get bx, by, bz
+		hillis_steele<<<1, DimGrid, scan_shMem_size>>>(dBx, dBy, dBz, bx+i, by+i, bz+i);
+	}
 
-	// Call a parallel reduction to get B-total at each point
-
-	// Call rotation kernel to reflect results to all field periods
-
+	// TODO: Call rotation kernel to reflect results to all field periods
+	
 	// Cleanup
 	cudaFree(Icoil);
+	cudaFree(dBx);
+	cudaFree(dBy);
+	cudaFree(dBz);
 }
-
-

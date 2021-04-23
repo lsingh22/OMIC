@@ -24,6 +24,8 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 
 void CalculateFieldSerial(void);
 
+void CalculateFieldGPU(void);
+
 double cosnfp(int ip);  
 double sinnfp(int ip); 
 

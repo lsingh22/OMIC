@@ -95,6 +95,40 @@ void CalculateFieldSerial(void) {
 	}
 }
 
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
+void CalculateFieldGPU(void) {
+
+	// Allocate unified memory arrays for coil segs/currents and magnetic surface
+	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+ 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double));
+
+	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double));
+
+	// Set up timing events
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	double ms;
+
+	// Time call to magnetic field function using CUDA events
+	cudaEventRecord(start, 0);
+	magnetic_field(Bmfilx, Bmfily, Bmfilz, currents, mfilx, mfily, mfilz, \ 
+						Ncoil * Nfils, Nseg+1, size_fp);  
+	cudaEventRecord(stop, 0);
+
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&ms, start, stop);
+
+	// Cleanup
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);		
+}
+
 void CalculateFieldAtPoint(double x, double y, double z, \
                            double* Bx, double* By, double* Bz){
 //----------------------------------------------------------------------------------------------------
