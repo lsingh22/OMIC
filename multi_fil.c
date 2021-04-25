@@ -322,7 +322,7 @@ void GatherFieldData(void){
 
 //   t1 = MPI_Wtime();
 
-   if(pn==0) //HEAD
+   if(pn==0) //Parent process
    {
       for(int i=2;i<nproc+1;i++)
       {
@@ -372,7 +372,7 @@ void GatherFieldData(void){
          *(Bmfil+i) = sqrt( pow(*(Bmfilx+i),2) + pow(*(Bmfily+i),2) + pow(*(Bmfilz+i),2) ); 
       }
 
-   }else //Not HEAD
+   }else //Not parent process
    {
       sizepn = 1 + *(endind+pn) - *(startind+pn);  
          

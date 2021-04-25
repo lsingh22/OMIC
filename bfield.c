@@ -1,12 +1,11 @@
-#include "bfield.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <netcdf.h>
 #include <omp.h>
 #include <cuda.h>
-#include <cuda_runtime.h>
-#include "bfield_gpu.h"
+#include "bfield.h"
+#include "bfield_gpu.cuh"
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -99,6 +98,7 @@ void CalculateFieldSerial(void) {
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
+/*
 void CalculateFieldGPU(void) {
 
 	int flags = 0;
@@ -131,6 +131,7 @@ void CalculateFieldGPU(void) {
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);		
 }
+*/
 
 void CalculateFieldAtPoint(double x, double y, double z, \
                            double* Bx, double* By, double* Bz){
@@ -154,8 +155,6 @@ void CalculateFieldAtPoint(double x, double y, double z, \
    bx  = 0.0; by  = 0.0; bz  = 0.0;
    bxx = 0.0; byy = 0.0; bzz = 0.0;
    
-	// True, except in the stellarator symmetric case
-   zz = z;
 
    for(ip = 1; ip < Nfp + 1; ip++) { 
       

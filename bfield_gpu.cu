@@ -1,6 +1,6 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
-#include "bfield_gpu.h"
+#include "bfield_gpu.cuh"
 
 __global__ void field_kernel(const double* mx, const double* my, const double* mz, 
 									  const double* curr, double* dbx, double* dby, double* dbz) {
@@ -27,8 +27,7 @@ __global__ void hillis_steele(double* dBx, double* dBy, double* dBz,
 								  double* bx,  double* by,  double* bz);
 
 __host__ void magnetic_field(const double* mfx, const double* mfy, const double* mfz, 
-									  const double* cur, const int ncoil, const int nseg, 
-									  const int size_fp) {
+                             const double* currents, const int ncoil, const int nseg, const int size_fp) {
 
 	// TODO: for purposes of parallel implementation, ncoil should be Ncoil * Nfils
 
@@ -79,4 +78,36 @@ __host__ void magnetic_field(const double* mfx, const double* mfy, const double*
 	cudaFree(dBx);
 	cudaFree(dBy);
 	cudaFree(dBz);
+}
+
+__host__ void MagneticFieldGPU(void) {
+
+	// Allocate unified memory arrays for coil segs/currents and magnetic surface
+	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+ 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double));
+
+	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double));
+
+	// Set up timing events
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	float ms;
+
+	// Time call to magnetic field function using CUDA events
+	cudaEventRecord(start, 0);
+	magnetic_field(mfilx, mfily, mfilz, currents,  
+						Ncoil * Nfils, Nseg+1, size_fp);  
+	cudaEventRecord(stop, 0);
+
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&ms, start, stop);
+
+	// Cleanup
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);		
 }
