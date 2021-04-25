@@ -61,9 +61,9 @@ single_fil.o: single_fil.c single_fil.h globals.h
 	${CC} -fopenmp ${NETCDF} -c $< -o $@
 multi_fil.o: multi_fil.c multi_fil.h globals.h
 	${CC} -fopenmp ${NETCDF} -c $< -o $@
-bfield.o: bfield.c bfield.h globals.h
-	${CC} -fopenmp ${NETCDF} -c $< -o $@
-bfield_gpu.o: bfield_gpu.cu bfield_gpu.cuh
+bfield_gpu.o: bfield_gpu.cu bfield_gpu.h
+	${NVCC} -lcudart ${NETCDF} -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -c $< -o $@
+bfield.o: bfield.c bfield.h  bfield_gpu.h globals.h
 	${NVCC} -lcudart ${NETCDF} -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -c $< -o $@
 alpha.o: alpha.c alpha.h globals.h
 	${CC} -c $< -o $@
