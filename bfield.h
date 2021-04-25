@@ -1,6 +1,8 @@
 #ifndef _BFIELD_H
 #define _BFIELD_H
 #include "globals.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -8,7 +10,7 @@
 
 double* xsurf; double* ysurf; double* zsurf; double* nsurfx; double* nsurfy; double* nsurfz;
 
-int Ncoil; int iCoil; int Nzeta; int Nteta; int Nfp; double* currents; int Nseg;
+int size_fp; int Ncoil; int iCoil; int Nzeta; int Nteta; int Nfp; double* currents; int Nseg;
 
 double* sfilx; double* sfily; double* sfilz; int Nradfil; int Ntorfil; int Nfils;
 

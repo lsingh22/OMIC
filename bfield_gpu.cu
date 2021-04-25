@@ -1,7 +1,9 @@
 #include <cuda.h>
-#include "bfield_gpu.cuh"
+#include <cuda_runtime.h>
+#include "bfield_gpu.h"
 
-__global__ void field_kernel(void) {
+__global__ void field_kernel(const double* mx, const double* my, const double* mz, 
+									  const double* curr, double* dbx, double* dby, double* dbz) {
 
 	// Dynamically allocate shared memory
 
@@ -21,7 +23,12 @@ __global__ void field_kernel(void) {
 
 }
 
-__host__ void magnetic_field(double* bx, double* by, double* bz, const double* currents, const double* mfx, const double* mfy, const double* mfz, const int ncoil, const int nseg, const int size_fp) {
+__global__ void hillis_steele(double* dBx, double* dBy, double* dBz, 
+								  double* bx,  double* by,  double* bz);
+
+__host__ void magnetic_field(const double* mfx, const double* mfy, const double* mfz, 
+									  const double* cur, const int ncoil, const int nseg, 
+									  const int size_fp) {
 
 	// TODO: for purposes of parallel implementation, ncoil should be Ncoil * Nfils
 
@@ -47,11 +54,12 @@ __host__ void magnetic_field(double* bx, double* by, double* bz, const double* c
 	double* dBz;
 
 	// TODO: fill Icoil array with values from currents
+	int flags = 0;
 	 
-	cudaMallocManaged((void**)&Icoil, ncoil * sizeof(double));
-	cudaMallocManaged((void**)&dBx, Dimgrid * sizeof(double));
-	cudaMallocManaged((void**)&dBy, Dimgrid * sizeof(double));
-	cudaMallocManaged((void**)&dBz, Dimgrid * sizeof(double));
+	cudaMallocManaged((void**)&Icoil, ncoil * sizeof(double), flags);
+	cudaMallocManaged((void**)&dBx, DimGrid * sizeof(double), flags);
+	cudaMallocManaged((void**)&dBy, DimGrid * sizeof(double), flags);
+	cudaMallocManaged((void**)&dBz, DimGrid * sizeof(double), flags);
 
 	// For each point on magnetic surface,
 	for(int i = 0; i < size_fp; i++) {
@@ -61,7 +69,7 @@ __host__ void magnetic_field(double* bx, double* by, double* bz, const double* c
 		cudaDeviceSynchronize(); // synchronize to prepare for reduction
 		
 		//Call Hillis_Steele kernel to scan the partial sums and get bx, by, bz
-		hillis_steele<<<1, DimGrid, scan_shMem_size>>>(dBx, dBy, dBz, bx+i, by+i, bz+i);
+		//hillis_steele<<<1, DimGrid, scan_shMem_size>>>(dBx, dBy, dBz, bx+i, by+i, bz+i);
 	}
 
 	// TODO: Call rotation kernel to reflect results to all field periods

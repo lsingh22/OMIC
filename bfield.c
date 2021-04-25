@@ -5,6 +5,8 @@
 #include <netcdf.h>
 #include <omp.h>
 #include <cuda.h>
+#include <cuda_runtime.h>
+#include "bfield_gpu.h"
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -99,26 +101,27 @@ void CalculateFieldSerial(void) {
 
 void CalculateFieldGPU(void) {
 
-	// Allocate unified memory arrays for coil segs/currents and magnetic surface
-	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double));
- 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double));
-	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double));
-	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double));
+	int flags = 0;
 
-	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double));
-	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double));
-	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double));
+	// Allocate unified memory arrays for coil segs/currents and magnetic surface
+	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
+ 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
+	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
+	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double), flags);
+
+	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double), flags);
+	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double), flags);
+	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double), flags);
 
 	// Set up timing events
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
-	double ms;
+	float ms;
 
 	// Time call to magnetic field function using CUDA events
 	cudaEventRecord(start, 0);
-	magnetic_field(Bmfilx, Bmfily, Bmfilz, currents, mfilx, mfily, mfilz, \ 
-						Ncoil * Nfils, Nseg+1, size_fp);  
+	magnetic_field(mfilx, mfily, mfilz, currents, Ncoil * Nfils, Nseg + 1, size_fp);  
 	cudaEventRecord(stop, 0);
 
 	cudaEventSynchronize(stop);
