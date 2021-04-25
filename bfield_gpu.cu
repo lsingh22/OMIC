@@ -1,4 +1,5 @@
 #include <cuda.h>
+#include <cuda_runtime.h>
 #include "bfield_gpu.cuh"
 
 __global__ void field_kernel(void) {
@@ -21,7 +22,9 @@ __global__ void field_kernel(void) {
 
 }
 
-__host__ void magnetic_field(double* bx, double* by, double* bz, const double* currents, const double* mfx, const double* mfy, const double* mfz, const int ncoil, const int nseg, const int size_fp) {
+__host__ void magnetic_field(double* bx, double* by, double* bz, const double* currents, 
+                             const double* mfx, const double* mfy, const double* mfz, 
+                             const int ncoil, const int nseg, const int size_fp) {
 
 	// TODO: for purposes of parallel implementation, ncoil should be Ncoil * Nfils
 
@@ -49,9 +52,9 @@ __host__ void magnetic_field(double* bx, double* by, double* bz, const double* c
 	// TODO: fill Icoil array with values from currents
 	 
 	cudaMallocManaged((void**)&Icoil, ncoil * sizeof(double));
-	cudaMallocManaged((void**)&dBx, Dimgrid * sizeof(double));
-	cudaMallocManaged((void**)&dBy, Dimgrid * sizeof(double));
-	cudaMallocManaged((void**)&dBz, Dimgrid * sizeof(double));
+	cudaMallocManaged((void**)&dBx, DimGrid * sizeof(double));
+	cudaMallocManaged((void**)&dBy, DimGrid * sizeof(double));
+	cudaMallocManaged((void**)&dBz, DimGrid * sizeof(double));
 
 	// For each point on magnetic surface,
 	for(int i = 0; i < size_fp; i++) {
@@ -71,4 +74,36 @@ __host__ void magnetic_field(double* bx, double* by, double* bz, const double* c
 	cudaFree(dBx);
 	cudaFree(dBy);
 	cudaFree(dBz);
+}
+
+__host__ void MagneticFieldGPU(void) {
+
+	// Allocate unified memory arrays for coil segs/currents and magnetic surface
+	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+ 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double));
+	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double));
+
+	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double));
+
+	// Set up timing events
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	float ms;
+
+	// Time call to magnetic field function using CUDA events
+	cudaEventRecord(start, 0);
+	magnetic_field(Bmfilx, Bmfily, Bmfilz, currents, mfilx, mfily, mfilz,  
+						Ncoil * Nfils, Nseg+1, size_fp);  
+	cudaEventRecord(stop, 0);
+
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&ms, start, stop);
+
+	// Cleanup
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);		
 }

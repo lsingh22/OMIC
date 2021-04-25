@@ -1,10 +1,11 @@
-#include "bfield.h"
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <netcdf.h>
 #include <omp.h>
 #include <cuda.h>
+#include "bfield.h"
+#include "bfield_gpu.cuh"
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -97,6 +98,7 @@ void CalculateFieldSerial(void) {
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
+/*
 void CalculateFieldGPU(void) {
 
 	// Allocate unified memory arrays for coil segs/currents and magnetic surface
@@ -113,11 +115,11 @@ void CalculateFieldGPU(void) {
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
 	cudaEventCreate(&stop);
-	double ms;
+	float ms;
 
 	// Time call to magnetic field function using CUDA events
 	cudaEventRecord(start, 0);
-	magnetic_field(Bmfilx, Bmfily, Bmfilz, currents, mfilx, mfily, mfilz, \ 
+	magnetic_field(Bmfilx, Bmfily, Bmfilz, currents, mfilx, mfily, mfilz,  
 						Ncoil * Nfils, Nseg+1, size_fp);  
 	cudaEventRecord(stop, 0);
 
@@ -128,6 +130,7 @@ void CalculateFieldGPU(void) {
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);		
 }
+*/
 
 void CalculateFieldAtPoint(double x, double y, double z, \
                            double* Bx, double* By, double* Bz){
@@ -151,8 +154,6 @@ void CalculateFieldAtPoint(double x, double y, double z, \
    bx  = 0.0; by  = 0.0; bz  = 0.0;
    bxx = 0.0; byy = 0.0; bzz = 0.0;
    
-	// True, except in the stellarator symmetric case
-   zz = z;
 
    for(ip = 1; ip < Nfp + 1; ip++) { 
       
