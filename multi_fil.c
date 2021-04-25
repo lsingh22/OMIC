@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "bfield.h"
+#include "bfield_gpu.cuh"
 #include <omp.h>
 #include <mpi.h>
 
@@ -237,8 +238,8 @@ void MultifilamentField(void){
 // Periodicity is assumed  
 //----------------------------------------------------------------------------------------------------
   
-   int i, j, ip, nave;
-   double start, end, total; 
+   int i, j, nave;
+   float start, end, total=0.0; 
 
    Bmfilx = (double*) malloc(Nzeta * Nteta * sizeof(double));
    Bmfily = (double*) malloc(Nzeta * Nteta * sizeof(double));
@@ -247,8 +248,8 @@ void MultifilamentField(void){
     Bmfil = (double*) malloc(Nzeta * Nteta * sizeof(double));
 
    // MPI rank chunks
-   int first = startind[pn];
-   int last  = endind[pn];
+   //int first = startind[pn];
+   //int last  = endind[pn];
 
 	// Number of times to run integration for averaging (759)
 	nave = 5;
@@ -257,6 +258,9 @@ void MultifilamentField(void){
 	   start = MPI_Wtime();	
 		// Calculate magnetic field at all points on a single field period
 		CalculateFieldSerial();
+
+		// Calculate using GPU
+		CalculateFieldParallelGPU();
 
 	   end = MPI_Wtime();
 		total += (end - start);
@@ -314,13 +318,10 @@ void GatherFieldData(void){
    double* temp_Bmfilx;
    double* temp_Bmfily;
    double* temp_Bmfilz;
-   double t1,t2;
    double rot_cos, rot_sin;
    MPI_Status status; 
 
    MPI_Barrier(MPI_COMM_WORLD);   
-
-//   t1 = MPI_Wtime();
 
    if(pn==0) //Parent process
    {

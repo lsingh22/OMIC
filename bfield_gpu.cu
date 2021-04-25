@@ -80,7 +80,7 @@ __host__ void magnetic_field(const double* mfx, const double* mfy, const double*
 	cudaFree(dBz);
 }
 
-__host__ void MagneticFieldGPU(void) {
+__host__ void CalculateFieldParallelGPU(void) {
 
 	// Allocate unified memory arrays for coil segs/currents and magnetic surface
 	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double));
