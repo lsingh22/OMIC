@@ -33,7 +33,7 @@ void CalculateBuildDirections(void){
 
    double norm; //used for finding unit vectors
    double theta, x,y,z;
-   double pi = M_PI;
+   double pi = 3.14159265358979323846;
 
    tx = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));
    ty = (double *) malloc((Ncoil)*(Nseg+1)*sizeof(double));

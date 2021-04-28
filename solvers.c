@@ -8,6 +8,7 @@
 #include "single_fil.h"
 #include <mpi.h>
 
+#define MY_PI 3.14159265358979323846 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 // GLOBALS SCOPED IN SOURCE FILE
@@ -26,7 +27,7 @@ double SingleFieldError(void){
 //----------------------------------------------------------------------------------------------------
 
    register int i;
-   double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+   double dsfactor = 4*pow(MY_PI,2) / (Nteta*Nzeta);
    double feval = 0.0;
 
    for(i=0;i<size_fp;i++)
@@ -47,7 +48,7 @@ double MultiFieldError(void){
 //----------------------------------------------------------------------------------------------------
 
    register int i;
-   double dsfactor = 4*pow(M_PI,2) / (Nteta*Nzeta);
+   double dsfactor = 4*pow(MY_PI,2) / (Nteta*Nzeta);
    double feval = 0.0;
  
    for(i=0;i<size_fp;i++)
@@ -132,7 +133,7 @@ double SurfaceArea(void){
 //----------------------------------------------------------------------------------------------------
 
    register int i;
-   double dsfactor = 4 * pow(M_PI,2) / (Nteta*Nzeta);
+   double dsfactor = 4 * pow(MY_PI,2) / (Nteta*Nzeta);
    double area = 0.0;
 
    for(i=0;i<size_fp;i++)

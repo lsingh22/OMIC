@@ -5,6 +5,7 @@
 
 #define ERRCODE 2  
 #define ERR(e) {printf("Error: %s\n",nc_strerror(e)); exit(ERRCODE);}
+#define MY_PI 3.14159265358979323846
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
@@ -71,7 +72,7 @@ void Unpack_alpha( void ){
    register int i,j;
    int k;
    double theta, a;  
-   double pi = M_PI;
+   double pi = MY_PI;
     
    alp = (double*) malloc(iCoil*(Nseg+1)*sizeof(double)); //all alpha angles at each position on each coil
 

@@ -31,7 +31,7 @@ void UnpackSingleFilaments(void){
    int i,j,k;
    double x,y,z;
    double theta; //TODO: insert theta directly to improve speed
-   double pi = M_PI;
+   double pi = 3.14159265358979323846;
 
    ind_arr = malloc(Ncoil*sizeof(int));
    currents = (double*) malloc(Ncoil*sizeof(double));
