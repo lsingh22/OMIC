@@ -26,6 +26,12 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 
 void CalculateFieldSerial(void);
 
+void CalculateFieldParallelGPU(void);
+
+//void magnetic_field(const double* mfx, const double* mfy, const double* mfz, 
+//                    double* currents, const int ncoil, const int nseg, const int size_fp);
+
+
 //void CalculateFieldGPU(void);
 
 double cosnfp(int ip);  

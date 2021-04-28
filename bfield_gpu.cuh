@@ -10,9 +10,9 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
 
 __global__ void hillis_steele(double* dBx, double* dBy, double* dBz, double* bx, double* by, double* bz);
 
-__host__ void magnetic_field(const double* mfx, const double* mfy, const double* mfz,
-									  const double* currents, const int ncoil, const int nseg, const int size_fp);
+extern "C" void magnetic_field(const double* mfx, const double* mfy, const double* mfz,
+									    const double* currents, const int ncoil, const int nseg, const int size_fp);
 
-__host__ void CalculateFieldParallelGPU(void);
+//void CalculateFieldParallelGPU(void);
 
 #endif

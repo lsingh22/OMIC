@@ -209,3 +209,36 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
+void CalculateFieldParallelGPU(void) {
+
+	unsigned int flags = 0;
+		
+	// Allocate unified memory arrays for coil segs/currents and magnetic surface
+	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
+ 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
+	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
+	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double), flags);
+
+	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double), flags);
+	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double), flags);
+	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double), flags);
+
+	// Set up timing events
+	cudaEvent_t start, stop;
+	cudaEventCreate(&start);
+	cudaEventCreate(&stop);
+	float ms;
+
+	// Time call to magnetic field function using CUDA events
+	cudaEventRecord(start, 0);
+	magnetic_field(mfilx, mfily, mfilz, currents,  
+						Ncoil * Nfils, Nseg+1, size_fp);  
+	cudaEventRecord(stop, 0);
+
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&ms, start, stop);
+
+	// Cleanup
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);		
+}
