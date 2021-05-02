@@ -31,6 +31,7 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 
 	// TODO: for purposes of parallel implementation, ncoil should be Ncoil * Nfils
 
+
 	// Define execution configuration for field_kernel call
 	// A 2D block configuration enables easy tracking of coils, segments
 	// A 1D grid configuration is determined by ty, the number of coils / block
@@ -79,37 +80,3 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 	cudaFree(dBy);
 	cudaFree(dBz);
 }
-
-/*
-__host__ void CalculateFieldParallelGPU(void) {
-
-	// Allocate unified memory arrays for coil segs/currents and magnetic surface
-	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double));
- 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double));
-	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double));
-	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double));
-
-	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double));
-	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double));
-	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double));
-
-	// Set up timing events
-	cudaEvent_t start, stop;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-	float ms;
-
-	// Time call to magnetic field function using CUDA events
-	cudaEventRecord(start, 0);
-	magnetic_field(mfilx, mfily, mfilz, currents,  
-						Ncoil * Nfils, Nseg+1, size_fp);  
-	cudaEventRecord(stop, 0);
-
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&ms, start, stop);
-
-	// Cleanup
-	cudaEventDestroy(start);
-	cudaEventDestroy(stop);		
-}
-*/
