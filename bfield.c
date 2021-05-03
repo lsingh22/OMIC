@@ -120,7 +120,6 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 	// Initialize field components to zero 
    bx  = 0.0; by  = 0.0; bz  = 0.0;
    bxx = 0.0; byy = 0.0; bzz = 0.0;
-   
 
    for(ip = 1; ip < Nfp + 1; ip++) { 
       
@@ -212,6 +211,8 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 
 void CalculateFieldParallelGPU(void) {
 
+   // TODO: check that nfils * ncoil is as needed in the kernel wrapper
+
 	unsigned int flags = 0;
 		
 	// Allocate unified memory arrays for coil segs/currents and magnetic surface
@@ -232,7 +233,7 @@ void CalculateFieldParallelGPU(void) {
 
 	// Time call to magnetic field function using CUDA events
 	cudaEventRecord(start, 0);
-	magnetic_field(mfilx, mfily, mfilz, currents, Ncoil * Nfils, Nseg+1, size_fp);  
+	magnetic_field(mfilx, mfily, mfilz, currents, Ncoil * Nfils, Nfils, Nfp, Nseg+1, size_fp);  
 	cudaEventRecord(stop, 0);
 
 	cudaEventSynchronize(stop);
