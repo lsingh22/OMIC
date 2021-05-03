@@ -21,100 +21,98 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
    extern volatile __shared__ double shdby[];
    extern volatile __shared__ double shdbz[];
 
-   printf("EXECUTED\n");
-
    // Define indexing variables 
-   int bid = blockIdx.x;
-   int seg = threadIdx.x; // for keeping track of segments
-   int cid = threadIdx.y; // for indexing current 
-   int idx = bid * seg * cid + seg * cid + seg; // position index
+   int shIdx  = threadIdx.y * threadIdx.x + threadIdx.x; 
+   int posIdx = blockIdx.x * threadIdx.x * threadIdx.y + shIdx;
 
    // Doubles needed for integration
    double x1, y1, z1, x2, y2, z2;
-   double xx, yy, zz, ri, xi, yi, zi, rf, xf, yf, zf;
-   double l, ex, ey, ez, bx, by, bz, bxx, byy, bzz;
-   double coef;
+   double xx, yy, zz, ri, rf, l, ex, ey, ez;
+   double bx, by, bz, bxx, byy, bzz, coef;
 
    // Store current of the relevant coil (filament)
-   double cur = curr[cid];
+   double cur = curr[threadIdx.y];
 
-   // TODO: probably include in args the max size for if-else safety net here
-   // if(idx < SEG_MAX) {
+   // If segment is valid, calculate contribution to B field
+   if(posIdx < MAXSEG) {
 
-   // TODO: pass rotation matrix as global, then put in shared memory
-   // Number of elements is 2 * Nfp, Nfp are cosines, Nfp are sines
-   // if(idx < Nfp) {shared memory write from RMatrix to Rc, Rs} 
+      // TODO: write rotation matrix to shared memeory
+      // Number of elements is 2 * Nfp, Nfp are cosines, Nfp are sines
+      // if(idx < Nfp) {shared memory write from RMatrix to Rc, Rs} 
 
-   // Global load of start of segment
-   x1 = mx[cid * seg + seg]; 
-   y1 = my[cid * seg + seg];
-   z1 = mz[cid * seg + seg];
+      // Global load of start of segment
+      x1 = mx[posIdx]; 
+      y1 = my[posIdx];
+      z1 = mz[posIdx];
 
-   // Write starting segments to shared memory 
-   posx[cid * seg + seg] = x1;
-   posy[cid * seg + seg] = y1;
-   posz[cid * seg + seg] = z1;
+      // Write starting segments to shared memory 
+      posx[shIdx] = x1;
+      posy[shIdx] = y1;
+      posz[shIdx] = z1;
 
-   // Share segment starts to hide latency in loading neighbor segment
-	__syncthreads();
+      // Share segment starts to hide latency in loading neighbor segment
+      __syncthreads();
 
-   // Shared load of end of segment
-   x2 = posx[cid * seg + seg + 1]; 
-   y2 = posy[cid * seg + seg + 1];
-   z2 = posz[cid * seg + seg + 1]; 
-	
-   // Using start and end segments, and kernel arguments, compute cartesian dB
-   // Parameters are defined as in Hanson & Hirschman (TODO:ref)
+      // Shared load of end of segment
+      x2 = posx[shIdx + 1]; 
+      y2 = posy[shIdx + 1];
+      z2 = posz[shIdx + 1]; 
+      
+      // Using start and end segments, and kernel arguments, compute cartesian dB
+      // Parameters are defined as in Hanson & Hirschman (TODO:ref)
 
-   // Accumulators over symmetric field periods
-   bxx = 0.; byy = 0.; bzz = 0.;
+      // Accumulators over symmetric field periods
+      bxx = 0.; byy = 0.; bzz = 0.;
 
-   for(int ip = 0; ip < nfp; ip++) {
+      for(int ip = 0; ip < nfp; ip++) {
 
-      // Locate stellarator symmetric point on magnetic boundary
-      xx =  x * Rcs[ip] + y * Rcs[nfp + ip];
-      yy = -x * Rcs[nfp + ip] + y * Rcs[ip];
-      zz = z; // not needed here, but needed for future speedup
+         // Locate stellarator symmetric point on magnetic boundary
+         xx =  x * Rcs[ip] + y * Rcs[nfp + ip];
+         yy = -x * Rcs[nfp + ip] + y * Rcs[ip];
+         zz = z; // not needed here, but needed for future speedup
 
-      // Use H & H method to find field contribution due to segment
-      xi = xx - x1;
-      yi = yy - y1;
-      zi = zz - z1;
+         // Use H & H method to find field contribution due to segment
+         x1 = xx - x1;
+         y1 = yy - y1;
+         z1 = zz - z1;
 
-      xf = xx - x2;
-      yf = yy - y2;
-      zf = zz - z2;
+         x2 = xx - x2;
+         y2 = yy - y2;
+         z2 = zz - z2;
 
-      ri = sqrt(xi * xi + yi * yi + zi * zi);  
-      rf = sqrt(xf * xf + yf * yf + zf * zf);
+         ri = sqrt(x1 * x1 + y1 * y1 + z1 * z1);  
+         rf = sqrt(x2 * x2 + y2 * y2 + z2 * z2);
 
-      l = sqrt((xf-xi) * (xf-xi) + (yf-yi) * (yf-yi) + (zf-zi) * (zf-zi));  
+         l = sqrt((x2-x1) * (x2-x1) + (y2-y1) * (y2-y1) + (z2-z1) * (z2-z1));  
 
-      ex = ((xf-xi)/l);  
-      ey = ((yf-yi)/l);  
-      ez = ((zf-zi)/l);  
+         ex = ((x2-x1)/l);  
+         ey = ((y2-y1)/l);  
+         ez = ((z2-z1)/l);  
 
-      // Prefactor for cross product 
-      coef = cur * l * (ri+rf) / (ri*rf * ((ri+rf) * (ri+rf) - l * l));   
+         // Prefactor for cross product 
+         coef = cur * l * (ri+rf) / (ri*rf * ((ri+rf) * (ri+rf) - l * l));   
 
-      bx = coef * (ey * zi - ez * yi);
-      by = coef * (ez * xi - ex * zi);
-      bz = coef * (ex * yi - ey * xi);
-  
-      bxx += bx * Rcs[ip] - by * Rcs[nfp + ip];
-      byy += bx * Rcs[nfp + ip] + by * Rcs[ip];
-      bzz += bz;    
+         bx = coef * (ey * z1 - ez * y1);
+         by = coef * (ez * x1 - ex * z1);
+         bz = coef * (ex * y1 - ey * x1);
+     
+         bxx += bx * Rcs[ip] - by * Rcs[nfp + ip];
+         byy += bx * Rcs[nfp + ip] + by * Rcs[ip];
+         bzz += bz;    
+      }
+
+      // Write segment contribution to shared memory to prepare for reduction   
+      // Swapped double buffer method is performed for each cartesian component
+      shdbx[shIdx] = bxx;
+      shdby[shIdx] = byy;
+      shdbz[shIdx] = bzz;
+
+      __syncthreads();
+
+      // Perform Hillis-Steele reduction and store in global db (x,y,z)   
+
    }
 
-   // Write segment contribution to shared memory to prepare for reduction   
-   // Swapped double buffer method is performed for each cartesian component
-   shdbx[cid * seg + seg] = bxx;
-   shdby[cid * seg + seg] = byy;
-   shdbz[cid * seg + seg] = bzz;
-
-	__syncthreads();
-
-   // Perform Hillis-Steele reduction and store in global db (x,y,z)   
 }
 
 __global__ void hillis_steele(double* dBx, double* dBy, double* dBz, 
