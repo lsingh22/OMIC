@@ -3,10 +3,12 @@
 #include <cuda_runtime.h>
 #include "bfield_gpu.cuh"
 
+#define MY_PI 3.14159265358979323846
+
 __global__ void field_kernel(const double* mx, const double* my, const double* mz, 
 									  const double* curr, const double x, const double y, 
                              const double z, double* dbx, double* dby, double* dbz,
-                             const int nfp, const int MAXSEG) {
+                             const double* Rot, const int nfp, const int MAXSEG) {
 
 	// Dynamically allocate shared memory for inputs, outputs
    // Inputs are coil positions, currents, and rotation matrix
@@ -14,11 +16,12 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
    extern volatile __shared__ double posx[];
    extern volatile __shared__ double posy[];
    extern volatile __shared__ double posz[];
-   extern volatile __shared__ double Rc[];
-   extern volatile __shared__ double Rs[];
+   extern volatile __shared__ double Rcs[];
    extern volatile __shared__ double shdbx[];
    extern volatile __shared__ double shdby[];
    extern volatile __shared__ double shdbz[];
+
+   printf("EXECUTED\n");
 
    // Define indexing variables 
    int bid = blockIdx.x;
@@ -69,8 +72,8 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
    for(int ip = 0; ip < nfp; ip++) {
 
       // Locate stellarator symmetric point on magnetic boundary
-      xx =  x * Rc[ip] + y * Rs[ip];
-      yy = -x * Rs[ip] + y * Rc[ip];
+      xx =  x * Rcs[ip] + y * Rcs[nfp + ip];
+      yy = -x * Rcs[nfp + ip] + y * Rcs[ip];
       zz = z; // not needed here, but needed for future speedup
 
       // Use H & H method to find field contribution due to segment
@@ -98,8 +101,8 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
       by = coef * (ez * xi - ex * zi);
       bz = coef * (ex * yi - ey * xi);
   
-      bxx += bx * Rc[ip] - by * Rc[ip];
-      byy += bx * Rs[ip] + by * Rc[ip];
+      bxx += bx * Rcs[ip] - by * Rcs[nfp + ip];
+      byy += bx * Rcs[nfp + ip] + by * Rcs[ip];
       bzz += bz;    
    }
 
@@ -117,6 +120,23 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
 __global__ void hillis_steele(double* dBx, double* dBy, double* dBz, 
 								  double* bx,  double* by,  double* bz);
 
+double cosnfp(int ip) { 
+//----------------------------------------------------------------------------------------------------
+// Cosine of vector component at the ip-th field period
+//----------------------------------------------------------------------------------------------------
+   return cos((ip - 1) * MY_PI * 2 / Nfp);
+}
+
+//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
+double sinnfp(int ip) { 
+//----------------------------------------------------------------------------------------------------
+// Sine of vector component at the ip-th field period
+//----------------------------------------------------------------------------------------------------
+   return sin((ip - 1) * MY_PI * 2 / Nfp);
+
+}
+
 extern "C" void magnetic_field(const double* mfx, const double* mfy, const double* mfz, 
                                const double* current, const int ncoil, const int nfil,
                                const int nfp, const int nseg, const int size_fp) {
@@ -126,21 +146,25 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 	// A 1D grid configuration is determined by ty, the number of coils / block
 	// Field kernel computes B-field due to tx-th segment of ty-th coil
 	// Shared memory holds coil positions, currents, and two reduction buffers
-	unsigned int coils_per_block = (1024 + nseg - 1) / nseg;
+  
+   // Change this for lower CUDA CC hardware
+   unsigned int MAX_BLOCK_THREADS = 1024;
+
+	unsigned int coils_per_block = MAX_BLOCK_THREADS / nseg;
 	unsigned int segs_per_block  = coils_per_block * nseg;   
-
-	dim3 DimBlock(coils_per_block, segs_per_block);
+	dim3 DimBlock(coils_per_block, nseg);
 	unsigned int DimGrid = (ncoil + coils_per_block - 1) / coils_per_block;
-	unsigned int field_shMem_size = (segs_per_block * 3 + 2 * (segs_per_block - 1) * 3 \
+	unsigned int shmem_size = (segs_per_block * 3 + 2 * (segs_per_block - 1) * 3 \
 										      + 2 * nfp) * sizeof(double);
-   unsigned int scan_shMem_size = 2 * DimGrid * 3 * sizeof(double); 
+   //unsigned int shmem_size = 2 * DimGrid * 3 * sizeof(double); 
 
-   printf("First point of multifilaments is (%f,%f,%f)\n", mfx[0],mfy[0],mfz[0]);
-   printf("nseg: %d, size_fp: %d\n", nseg, size_fp);
-   printf("First value of current: %f Number of coils: %d Number of fils %d\n", current[0], ncoil, nfil);
+   //printf("First point of multifilaments is (%f,%f,%f)\n", mfx[0],mfy[0],mfz[0]);
+   //printf("nseg: %d, size_fp: %d\n", nseg, size_fp);
+   //printf("First value of current: %f Number of coils: %d Number of fils %d\n", current[0], ncoil, nfil);
 
 	// Create helper currents and reduction buffer unified arrays
 	double* Ic = (double*) malloc(ncoil * sizeof(double));
+   double* R = (double*) malloc(nfp * 2 * sizeof(double));
 	double* dBx;
 	double* dBy;
 	double* dBz;
@@ -152,32 +176,60 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
       }
    }
 
+   // Fill rotation matrix
+   for(int i = 0; i < nfp; i++) {
+      R[i] = cosnfp(i + 1); 
+      R[nfp + i] = sin(i + 1);
+   }
+      
    // Define maximum number of segments for kernel memory safety
    int max = nseg * ncoil;
 
-   // Allocate managed memory for the helper arrays
-	int flags = 0;
-	cudaMallocManaged((void**)&Ic,  ncoil   * sizeof(double), flags);
-	cudaMallocManaged((void**)&dBx, DimGrid * sizeof(double), flags);
-	cudaMallocManaged((void**)&dBy, DimGrid * sizeof(double), flags);
-	cudaMallocManaged((void**)&dBz, DimGrid * sizeof(double), flags);
+   //printf("coils_per_block and nseg are: %d and %d\n", coils_per_block, nseg);
+   // Allocate managed memory for coil segs/currents and magnetic surface
+   cudaMallocManaged((void**)&mfilx, ncoil * nseg * sizeof(double));
+ 	cudaMallocManaged((void**)&mfily, ncoil * nseg * sizeof(double));
+	cudaMallocManaged((void**)&mfilz, ncoil * nseg * sizeof(double));
+	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double));
+	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double));
 
-   printf("Filled up Ic\n");   
-	
-   // For each point on magnetic surface,
+   // Allocate managed memory for the helper arrays
+	cudaMallocManaged((void**)&Ic,  ncoil   * sizeof(double));
+   cudaMallocManaged((void**)&R,   nfp * 2 * sizeof(double));
+	cudaMallocManaged((void**)&dBx, DimGrid * sizeof(double));
+	cudaMallocManaged((void**)&dBy, DimGrid * sizeof(double));
+	cudaMallocManaged((void**)&dBz, DimGrid * sizeof(double));
+
+   // TODO:DEBUG
+   field_kernel<<<DimGrid, dim3(6,129), 10000>>>(mfilx, mfily, mfilz, Ic, 
+                                                     xsurf[0], ysurf[0], zsurf[0],
+                                                     dBx, dBy, dBz, R, nfp, max);
+
+   // Exit if there is a problem with kernel execution	
+   cudaError_t err = cudaGetLastError();
+   
+   if(err != cudaSuccess) {
+      printf("CUDA Error: %s\n", cudaGetErrorString(err));
+      exit(-1);
+   }
+
+   cudaDeviceSynchronize();
+
 	for(int i = 0; i < size_fp; i++) {
-/*		
 		// Call field kernel to get magnetic field
-		field_kernel<<<DimGrid, DimBlock, field_shMem_size>>>(mfilx, mfily, mfilz, Ic, 
+/*		field_kernel<<<DimGrid, DimBlock, field_shMem_size>>>(mfilx, mfily, mfilz, Ic, 
                                                             xsurf[i], ysurf[i], zsurf[i],
-                                                            dBx, dBy, dBz, nfp, max);
-		cudaDeviceSynchronize(); // synchronize to prepare for reduction
+                                                            dBx, dBy, dBz, R, nfp, max);
+
+
+      cudaDeviceSynchronize(); // synchronize to prepare for reduction
 */		
 		//Call Hillis_Steele kernel to scan the partial sums and get bx, by, bz
 		//hillis_steele<<<1, DimGrid, scan_shMem_size>>>(dBx, dBy, dBz, bx+i, by+i, bz+i);
 	}
 
-	// TODO: Call rotation kernel to reflect results to all field periods
+	// Call rotation kernel to reflect results to all field periods
 	
 	// Cleanup
 	cudaFree(Ic);

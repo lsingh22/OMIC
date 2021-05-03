@@ -7,7 +7,8 @@
 
 __global__ void field_kernel(const double* mx, const double* my, const double* mz,
                              const double* coilcurrents, double x, double y, double z, 
-                             double* dbx, double* dby, double* dbz, const int nfp, const int maxsegs);
+                             double* dbx, double* dby, double* dbz, 
+                             const double* rot,  const int nfp, const int maxsegs);
 
 __global__ void hillis_steele(double* dBx, double* dBy, double* dBz, double* bx, double* by, double* bz);
 

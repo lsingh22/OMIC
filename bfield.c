@@ -4,6 +4,7 @@
 #include <netcdf.h>
 #include <omp.h>
 #include <cuda.h>
+#include <cuda_runtime.h>
 #include "bfield.h"
 #include "bfield_gpu.cuh"
 
@@ -211,10 +212,8 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 
 void CalculateFieldParallelGPU(void) {
 
-   // TODO: check that nfils * ncoil is as needed in the kernel wrapper
-
 	unsigned int flags = 0;
-		
+/*		
 	// Allocate unified memory arrays for coil segs/currents and magnetic surface
 	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
  	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
@@ -224,6 +223,7 @@ void CalculateFieldParallelGPU(void) {
 	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double), flags);
 	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double), flags);
 	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double), flags);
+*/
 
 	// Set up timing events
 	cudaEvent_t start, stop;

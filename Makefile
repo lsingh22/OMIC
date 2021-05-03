@@ -51,9 +51,9 @@ LDFLAGS = ${CUDAFLAGS} ${NETCDF_LIB} -lgomp
 
 LDLIBS  =
 
-GENCODE_SM70 := -gencode arch=compute_70,code=sm_70 # CC 7 on Travis
+#GENCODE_SM70 := -gencode arch=compute_70,code=sm_70 # CC 7 on Travis
 
-GENCODE_SM80 := -gencode arch=compute_80,code=sm_80 # CC 8 on Euler
+#GENCODE_SM80 := -gencode arch=compute_80,code=sm_80 # CC 8 on Euler
 
 all:    ${PROGRAM} 
 
@@ -70,7 +70,7 @@ read_focus.o: read_focus.c read_focus.h globals.h
 single_fil.o: single_fil.c single_fil.h globals.h
 	${CC} ${CFLAGS} -c $< -o $@
 bfield_gpu.o: bfield_gpu.cu bfield_gpu.cuh globals.h
-	${NVCC} ${GENCODE_SM80} -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -c $< -o $@
+	${NVCC} -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -c $< -o $@
 bfield.o: bfield.c bfield.h bfield_gpu.cuh globals.h
 	${CC} ${CFLAGS} -c $< -o $@
 multi_fil.o: multi_fil.c multi_fil.h bfield_gpu.cuh globals.h
