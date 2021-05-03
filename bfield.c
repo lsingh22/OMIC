@@ -212,19 +212,6 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 
 void CalculateFieldParallelGPU(void) {
 
-	unsigned int flags = 0;
-/*		
-	// Allocate unified memory arrays for coil segs/currents and magnetic surface
-	cudaMallocManaged((void**)&mfilx, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
- 	cudaMallocManaged((void**)&mfily, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
-	cudaMallocManaged((void**)&mfilz, Ncoil * Nfils * (Nseg+1) * sizeof(double), flags);
-	cudaMallocManaged((void**)&currents, Ncoil * sizeof(double), flags);
-
-	cudaMallocManaged((void**)&xsurf, size_fp * sizeof(double), flags);
-	cudaMallocManaged((void**)&ysurf, size_fp * sizeof(double), flags);
-	cudaMallocManaged((void**)&zsurf, size_fp * sizeof(double), flags);
-*/
-
 	// Set up timing events
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);

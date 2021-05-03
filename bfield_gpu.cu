@@ -7,7 +7,7 @@
 
 __global__ void field_kernel(const double* mx, const double* my, const double* mz, 
 									  const double* curr, const double x, const double y, 
-                             const double z, double* dbx, double* dby, double* dbz,
+                             const double z, double* dBx, double* dBy, double* dBz,
                              const double* Rot, const int nfp, const int MAXSEG) {
 
 	// Dynamically allocate shared memory for inputs, outputs
@@ -17,13 +17,12 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
    extern volatile __shared__ double posy[];
    extern volatile __shared__ double posz[];
    extern volatile __shared__ double Rcs[];
-   extern volatile __shared__ double shdbx[];
-   extern volatile __shared__ double shdby[];
-   extern volatile __shared__ double shdbz[];
 
    // Define indexing variables 
-   int shIdx  = threadIdx.y * threadIdx.x + threadIdx.x; 
-   int posIdx = blockIdx.x * threadIdx.x * threadIdx.y + shIdx;
+   int tx = threadIdx.x;
+   int bdim = blockDim.x;
+   int tid  = threadIdx.y * threadIdx.x + threadIdx.x; 
+   int posIdx = blockIdx.x * threadIdx.x * threadIdx.y + tid;
 
    // Doubles needed for integration
    double x1, y1, z1, x2, y2, z2;
@@ -36,30 +35,36 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
    // If segment is valid, calculate contribution to B field
    if(posIdx < MAXSEG) {
 
-      // TODO: write rotation matrix to shared memeory
+      // Write rotation matrix to shared memory
       // Number of elements is 2 * Nfp, Nfp are cosines, Nfp are sines
-      // if(idx < Nfp) {shared memory write from RMatrix to Rc, Rs} 
-
+      if(tx < nfp) {
+         Rcs[tx] = Rot[tx];
+         Rcs[nfp + tx] = Rot[tx + nfp];          
+      }
+      
       // Global load of start of segment
       x1 = mx[posIdx]; 
       y1 = my[posIdx];
       z1 = mz[posIdx];
 
       // Write starting segments to shared memory 
-      posx[shIdx] = x1;
-      posy[shIdx] = y1;
-      posz[shIdx] = z1;
+      posx[tid] = x1;
+      posy[tid] = y1;
+      posz[tid] = z1;
 
       // Share segment starts to hide latency in loading neighbor segment
+      // Also share the rotation matrix
       __syncthreads();
 
       // Shared load of end of segment
-      x2 = posx[shIdx + 1]; 
-      y2 = posy[shIdx + 1];
-      z2 = posz[shIdx + 1]; 
+      x2 = posx[tid + 1]; 
+      y2 = posy[tid + 1];
+      z2 = posz[tid + 1]; 
       
       // Using start and end segments, and kernel arguments, compute cartesian dB
       // Parameters are defined as in Hanson & Hirschman (TODO:ref)
+      // Copied from the serial calculation, except...
+      // xi and xf -> x1 and x2 to save registers
 
       // Accumulators over symmetric field periods
       bxx = 0.; byy = 0.; bzz = 0.;
@@ -85,9 +90,9 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
 
          l = sqrt((x2-x1) * (x2-x1) + (y2-y1) * (y2-y1) + (z2-z1) * (z2-z1));  
 
-         ex = ((x2-x1)/l);  
-         ey = ((y2-y1)/l);  
-         ez = ((z2-z1)/l);  
+         ex = (x2-x1)/l;  
+         ey = (y2-y1)/l;  
+         ez = (z2-z1)/l;  
 
          // Prefactor for cross product 
          coef = cur * l * (ri+rf) / (ri*rf * ((ri+rf) * (ri+rf) - l * l));   
@@ -101,22 +106,15 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
          bzz += bz;    
       }
 
-      // Write segment contribution to shared memory to prepare for reduction   
-      // Swapped double buffer method is performed for each cartesian component
-      shdbx[shIdx] = bxx;
-      shdby[shIdx] = byy;
-      shdbz[shIdx] = bzz;
-
-      __syncthreads();
-
-      // Perform Hillis-Steele reduction and store in global db (x,y,z)   
-
+      // Write segment dB to output   
+      dBx[tid] = bxx;
+      dBy[tid] = byy;
+      dBz[tid] = bzz;
    }
-
 }
 
-__global__ void hillis_steele(double* dBx, double* dBy, double* dBz, 
-								  double* bx,  double* by,  double* bz);
+__global__ void parallel_reduction(double* dBx, double* dBy, double* dBz, 
+								           double* bx,  double* by,  double* bz);
 
 double cosnfp(int ip) { 
 //----------------------------------------------------------------------------------------------------
@@ -152,13 +150,7 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 	unsigned int segs_per_block  = coils_per_block * nseg;   
 	dim3 DimBlock(coils_per_block, nseg);
 	unsigned int DimGrid = (ncoil + coils_per_block - 1) / coils_per_block;
-	unsigned int shmem_size = (segs_per_block * 3 + 2 * (segs_per_block - 1) * 3 \
-										      + 2 * nfp) * sizeof(double);
-   //unsigned int shmem_size = 2 * DimGrid * 3 * sizeof(double); 
-
-   //printf("First point of multifilaments is (%f,%f,%f)\n", mfx[0],mfy[0],mfz[0]);
-   //printf("nseg: %d, size_fp: %d\n", nseg, size_fp);
-   //printf("First value of current: %f Number of coils: %d Number of fils %d\n", current[0], ncoil, nfil);
+	unsigned int field_shmem_size = (segs_per_block * 3 + 2 * nfp) * sizeof(double);
 
 	// Create helper currents and reduction buffer unified arrays
 	double* Ic = (double*) malloc(ncoil * sizeof(double));
@@ -174,7 +166,7 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
       }
    }
 
-   // Fill rotation matrix
+   // Fill shared rotation matrix
    for(int i = 0; i < nfp; i++) {
       R[i] = cosnfp(i + 1); 
       R[nfp + i] = sin(i + 1);
@@ -199,8 +191,7 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 	cudaMallocManaged((void**)&dBy, DimGrid * sizeof(double));
 	cudaMallocManaged((void**)&dBz, DimGrid * sizeof(double));
 
-   // TODO:DEBUG
-   field_kernel<<<DimGrid, dim3(6,129), 10000>>>(mfilx, mfily, mfilz, Ic, 
+   field_kernel<<<DimGrid, dim3(6,129), field_shmem_size>>>(mfilx, mfily, mfilz, Ic, 
                                                      xsurf[0], ysurf[0], zsurf[0],
                                                      dBx, dBy, dBz, R, nfp, max);
 
@@ -214,12 +205,13 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 
    cudaDeviceSynchronize();
 
+   // Calculate segment dB contributions (field_kernel)
+   // Perform parallel reduction to superpose dB (parallel_reduction)
 	for(int i = 0; i < size_fp; i++) {
 		// Call field kernel to get magnetic field
 /*		field_kernel<<<DimGrid, DimBlock, field_shMem_size>>>(mfilx, mfily, mfilz, Ic, 
                                                             xsurf[i], ysurf[i], zsurf[i],
                                                             dBx, dBy, dBz, R, nfp, max);
-
 
       cudaDeviceSynchronize(); // synchronize to prepare for reduction
 */		

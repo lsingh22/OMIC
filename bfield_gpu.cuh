@@ -10,7 +10,7 @@ __global__ void field_kernel(const double* mx, const double* my, const double* m
                              double* dbx, double* dby, double* dbz, 
                              const double* rot,  const int nfp, const int maxsegs);
 
-__global__ void hillis_steele(double* dBx, double* dBy, double* dBz, double* bx, double* by, double* bz);
+__global__ void parallel_reduction(double* dBx, double* dBy, double* dBz, double* bx, double* by, double* bz);
 
 #ifdef __cplusplus
 extern "C" {
