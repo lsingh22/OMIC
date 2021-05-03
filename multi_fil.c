@@ -252,12 +252,12 @@ void MultifilamentField(void){
    //int last  = endind[pn];
 
 	// Number of times to run integration for averaging (759)
-	nave = 5;
+	nave = 1;
 
 	for(j = 0; j < nave; j++) {   
 	   start = MPI_Wtime();	
 		// Calculate magnetic field at all points on a single field period
-		CalculateFieldSerial();
+  		//CalculateFieldSerial();
 
 		// Calculate using GPU
 		CalculateFieldParallelGPU();
@@ -405,9 +405,6 @@ void GatherFieldData(void){
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-
-
 
 void WriteMultiFilaments(void){
 //----------------------------------------------------------------------------------------------------

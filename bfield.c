@@ -234,7 +234,7 @@ void CalculateFieldParallelGPU(void) {
 	// Time call to magnetic field function using CUDA events
 	cudaEventRecord(start, 0);
 	magnetic_field(mfilx, mfily, mfilz, currents, Ncoil * Nfils, Nfils, Nfp, Nseg+1, size_fp);  
-	cudaEventRecord(stop, 0);
+   cudaEventRecord(stop, 0);
 
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&ms, start, stop);
