@@ -9,26 +9,19 @@
 #include "bfield_gpu.cuh"
 
 #define MY_PI 3.14159265358979323846
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-double cosnfp(int ip){ 
-//----------------------------------------------------------------------------------------------------
-// Cosine of vector component at the ip-th field period
-//----------------------------------------------------------------------------------------------------
+double cosnfp(int ip) { 
+
+   // Cosine of vector component at the ip-th field period
    return cos((ip - 1) * MY_PI * 2 / Nfp);
 }
 
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+double sinnfp(int ip) { 
 
-double sinnfp(int ip){ 
-//----------------------------------------------------------------------------------------------------
-// Sine of vector component at the ip-th field period
-//----------------------------------------------------------------------------------------------------
+   // Sine of vector component at the ip-th field period
    return sin((ip - 1) * MY_PI * 2 / Nfp);
-
 }
 
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void CalculateSingleField(double x, double y, double z, \
                           double* Bx, double* By, double* Bz){
@@ -209,7 +202,7 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
+/*
 void CalculateFieldParallelGPU(void) {
 
 	// Set up timing events
@@ -230,3 +223,4 @@ void CalculateFieldParallelGPU(void) {
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);		
 }
+*/
