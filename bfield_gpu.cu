@@ -3,6 +3,7 @@
 #include <cuda_runtime.h>
 #include "bfield_gpu.cuh"
 #include "globals.h"
+#include <stdio.h>
 
 #define MY_PI 3.14159265358979323846
 
@@ -69,7 +70,7 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
 
          // Integration loop: one thread sums contributions from all points
          // For further development, this could be split up over nfp threads
-         for(int ip = 0; ip < nfp; ip++) {
+         for(int ip = 0; ip < 1; ip++) {
 
             // Locate stellarator symmetric point on magnetic boundary
             xx =  x * Rcs[ip] + y * Rcs[nfp + ip];
@@ -112,13 +113,13 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
          dBz[posIdx] = bzz;
       
          // DEBUG:
-         if(tx==0 && threadIdx.y==0){
+/*         if(tx==0 && threadIdx.y==0){
             for(int i = 0; i < blockDim.x * blockDim.y; i++) {
                printf("mx: %f my: %f mz: %f\n", mx[i], my[i], mz[i]);
                printf("bx: %f by: %f bz: %f\n", dBx[i], dBy[i], dBz[i]);
             }
          }      
-      }
+*/    }
    }
 }
 
@@ -236,6 +237,54 @@ double sinnfp(int ip, int nfp) {
    return sin((ip - 1) * MY_PI * 2 / nfp);
 }
 
+__global__ void reduce_kernel(float* g_idata, float* g_odata, unsigned int n) {
+    extern __shared__ float sdata[];
+
+    unsigned int tid = threadIdx.x;
+    unsigned int i = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
+    if (i + blockDim.x < n) {
+        sdata[tid] = g_idata[i] + g_idata[i + blockDim.x];
+    } else if (i < n) {
+        sdata[tid] = g_idata[i];
+    } else {
+        sdata[tid] = 0;
+    }
+
+    __syncthreads();
+
+    // Sequential addressing alteration
+    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            sdata[tid] += sdata[tid + s];
+        }
+        __syncthreads();
+    }
+
+    // Write out reduced portion of the output
+    if (tid == 0) {
+        g_odata[blockIdx.x] = sdata[0];
+    }
+}
+
+__global__ void helper(float* in, float* out, unsigned int n) {
+    unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
+    if (i < n)
+        out[i] = in[i];
+
+}
+
+__host__ void reduce(float** input, float** output, unsigned int N, unsigned int threads_per_block) {
+    size_t n = N;
+    while (n > 1) {
+        reduce_kernel<<<(n + threads_per_block * 2 - 1) / threads_per_block / 2, threads_per_block,
+                        threads_per_block * sizeof(float)>>>(*input, *output, n);
+        n = (n + threads_per_block * 2 - 1) / threads_per_block / 2;
+        //std::swap(*output, *input);  
+        // helper<<<(n + threads_per_block - 1) / threads_per_block, threads_per_block>>>(output, input, n);
+    }
+    cudaDeviceSynchronize();
+}
+
 extern "C" void magnetic_field(const double* mfx, const double* mfy, const double* mfz, 
                                double* xsurf, double* ysurf, double* zsurf, 
                                const double* current, const int ncoil, const int nfil, 
@@ -250,12 +299,12 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
    // Change this for lower CUDA CC hardware
    unsigned int MAX_BLOCK_THREADS = 1024;
 
-	unsigned int coils_per_block = MAX_BLOCK_THREADS / nseg;
+	unsigned int coils_per_block = MAX_BLOCK_THREADS / nseg - 1; // TODO: for some reason, this -1 is needed right now
 	unsigned int segs_per_block  = coils_per_block * nseg;   
-	dim3 DimBlock(coils_per_block, nseg);
+	dim3 DimBlock(nseg, coils_per_block);
 	unsigned int DimGrid = (ncoil + coils_per_block - 1) / coils_per_block;
 	unsigned int field_shmem_size = (segs_per_block * 3 + 2 * nfp) * sizeof(double);
-   unsigned int ndb = ncoil * (nseg - 1);
+   unsigned int ndb = ncoil * nseg - 1; // TODO: there will be ncoil empty entries with this definition
 
    // Define maximum number of segments for kernel memory safety
    unsigned int max = nseg * ncoil;
@@ -304,11 +353,8 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
       R[i] = cosnfp(i + 1, nfp); 
       R[nfp + i] = sinnfp(i + 1, nfp);
    }
-
-   field_kernel0<<<DimGrid, dim3(129,6), field_shmem_size>>>(mx, my, mz, Ic, 
-                                                             xs[0], ys[0], zs[0],
-                                                             dBx, dBy, dBz, R, nfp, max);
-
+   
+   /*
    // Exit if there is a problem with kernel execution	
    cudaError_t err = cudaGetLastError();
    
@@ -316,19 +362,19 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
       printf("CUDA Error: %s\n", cudaGetErrorString(err));
       exit(-1);
    }
+   */
 
-   cudaDeviceSynchronize();
-
-   // Calculate segment dB contributions (field_kernel)
-   // Perform parallel reduction to superpose dB (parallel_reduction)
+   // Calculate segment dB contributions (field_kernel),
+   // Perform parallel reduction to superpose dB (parallel_reduction).
 	for(int i = 0; i < size_fp; i++) {
-		// Call field kernel to get magnetic field
-/*		field_kernel<<<DimGrid, dim3(6,129), field_shmem_size>>>(mfilx, mfily, mfilz, Ic, 
-                                                            xsurf[i], ysurf[i], zsurf[i],
-                                                            dBx, dBy, dBz, R, nfp, max);
 
-      cudaDeviceSynchronize(); // synchronize to prepare for reduction
-*/		//parallel_scan<<<1, DimGrid, segs_per_block>>>(dBx, dBy, dBz, bx+i, by+i, bz+i);
+		// Call field kernel to get magnetic field
+      field_kernel0<<<DimGrid, DimBlock, field_shmem_size>>>(mx, my, mz, Ic, 
+                                                             xs[i], ys[i], zs[i],
+                                                             dBx, dBy, dBz, R, nfp, max);
+
+      //cudaDeviceSynchronize(); // synchronize to prepare for reduction
+		//parallel_scan<<<1, DimGrid, segs_per_block>>>(dBx, dBy, dBz, bx+i, by+i, bz+i);
 	}
 
 	// Call rotation kernel to reflect results to all field periods
