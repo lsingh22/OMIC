@@ -20,6 +20,8 @@ void magnetic_field(const double* mfx, const double* mfy, const double* mfz,
 					     const double* currents, const int ncoil, const int nfil,
                     const int nfp, const int nseg, const int size_fp);
 
+void CalculateFieldParallelGPU(void); 
+
 #ifdef __cplusplus
 }
 #endif
