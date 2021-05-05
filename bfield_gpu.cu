@@ -13,10 +13,10 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
                               const double* Rot, const int nfp, const int MAXSEG) {
 
 	// Dynamically allocate shared memory, positions and rotaiton matrix
-   extern volatile __shared__ double posx[];
-   extern volatile __shared__ double posy[];
-   extern volatile __shared__ double posz[];
-   extern volatile __shared__ double Rcs[];
+   extern __shared__ double posx[];
+   extern __shared__ double posy[];
+   extern __shared__ double posz[];
+   extern __shared__ double Rcs[];
 
    // Define indexing variables 
    int tx = threadIdx.x;
@@ -70,7 +70,7 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
 
          // Integration loop: one thread sums contributions from all points
          // For further development, this could be split up over nfp threads
-         for(int ip = 0; ip < 1; ip++) {
+         for(int ip = 0; ip < nfp; ip++) {
 
             // Locate stellarator symmetric point on magnetic boundary
             xx =  x * Rcs[ip] + y * Rcs[nfp + ip];
@@ -104,7 +104,7 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
         
             bxx += bx * Rcs[ip] - by * Rcs[nfp + ip];
             byy += bx * Rcs[nfp + ip] + by * Rcs[ip];
-            bzz += bz;    
+            bzz += bz;         
          }
 
          // Write segment dB to output   
@@ -123,8 +123,6 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
    }
 }
 
-// Variation of kernel0 where the loop is unrolled by using a 3D thread block
-// Here, tz tracks stellarator field period, and the dB are assumed nfp times
 // their size in the looped kernel0 implementation.
 __global__ void field_kernel1(const double* mx, const double* my, const double* mz, 
 									   const double* curr, double x, double y, double z, 
@@ -132,10 +130,10 @@ __global__ void field_kernel1(const double* mx, const double* my, const double* 
                               const double* Rot, const int nfp, const int MAXSEG) {
 
 	// Dynamically allocate shared memory, positions and rotaiton matrix
-   extern volatile __shared__ double posx[];
-   extern volatile __shared__ double posy[];
-   extern volatile __shared__ double posz[];
-   extern volatile __shared__ double Rcs[];
+   extern __shared__ double posx[];
+   extern __shared__ double posy[];
+   extern __shared__ double posz[];
+   extern __shared__ double Rcs[];
 
    // Define indexing variables 
    int tx = threadIdx.x;
@@ -222,8 +220,42 @@ __global__ void field_kernel1(const double* mx, const double* my, const double* 
    }
 }
 
-__global__ void parallel_reduction(double* dBx, double* dBy, double* dBz, 
-								           double* bx,  double* by,  double* bz);
+__global__ void reduce_kernel(double* g_idata, double* g_odata, unsigned int n) {
+
+   // Dynamically allocate shared memory 
+   extern __shared__ double sdata[];
+   
+   // Useful indexing variables adapted from slides   
+   unsigned int tid = threadIdx.x;
+   unsigned int i   = blockIdx.x * (blockDim.x * 2) + threadIdx.x;
+   
+   // First add during load 
+   // Check bounds before writing sum to shared memory 
+
+   sdata[tid] = 0;
+   if(i < n) {
+      sdata[tid] = (i + blockDim.x < n) ? g_idata[i] + g_idata[i + blockDim.x] : g_idata[i];
+   }  
+   
+   // Give all threads access to the shared memory  
+   __syncthreads();
+   
+   // For the input length of the array, determine sum for given thread 
+   // Reduce in the shared memory 
+   if (i < n) {
+      for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
+         if (tid < s) { 
+            sdata[tid] += sdata[tid + s];
+         }      
+         __syncthreads();
+      }  
+      
+      // Write block result to global memory 
+      if (tid == 0) {
+         g_odata[blockIdx.x] = sdata[0];
+      }  
+   }  
+}  
 
 double cosnfp(int ip, int nfp) { 
 
@@ -237,52 +269,12 @@ double sinnfp(int ip, int nfp) {
    return sin((ip - 1) * MY_PI * 2 / nfp);
 }
 
-__global__ void reduce_kernel(float* g_idata, float* g_odata, unsigned int n) {
-    extern __shared__ float sdata[];
+// Helper function for parallel reduction
+void swap(double** a, double** b) {
 
-    unsigned int tid = threadIdx.x;
-    unsigned int i = blockIdx.x * (2 * blockDim.x) + threadIdx.x;
-    if (i + blockDim.x < n) {
-        sdata[tid] = g_idata[i] + g_idata[i + blockDim.x];
-    } else if (i < n) {
-        sdata[tid] = g_idata[i];
-    } else {
-        sdata[tid] = 0;
-    }
-
-    __syncthreads();
-
-    // Sequential addressing alteration
-    for (unsigned int s = blockDim.x / 2; s > 0; s >>= 1) {
-        if (tid < s) {
-            sdata[tid] += sdata[tid + s];
-        }
-        __syncthreads();
-    }
-
-    // Write out reduced portion of the output
-    if (tid == 0) {
-        g_odata[blockIdx.x] = sdata[0];
-    }
-}
-
-__global__ void helper(float* in, float* out, unsigned int n) {
-    unsigned int i = blockIdx.x * blockDim.x + threadIdx.x;
-    if (i < n)
-        out[i] = in[i];
-
-}
-
-__host__ void reduce(float** input, float** output, unsigned int N, unsigned int threads_per_block) {
-    size_t n = N;
-    while (n > 1) {
-        reduce_kernel<<<(n + threads_per_block * 2 - 1) / threads_per_block / 2, threads_per_block,
-                        threads_per_block * sizeof(float)>>>(*input, *output, n);
-        n = (n + threads_per_block * 2 - 1) / threads_per_block / 2;
-        //std::swap(*output, *input);  
-        // helper<<<(n + threads_per_block - 1) / threads_per_block, threads_per_block>>>(output, input, n);
-    }
-    cudaDeviceSynchronize();
+   double* temp = *a;
+   *a = *b;
+   *b = temp;
 }
 
 extern "C" void magnetic_field(const double* mfx, const double* mfy, const double* mfz, 
@@ -316,7 +308,6 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 
    double *mx, *my, *mz, *xs, *ys, *zs, *Ic, *R;
  
-   //printf("coils_per_block and nseg are: %d and %d\n", coils_per_block, nseg);
    // Allocate managed memory for coil segs/currents and magnetic surface
    cudaMallocManaged((void**)&mx, ncoil * nseg * sizeof(double));
  	cudaMallocManaged((void**)&my, ncoil * nseg * sizeof(double));
@@ -354,30 +345,47 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
       R[nfp + i] = sinnfp(i + 1, nfp);
    }
    
-   /*
-   // Exit if there is a problem with kernel execution	
-   cudaError_t err = cudaGetLastError();
-   
-   if(err != cudaSuccess) {
-      printf("CUDA Error: %s\n", cudaGetErrorString(err));
-      exit(-1);
-   }
-   */
+   // Helper arrays and variables for parallel reduction
+   unsigned int N;
+   unsigned int threads_per_block;
+   unsigned int blocks_per_grid;
+   double* outputx;
+   double* outputy;
+   double* outputz;
+   cudaMallocManaged((void**)&outputx, ncoil * nseg * sizeof(double));
+   cudaMallocManaged((void**)&outputy, ncoil * nseg * sizeof(double));
+   cudaMallocManaged((void**)&outputz, ncoil * nseg * sizeof(double));
 
    // Calculate segment dB contributions (field_kernel),
-   // Perform parallel reduction to superpose dB (parallel_reduction).
-	for(int i = 0; i < size_fp; i++) {
+   // Perform parallel reduction to superpose dB (parallel_reduction)
+   // TODO: openmp may help here, too
+   for(int i = 0; i < size_fp; i++) {
+      N = ncoil * nseg - 1;
+      threads_per_block = MAX_BLOCK_THREADS;
+      blocks_per_grid = (N + 2 * threads_per_block - 1) / (2 * threads_per_block);
 
 		// Call field kernel to get magnetic field
       field_kernel0<<<DimGrid, DimBlock, field_shmem_size>>>(mx, my, mz, Ic, 
                                                              xs[i], ys[i], zs[i],
                                                              dBx, dBy, dBz, R, nfp, max);
+      cudaDeviceSynchronize();
+      while (N > 1) {
+         reduce_kernel<<<blocks_per_grid, threads_per_block, threads_per_block * sizeof(double)>>>(dBx, outputx, N);
+         reduce_kernel<<<blocks_per_grid, threads_per_block, threads_per_block * sizeof(double)>>>(dBy, outputy, N);
+         reduce_kernel<<<blocks_per_grid, threads_per_block, threads_per_block * sizeof(double)>>>(dBz, outputz, N);
 
-      //cudaDeviceSynchronize(); // synchronize to prepare for reduction
-		//parallel_scan<<<1, DimGrid, segs_per_block>>>(dBx, dBy, dBz, bx+i, by+i, bz+i);
-	}
-
-	// Call rotation kernel to reflect results to all field periods
+         N = blocks_per_grid;
+         blocks_per_grid = (N + threads_per_block * 2 - 1) / (2 * threads_per_block);
+         
+         // Swap input and output
+         if(N != 1) {
+            swap(&dBx, &outputx);
+            swap(&dBy, &outputy);
+            swap(&dBz, &outputz);
+         }
+      }
+      cudaDeviceSynchronize();
+   }
 	
 	// Cleanup
 	cudaFree(Ic);
@@ -385,5 +393,3 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 	cudaFree(dBy);
 	cudaFree(dBz);
 }
-
-

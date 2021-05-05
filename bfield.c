@@ -203,7 +203,7 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 
 // Driving code for GPU calculation 
 void CalculateFieldParallelGPU(void) {
-
+/*
 	// Set up timing events
 	cudaEvent_t start, stop;
 	cudaEventCreate(&start);
@@ -212,9 +212,10 @@ void CalculateFieldParallelGPU(void) {
 
 	// Time call to magnetic field function using CUDA events
 	cudaEventRecord(start, 0);
+*/
 	magnetic_field(mfilx, mfily, mfilz, xsurf, ysurf, zsurf,
                   currents, Ncoil * Nfils, Nfils, Nfp, Nseg+1, size_fp);  
-   cudaEventRecord(stop, 0);
+/*   cudaEventRecord(stop, 0);
 
 	cudaEventSynchronize(stop);
 	cudaEventElapsedTime(&ms, start, stop);
@@ -222,4 +223,5 @@ void CalculateFieldParallelGPU(void) {
 	// Cleanup
 	cudaEventDestroy(start);
 	cudaEventDestroy(stop);		
+*/
 }
