@@ -214,7 +214,9 @@ void CalculateFieldParallelGPU(void) {
 	cudaEventRecord(start, 0);
 */
 	magnetic_field(mfilx, mfily, mfilz, xsurf, ysurf, zsurf,
-                  currents, Ncoil * Nfils, Nfils, Nfp, Nseg+1, size_fp);  
+                  currents, Ncoil * Nfils, Nfils, Nfp, Nseg+1, size_fp,
+                  nsurfx, nsurfy, nsurfz, Bmfilx, Bmfily, Bmfilz, Bmfil, Bmfiln);  
+                                                                     
 /*   cudaEventRecord(stop, 0);
 
 	cudaEventSynchronize(stop);

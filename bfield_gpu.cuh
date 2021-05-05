@@ -24,7 +24,9 @@ extern "C" {
 void magnetic_field(const double* mfx, const double* mfy, const double* mfz,
                     double* xs, double* ys, double* zs, const double* currents, 
                     const int ncoil, const int nfil, const int nfp, 
-                    const int nseg, const int size_fp);
+                    const int nseg, const int size_fp, 
+                    const double* nx, const double* ny, const double* nz, 
+                    double* Bx, double* By, double* Bz, double* B, double* Bn);
 
 //void CalculateFieldParallelGPU(void); 
 

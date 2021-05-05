@@ -108,9 +108,9 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
          }
 
          // Write segment dB to output   
-         dBx[posIdx] = bxx;
-         dBy[posIdx] = byy;
-         dBz[posIdx] = bzz;
+         dBx[posIdx] = 1.; //bxx;
+         dBy[posIdx] = 1.; //byy;
+         dBz[posIdx] = 1.; //bzz;
       
          // DEBUG:
 /*         if(tx==0 && threadIdx.y==0){
@@ -280,8 +280,10 @@ void swap(double** a, double** b) {
 extern "C" void magnetic_field(const double* mfx, const double* mfy, const double* mfz, 
                                double* xsurf, double* ysurf, double* zsurf, 
                                const double* current, const int ncoil, const int nfil, 
-                               const int nfp, const int nseg, const int size_fp) {
-
+                               const int nfp, const int nseg, const int size_fp,
+                               const double* nx, const double* ny, const double* nz,
+                               double* Bx, double* By, double* Bz, double* B, double* Bn) {
+                                                            
 	// Define execution configuration for field_kernel call
 	// A 2D block configuration enables easy tracking of coils, segments
 	// A 1D grid configuration is determined by ty, the number of coils / block
@@ -347,8 +349,9 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
    
    // Helper arrays and variables for parallel reduction
    unsigned int N;
-   unsigned int threads_per_block;
+   unsigned int threads_per_block = MAX_BLOCK_THREADS;
    unsigned int blocks_per_grid;
+   float reduce_shmem_size = threads_per_block * sizeof(double);
    double* outputx;
    double* outputy;
    double* outputz;
@@ -360,6 +363,7 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
    // Perform parallel reduction to superpose dB (parallel_reduction)
    // TODO: openmp may help here, too
    for(int i = 0; i < size_fp; i++) {
+
       N = ncoil * nseg - 1;
       threads_per_block = MAX_BLOCK_THREADS;
       blocks_per_grid = (N + 2 * threads_per_block - 1) / (2 * threads_per_block);
@@ -370,21 +374,24 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
                                                              dBx, dBy, dBz, R, nfp, max);
       cudaDeviceSynchronize();
       while (N > 1) {
-         reduce_kernel<<<blocks_per_grid, threads_per_block, threads_per_block * sizeof(double)>>>(dBx, outputx, N);
-         reduce_kernel<<<blocks_per_grid, threads_per_block, threads_per_block * sizeof(double)>>>(dBy, outputy, N);
-         reduce_kernel<<<blocks_per_grid, threads_per_block, threads_per_block * sizeof(double)>>>(dBz, outputz, N);
+         reduce_kernel<<<blocks_per_grid, threads_per_block, reduce_shmem_size>>>(dBx, outputx, N);
+         reduce_kernel<<<blocks_per_grid, threads_per_block, reduce_shmem_size>>>(dBy, outputy, N);
+         reduce_kernel<<<blocks_per_grid, threads_per_block, reduce_shmem_size>>>(dBz, outputz, N);
 
          N = blocks_per_grid;
          blocks_per_grid = (N + threads_per_block * 2 - 1) / (2 * threads_per_block);
          
          // Swap input and output
-         if(N != 1) {
-            swap(&dBx, &outputx);
-            swap(&dBy, &outputy);
-            swap(&dBz, &outputz);
-         }
+         swap(&dBx, &outputx);
+         swap(&dBy, &outputy);
+         swap(&dBz, &outputz);
       }
       cudaDeviceSynchronize();
+   
+      // TODO: assumes only two calls to reduce_kernel, else, use the first element of output(x,y,z)
+      Bx[i] = dBx[0];
+      By[i] = dBy[0];
+      Bz[i] = dBz[0];     
    }
 	
 	// Cleanup

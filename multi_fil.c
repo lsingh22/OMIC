@@ -252,7 +252,7 @@ void MultifilamentField(void){
    //int last  = endind[pn];
 
 	// Number of times to run integration for averaging (759)
-	nave = 1;
+	nave = 5;
 
 	for(j = 0; j < nave; j++) {   
 	   start = MPI_Wtime();	
