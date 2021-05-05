@@ -313,7 +313,7 @@ void GatherFieldData(void){
 // Gathers data from each node and stores it in the global Bx,By,Bz,Bn,B
 //----------------------------------------------------------------------------------------------------
    
-   int pri, sizepn, first, last;
+   int pri, sizepn, first; 
    register int ip, i, j, k;
    double* temp_Bmfilx;
    double* temp_Bmfily;
@@ -335,7 +335,6 @@ void GatherFieldData(void){
          temp_Bmfilz = (double*) malloc(sizepn*sizeof(double));
  
          first = *(startind+pri);
-          last = *(endind+pri);
 
          MPI_Recv(temp_Bmfilx, sizepn, MPI_DOUBLE, pri, 10+100*pri, MPI_COMM_WORLD, &status);
          for(j=0;j<sizepn; *(Bmfilx+first+j) = *(temp_Bmfilx+j),j++);
@@ -382,7 +381,6 @@ void GatherFieldData(void){
       temp_Bmfilz = (double*) malloc(sizepn*sizeof(double));
 
       first = *(startind+pn);
-       last = *(endind+pn);
 
       for(j=0;j<sizepn; *(temp_Bmfilx+j) = *(Bmfilx + first + j), j++);
       MPI_Send(temp_Bmfilx, sizepn, MPI_DOUBLE, 0, 10+100*pn, MPI_COMM_WORLD);

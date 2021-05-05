@@ -28,8 +28,6 @@ void ReadInputs(void){
    char str[MAXCHAR];
    char* filename = omic_input;
 
-   const char s[2] = "=";
-   const char t[2] = ";";
    char *token;
    
    fp = fopen(filename, "r");

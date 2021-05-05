@@ -38,17 +38,17 @@ void ReadFocusInts(char* output_file){
    nc_inq_varid(ncid, "Nzeta", &varid);
    nc_get_var_int(ncid, varid, &Nzeta);
 
-   if(retval=nc_inq_varid(ncid,"coilspace",&varid))
+   if((retval=nc_inq_varid(ncid,"coilspace",&varid)))
       ERR(retval);
-   if(retval=nc_inq_vardimid(ncid,varid,&dimid))
+   if((retval=nc_inq_vardimid(ncid,varid,&dimid)))
       ERR(retval);
-   if(retval=nc_inq_dimlen(ncid,dimid,&size_coilspace))
+   if((retval=nc_inq_dimlen(ncid,dimid,&size_coilspace)))
       ERR(retval);
-   if(retval=nc_inq_varid(ncid,"xsurf",&varid))
+   if((retval=nc_inq_varid(ncid,"xsurf",&varid)))
       ERR(retval);
    //nc_inq_vardimid(ncid,varid,&dimid);
    //nc_inq_dimlen(ncid,dimid,&size_surf);
-   if(retval=nc_close(ncid))
+   if((retval=nc_close(ncid)))
       ERR(retval);
 }
 
@@ -59,7 +59,7 @@ void ReadFocusArrays(char* output_file){
 // ALLOCATES AND STORES FOCUS DATA
 //----------------------------------------------------------------------------------------------------
   
-   int ncid, varid, dimid;
+   int ncid, varid;
    coilspace = (double*) malloc(size_coilspace*sizeof(double));   
    xsurf = (double*) malloc(Nteta*Nzeta*sizeof(double)); 
    ysurf = (double*) malloc(Nteta*Nzeta*sizeof(double)); 

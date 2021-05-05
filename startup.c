@@ -19,9 +19,9 @@ int isStellSym; int iCoil; int size_alpamp; int size_fp; int Nfils; int Ns;
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 int CFileExists(char *filename){
-   /* try to open and read a file */
+   // try to open and read a file
    FILE *file;
-   if(file = fopen(filename, "r"))
+   if((file = fopen(filename, "r")))
    {
       fclose(file);
       return 1;
@@ -58,7 +58,7 @@ void OMICStartup(char *ext){
    char *mfil_temp_out = strcat(ext_mfil_out, ".mcoils");
    char *sfil_temp_out = strcat(ext_sfil_out, ".scoils");
 
-   int exist_focus, exist_omic_in, exist_omic_out; //TODO: exist_boundary 
+   int exist_focus, exist_omic_in;  
    exist_focus    = CFileExists(focus_temp);
    exist_omic_in  = CFileExists(omic_temp_in);
 

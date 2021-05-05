@@ -69,7 +69,7 @@ read_focus.o: read_focus.c read_focus.h globals.h
 	${CC} ${CFLAGS} -c $< -o $@
 single_fil.o: single_fil.c single_fil.h globals.h
 	${CC} ${CFLAGS} -c $< -o $@
-bfield_gpu.o: bfield_gpu.cu bfield_gpu.cuh globals.h
+bfield_gpu.o: bfield_gpu.cu bfield_gpu.cuh globals.h 
 	${NVCC} -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -c $< -o $@
 bfield.o: bfield.c bfield.h bfield_gpu.cuh globals.h
 	${CC} ${CFLAGS} -c $< -o $@

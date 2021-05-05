@@ -45,13 +45,12 @@ void Init_alpha( int option ){
    }
    else if(option == 2)
    {
-      int size_amp = iCoil * (2*NFalpha+1); //TODO: should probably override if NFalpha doesn't match previous optimization!
-      int ncid, varid, dimid,retval;
+      int ncid, varid, retval;
       nc_open(multi_output, NC_NOWRITE, &ncid); //multi_output is the path to the .nc output file
       nc_inq_varid(ncid, "alpha", &varid);
       nc_get_var_double(ncid, varid, alpamps);
   
-      if(retval=nc_inq_varid(ncid,"alpha",&varid))
+      if((retval=nc_inq_varid(ncid,"alpha",&varid)))
       ERR(retval);      
    }
    else
@@ -68,7 +67,6 @@ void Unpack_alpha( void ){
 // Calculate the coil rotation angle alpha based on its Fourier series
 //----------------------------------------------------------------------------------------------------
   
-   int size_alp = iCoil*(Nseg+1); //total number of points for all coils
    register int i,j;
    int k;
    double theta, a;  

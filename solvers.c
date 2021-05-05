@@ -162,7 +162,9 @@ void Central_diff( double *dof, double fb_init ){
    double plus_bn;
    double init_bn = 0.0;
    int alp_per_coil = 2*NFalpha+1;
- 
+
+   if(init_bn > 100000){return;} 
+
    for(i=0;i<size_alpamp;i++)
    {
       *(alpamps+i) = dof[i];
@@ -238,7 +240,7 @@ void Steepest_descent( void ){
 // TODO: this should just be flagged in central_diff, no need for another function for adding a - sign
 //----------------------------------------------------------------------------------------------------
    
-   register int i,j;
+   register int i;
    
    descent_dir = (double*) malloc( size_alpamp*sizeof(double) );
   
@@ -256,20 +258,17 @@ void Steepest_descent( void ){
 void Forward_track(double fb_init ){
 //----------------------------------------------------------------------------------------------------
 // Optimizes alpha harmonics using a forward-tracking line search
-// TODO: this should probably have a better exit flag on the while loop
 // Maybe just look at k+step*(1/2) where k+1 is the exit iteration
 //----------------------------------------------------------------------------------------------------
 
-   int i,j;
-   int k=0;
+   int j, k = 0;
 
-   double step = .000000001; // There is small error, I fix later
-   double init_bn = 0.0;
+   double step = .000000001; 
+   double init_bn = 0;
    double fb_now=0.0, fc_now=0.0;
    double search_bn;
-   double hold_bn;
-
-     
+   double hold_bn; 
+ 
    CalculateMultiFilaments();
    MultifilamentField();
    if(nproc > 1){GatherFieldData();}
@@ -316,8 +315,8 @@ void Forward_track(double fb_init ){
          fc_now = ComplexityPenalty();
  
          printf("\nTotal cost function value, tracking iter: %.9f   %d\n", search_bn, k);
-         printf("The fB value is: %.9f   \n", fb_now, k);
-         printf("The fC value is: %.9f   \n", fc_now, k);
+         printf("The fB value is: %.9f   \n", fb_now);
+         printf("The fC value is: %.9f   \n", fc_now);
       } 
       
       step = step * 2.0;

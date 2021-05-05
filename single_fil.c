@@ -109,10 +109,6 @@ void SingleFilField(void){
 //----------------------------------------------------------------------------------------------------
 
    int i;
-   double timeBfield;
-   double startBfield, endBfield;
-
-   startBfield = omp_get_wtime(); //clock();
    
    Bsfilx = (double*) malloc(Nzeta*Nteta*sizeof(double));
    Bsfily = (double*) malloc(Nzeta*Nteta*sizeof(double));
@@ -132,9 +128,6 @@ void SingleFilField(void){
                     *(Bsfilz+i) * *(nsurfz+i);  
       *(Bsfil+i) = sqrt( pow(*(Bsfilx+i),2) + pow(*(Bsfily+i),2) + pow(*(Bsfilz+i),2) ); 
    }
-
-   endBfield = omp_get_wtime(); //clock();
-   //printf("\nTotal time of single fil field calculation: %f\n\n", endBfield-startBfield);//timeBfield);  
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----

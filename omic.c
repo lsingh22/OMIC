@@ -27,18 +27,17 @@ int main(int argc, char **argv){
  
    if(argc==1){printf("\nERROR: File extension for 'prefix.input' not specified.\n\n"); exit(0);}
    char *ext = *(argv+1);
- 
-   OMICStartup(ext); 
 
-   int ierr;
-   double t1,t2,tot_time;
+   OMICStartup(ext); 
+  
+   double tot_time;
    double multi_error_init, comp_penalty_init;
    double start, end;
       
    //Initialize MPI, store node configuration and current node
    MPI_Init(&argc, &argv);   
-   ierr = MPI_Comm_rank(MPI_COMM_WORLD, &pn);
-   ierr = MPI_Comm_size(MPI_COMM_WORLD, &nproc);   
+   MPI_Comm_rank(MPI_COMM_WORLD, &pn);
+   MPI_Comm_size(MPI_COMM_WORLD, &nproc);   
    start = MPI_Wtime();
    
 //   SetInputs();
@@ -78,6 +77,8 @@ int main(int argc, char **argv){
    MultifilamentField();
 
    if(nproc > 1){GatherFieldData();}
+      
+   multi_error_init = MultiFieldError();
 
    if(pn==0)
    {
@@ -118,7 +119,7 @@ int main(int argc, char **argv){
    tot_time = end - start;
    if(pn==0){printf("\nTotal time taken is: %f\n\n", tot_time);} 
 
-   ierr = MPI_Finalize();
+   MPI_Finalize();
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
