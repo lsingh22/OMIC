@@ -140,10 +140,10 @@ void MPISetup(void){
       *(endind+i)   = (i+1)*floor_points_per_proc - 1; 
    }
    
-   //increment the last index if there are an odd number of points
-   if(size_fp % 2 == 1)
+   //increment the last index if size_fp is not a multiple of nproc
+   if(size_fp % nproc != 0)
    {
-      *(endind+endpn) = *(endind+endpn) + 1;
+      *(endind+endpn) = *(endind+endpn) + (size_fp % nproc);
    }
 }
 
