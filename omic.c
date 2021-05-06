@@ -20,26 +20,28 @@ int pn, nproc;
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 int main(int argc, char **argv){
-   
-   printf("\n*********************************************************"); 
-   printf("\n         This is the stellarator coil tool OMIC.\n          Authors: Luquant Singh, Thomas Kruger");
-   printf("\n*********************************************************\n"); 
- 
-   if(argc==1){printf("\nERROR: File extension for 'prefix.input' not specified.\n\n"); exit(0);}
-   char *ext = *(argv+1);
 
-   OMICStartup(ext); 
-  
-   double tot_time;
+   float tot_time;
    double multi_error_init, comp_penalty_init;
-   double start, end;
-      
+   float start, end;
+       
    //Initialize MPI, store node configuration and current node
    MPI_Init(&argc, &argv);   
    MPI_Comm_rank(MPI_COMM_WORLD, &pn);
    MPI_Comm_size(MPI_COMM_WORLD, &nproc);   
    start = MPI_Wtime();
-   
+
+   if(pn==0) {   
+      printf("\n*********************************************************"); 
+      printf("\n         This is the stellarator coil tool OMIC.\n          Authors: Luquant Singh, Thomas Kruger");
+      printf("\n*********************************************************\n");  
+   }
+   if(argc==1){printf("\nERROR: File extension for 'prefix.input' not specified.\n\n"); exit(0);}
+   char *ext = *(argv+1);
+
+   OMICStartup(ext); 
+  
+ 
 //   SetInputs();
 
    ReadInputs();
