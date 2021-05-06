@@ -248,26 +248,27 @@ void MultifilamentField(void){
     Bmfil = (double*) malloc(Nzeta * Nteta * sizeof(double));
 
    // MPI rank chunks
-   //int first = startind[pn];
-   //int last  = endind[pn];
+   int first = startind[pn];
+   int last  = endind[pn] + 1;
 
 	// Number of times to run integration for averaging (759)
-	nave = 5;
+	nave = 1;
 
 	for(j = 0; j < nave; j++) {   
 	   start = MPI_Wtime();	
-		// Calculate magnetic field at all points on a single field period
-  		//CalculateFieldSerial();
+	
+   	// Calculate field using serial computation
+  		CalculateFieldSerial(first, last);
 
-		// Calculate using GPU
-		CalculateFieldParallelGPU();
-
+		// Calculate field using GPU
+		//CalculateFieldParallelGPU(first, last);
+		
 	   end = MPI_Wtime();
 		total += (end - start);
 	}
 
 	// Print the average time
-	printf("Total time for field calculation: %f\n", total / nave);
+	if(pn==0){printf("%f\n", total / nave);}
    
    //Calculate |B| and B*n on one field period
    if(nproc == 1) {
@@ -397,8 +398,6 @@ void GatherFieldData(void){
    }  
 
    MPI_Barrier(MPI_COMM_WORLD);
-//   t2 = MPI_Wtime();
-//   if(pn==0){printf("\nTotal time for gathering results is: %f\n\n", t2-t1);}   
 
 }
 
