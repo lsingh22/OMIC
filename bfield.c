@@ -198,7 +198,7 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 // In the future, more kernels will be called after magnetic_field
 void CalculateFieldParallelGPU(int start, int end) {
 	
-   magnetic_field(mfilx, mfily, mfilz, xsurf, ysurf, zsurf,
+   magnetic_field1(mfilx, mfily, mfilz, xsurf, ysurf, zsurf,
                   currents, Ncoil * Nfils, Nfils, Nfp, Nseg+1, size_fp,
-                  nsurfx, nsurfy, nsurfz, Bmfilx, Bmfily, Bmfilz, start, end);  
+                  Bmfilx, Bmfily, Bmfilz, start, end);  
 }

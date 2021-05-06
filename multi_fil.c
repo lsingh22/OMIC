@@ -252,16 +252,16 @@ void MultifilamentField(void){
    int last  = endind[pn] + 1;
 
 	// Number of times to run integration for averaging (759)
-	nave = 1;
+	nave = 5;
 
 	for(j = 0; j < nave; j++) {   
 	   start = MPI_Wtime();	
 	
    	// Calculate field using serial computation
-  		CalculateFieldSerial(first, last);
+  		//CalculateFieldSerial(first, last);
 
 		// Calculate field using GPU
-		//CalculateFieldParallelGPU(first, last);
+		CalculateFieldParallelGPU(first, last);
 		
 	   end = MPI_Wtime();
 		total += (end - start);
