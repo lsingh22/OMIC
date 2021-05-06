@@ -12,16 +12,18 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
                               const double z, double* dBx, double* dBy, double* dBz,
                               const double* Rot, const int nfp, const int MAXSEG) {
 
-	// Dynamically allocate shared memory, positions and rotation matrix
-   extern __shared__ double posx[];
-   extern __shared__ double posy[];
-   extern __shared__ double posz[];
-   extern __shared__ double Rcs[];
-
    // Define indexing variables 
-   int tx = threadIdx.x;
+   int tx     = threadIdx.x;
+   int bsize  = blockDim.x * blockDim.y;
    int tid    = threadIdx.y * blockDim.x + threadIdx.x;
-   int posIdx = blockIdx.x * blockDim.y * blockDim.x + tid;
+   int posIdx = blockIdx.x * bsize + tid;
+
+	// Dynamically allocate shared memory, positions and rotation matrix
+   extern __shared__ double sh[];
+   double* posx = sh;
+   double* posy = sh + bsize;
+   double* posz = sh + 2 * bsize;
+   double* Rcs  = sh + 3 * bsize;
 
    // Doubles needed for integration
    double xi, yi, zi, xf, yf, zf;
@@ -33,35 +35,35 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
    
    // If segment is valid, calculate contribution to B field
    if(posIdx < MAXSEG) {
+     
+      // Write starting segments to shared memory 
+      posx[tid] = mx[posIdx];
+      posy[tid] = my[posIdx];
+      posz[tid] = mz[posIdx];
 
       // Write rotation matrix to shared memory
       if(tx < nfp) {
          Rcs[tx] = Rot[tx];
          Rcs[nfp + tx] = Rot[tx + nfp];          
       }
-      
-      // Write starting segments to shared memory 
-      posx[tid] = mx[posIdx];
-      posy[tid] = my[posIdx];
-      posz[tid] = mz[posIdx];
-
+ 
       // Share segment starts to hide latency in loading neighbor segment
-      // Also share the rotation matrix
       __syncthreads();
 
       // Prevent segment index from reaching out of bounds at end of coil
       if(tx < blockDim.x - 1) {
-   
+      //if(tx==0 && threadIdx.y==0 && blockIdx.x==0) {
+
          // Accumulators over symmetric field periods
          bxx = 0.; byy = 0.; bzz = 0.;
 
-         // Integration loop: one thread sums contributions from all points
+         // Integration loop: one thread sums contributions from all symmetry points
          for(int ip = 0; ip < nfp; ip++) {
-
-            // Locate stellarator symmetric point on magnetic boundary
-            xx =  x * Rcs[ip] + y * Rcs[nfp + ip];
-            yy = -x * Rcs[nfp + ip] + y * Rcs[ip];
-            zz = z; // not needed here, but needed for future speedup
+   
+            // Locate stellarator symmetric point on magnetic boundary     
+            xx =  x * Rcs[ip] + y * Rcs[nfp+ip];
+            yy = -x * Rcs[nfp+ip] + y * Rcs[ip];
+            zz = z; 
 
             // Use H & H method to find field contribution due to segment
             xi = xx - posx[tid];
@@ -84,12 +86,14 @@ __global__ void field_kernel0(const double* mx, const double* my, const double* 
             // Prefactor for cross product 
             coef = cur * l * (ri+rf) / (ri*rf * ((ri+rf) * (ri+rf) - l * l));   
 
+            //printf("mxi: %f myi: %f mzi: %f\n",posx[tid],posy[tid],posz[tid]);
+            
             bx = coef * (ey * zi - ez * yi);
             by = coef * (ez * xi - ex * zi);
             bz = coef * (ex * yi - ey * xi);
         
-            bxx += bx * Rcs[ip] - by * Rcs[nfp + ip];
-            byy += bx * Rcs[nfp + ip] + by * Rcs[ip];
+            bxx += bx * Rcs[ip] - by * Rcs[nfp+ip];
+            byy += bx * Rcs[nfp+ip] + by * Rcs[ip];
             bzz += bz;         
          }
 
@@ -107,17 +111,19 @@ __global__ void field_kernel1(const double* mx, const double* my, const double* 
                               double* dBx, double* dBy, double* dBz,
                               const double* Rot, const int nfp, const int MAXSEG) {
 
-	// Dynamically allocate shared memory, positions and rotaiton matrix
-   extern __shared__ double posx[];
-   extern __shared__ double posy[];
-   extern __shared__ double posz[];
-   extern __shared__ double Rcs[];
-
    // Define indexing variables 
-   int tx = threadIdx.x;
-   int tz = threadIdx.z;
+   int tx     = threadIdx.x;
+   int tz     = threadIdx.z;
+   int bsize  = blockDim.x * blockDim.y;
    int tid    = threadIdx.y * blockDim.x + threadIdx.x;
-   int posIdx = blockIdx.x * blockDim.y * blockDim.x + tid;
+   int posIdx = blockIdx.x * bsize + tid;
+
+	// Dynamically allocate shared memory, positions and rotation matrix
+   extern __shared__ double sh[];
+   double* posx = sh;
+   double* posy = sh + bsize;
+   double* posz = sh + 2 * bsize;
+   double* Rcs  = sh + 3 * bsize;
 
    // Doubles needed for integration
    double x1, y1, z1, x2, y2, z2;
@@ -270,12 +276,13 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
   
    unsigned int icoil = ncoil / nfp;
    unsigned int MAX_BLOCK_THREADS = 1024;
-	unsigned int coils_per_block = MAX_BLOCK_THREADS / nseg - 1; // TODO: for some reason, this -1 is needed right now
+	unsigned int coils_per_block = MAX_BLOCK_THREADS / nseg - 1; // TODO: for some reason, this -1 is needed
 	unsigned int segs_per_block  = coils_per_block * nseg;   
 	dim3 DimBlock(nseg, coils_per_block);
 	unsigned int DimGrid = (icoil + coils_per_block - 1) / coils_per_block;
 	unsigned int field_shmem_size = (segs_per_block * 3 + 2 * nfp) * sizeof(double);
-   unsigned int ndb = icoil * nseg - 1; // TODO: there will be ncoil empty entries with this definition
+   unsigned int ndb = icoil * nseg - 1; 
+   double factor = 2.0e-7 / nfil;
 
    // Define maximum number of segments for kernel memory safety
    unsigned int max = nseg * icoil;
@@ -314,7 +321,7 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
    // Holds the multifilament current scaled by mu_0/pi
    for(unsigned int i = 0; i < icoil / nfil; i++) {
       for(int j = 0; j < nfil; j++) {
-         Ic[i * nfil + j] = current[i]; //2.0e-7 * current[i] / nfil;
+         Ic[i * nfil + j] = current[i];
       }
    }
 
@@ -323,13 +330,12 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
       R[i] = cosnfp(i + 1, nfp); 
       R[nfp + i] = sinnfp(i + 1, nfp);
    }
-   
+
    // Helper arrays and variables for parallel reduction
    unsigned int N;
    unsigned int threads_per_block = MAX_BLOCK_THREADS;
    unsigned int blocks_per_grid;
    float reduce_shmem_size = threads_per_block * sizeof(double);
-   double factor = 2.0e-7 / nfil;
    double* outputx;
    double* outputy;
    double* outputz;
@@ -351,7 +357,6 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
                                                              dBx, dBy, dBz, R, nfp, max);
       cudaDeviceSynchronize();
    
-      //if(i==0){for(int j = 0; j < icoil * nseg; j++) { printf("bx: %f by: %f bz: %f [%d]\n", dBx[j], dBy[j], dBz[j], j);}};
       while (N > 1) {
          reduce_kernel<<<blocks_per_grid, threads_per_block, reduce_shmem_size>>>(dBx, outputx, N);
          reduce_kernel<<<blocks_per_grid, threads_per_block, reduce_shmem_size>>>(dBy, outputy, N);
@@ -359,15 +364,15 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
 
          N = blocks_per_grid;
          blocks_per_grid = (N + threads_per_block * 2 - 1) / (2 * threads_per_block);
-         
+      
          // Swap input and output
          swap(&dBx, &outputx);
          swap(&dBy, &outputy);
          swap(&dBz, &outputz);
       }
-      cudaDeviceSynchronize();
+     cudaDeviceSynchronize();
    
-      // TODO: assumes only two calls to reduce_kernel, else, use the first element of output(x,y,z)
+      // TODO: if odd # of calls calls to reduce_kernel, use the first element of output(x,y,z)
       Bx[i] = dBx[0] * factor;
       By[i] = dBy[0] * factor;
       Bz[i] = dBz[0] * factor;
@@ -375,9 +380,6 @@ extern "C" void magnetic_field(const double* mfx, const double* mfy, const doubl
       cudaDeviceSynchronize();
    }
    
-   //for(int j = 0; j < 2*nfp; j++){printf("rot[%d]: %f\n", j, R[j]);};
-	for(int j = 0; j < size_fp; j++) {printf("bx: %f by: %f bz: %f [%d]\n", Bx[j], By[j], Bz[j], j);}
-
 	// Cleanup
 	cudaFree(Ic);
    cudaFree(xs);

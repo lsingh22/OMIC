@@ -86,12 +86,43 @@ void CalculateFieldSerial(void) {
 
    register int i;
 	
-   for(i = 0; i < size_fp; i++) {      
+   // TODO: DEBUG - set i < size_fp after debugging
+   for(i = 0; i < 1; i++) {      
 		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
 	}
 }
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
+
+void CalculateFieldOMP(void) {
+
+   // OpenMP outer loop
+   register int i;
+	
+   for(i = 0; i < size_fp; i++) {      
+		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
+	}
+}
+
+void CalculateFieldMPI(void) {
+
+   // MPI outer loop
+   register int i;
+	
+   for(i = 0; i < size_fp; i++) {      
+		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
+	}
+}
+
+void CalculateFieldHybrid(void) {
+
+   // Hybrid MPI/OpenMP outer loop
+   register int i;
+	
+   for(i = 0; i < size_fp; i++) {      
+		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
+	}
+}
 
 void CalculateFieldAtPoint(double x, double y, double z, \
                            double* Bx, double* By, double* Bz){
@@ -171,6 +202,14 @@ void CalculateFieldAtPoint(double x, double y, double z, \
                   by += coef * (ez * xi - ex * zi);
                   bz += coef * (ex * yi - ey * xi);
               
+                  if(i==0 && j==0 && k==0i && ip==1){
+                     printf("\nxi: %f yi: %f zi: %f ri: %f\n",xi,yi,zi,ri);
+                     printf("xf: %f yf: %f zf: %f rf: %f\n",xf,yf,zf,rf);
+                     printf("xx: %f yy: %f zz: %f\n",xx,yy,zz);
+                     printf("ex: %f ey: %f ez: %f l: %f\n",ex,ey,ez,l);   
+                     printf("curr: %f coef: %f bx: %f by: %f bz: %f\n",cur,coef,bx,by,bz);
+                  }
+
                   //End of segment k becomes beginning of segment k+1
                   xi = xf;
                   yi = yf;
@@ -185,6 +224,8 @@ void CalculateFieldAtPoint(double x, double y, double z, \
          byy += (bx * rot_sin + by * rot_cos); 
          bzz += bz;
 
+         if(ip==1){printf("After rotation, bxx: %f byy: %f bzz: %f\n",bxx,byy,bzz);}
+   
 			// Reset for next field period calculation
          bx = 0;
          by = 0;
@@ -199,6 +240,7 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 	*Bx = bxx * factor;
    *By = byy * factor;
    *Bz = bzz * factor;
+   printf("After scaling, Bx: %f By: %f Bz: %f\n\n",*Bx,*By,*Bz);
 }
 
 // Driving code for GPU calculation 
