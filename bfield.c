@@ -22,7 +22,6 @@ double sinnfp(int ip) {
    return sin((ip - 1) * MY_PI * 2 / Nfp);
 }
 
-
 void CalculateSingleField(double x, double y, double z, \
                           double* Bx, double* By, double* Bz){
 //----------------------------------------------------------------------------------------------------
@@ -80,46 +79,16 @@ void CalculateSingleField(double x, double y, double z, \
    *Bz = bz;
 }
 
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-void CalculateFieldSerial(void) {
+void CalculateFieldSerial(int start, int end) {
 
    register int i;
 	
-   // TODO: DEBUG - set i < size_fp after debugging
-   for(i = 0; i < 1; i++) {      
-		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
-	}
-}
+   // Set the number of threads to the max available
+   omp_set_num_threads(omp_get_max_threads());   
 
-//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
-
-void CalculateFieldOMP(void) {
-
-   // OpenMP outer loop
-   register int i;
-	
-   for(i = 0; i < size_fp; i++) {      
-		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
-	}
-}
-
-void CalculateFieldMPI(void) {
-
-   // MPI outer loop
-   register int i;
-	
-   for(i = 0; i < size_fp; i++) {      
-		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
-	}
-}
-
-void CalculateFieldHybrid(void) {
-
-   // Hybrid MPI/OpenMP outer loop
-   register int i;
-	
-   for(i = 0; i < size_fp; i++) {      
+   // Parallel thread region to chunk boundary points
+   #pragma omp parallel for
+   for(i = start; i < end; i++) {      
 		CalculateFieldAtPoint(xsurf[i], ysurf[i], zsurf[i], Bmfilx+i, Bmfily+i, Bmfilz+i);    
 	}
 }
@@ -173,7 +142,7 @@ void CalculateFieldAtPoint(double x, double y, double z, \
                yi = yy - mfily[i*Nfils*(Nseg+1)+j*(Nseg+1)];
                zi = zz - mfilz[i*Nfils*(Nseg+1)+j*(Nseg+1)];
                ri = sqrt(xi * xi + yi * yi + zi * zi);           
-            
+                
                for(k = 0; k < Nseg; k++) {
 						
 						// Use Hanson Hirschman method for finding B for each segment
@@ -188,13 +157,6 @@ void CalculateFieldAtPoint(double x, double y, double z, \
                   ey = ((yf-yi)/l);  
                   ez = ((zf-zi)/l);  
 
-						/* (759) Unnecessary inner loop multiplications
- 					    * Now, just calculate the prefactor coef using ri,rf explicitly        
-                  eps = l / (ri + rf);
-                  eta = ri * rf;
-                  coef = cur * eps / (eta * (1.0 - eps * eps)); 
-						*/
-
 						// Prefactor for cross product 
                   coef = cur * l * (ri+rf) / (ri*rf * ((ri+rf) * (ri+rf) - l * l));   
 
@@ -202,14 +164,6 @@ void CalculateFieldAtPoint(double x, double y, double z, \
                   by += coef * (ez * xi - ex * zi);
                   bz += coef * (ex * yi - ey * xi);
               
-                  if(i==0 && j==0 && k==0i && ip==1){
-                     printf("\nxi: %f yi: %f zi: %f ri: %f\n",xi,yi,zi,ri);
-                     printf("xf: %f yf: %f zf: %f rf: %f\n",xf,yf,zf,rf);
-                     printf("xx: %f yy: %f zz: %f\n",xx,yy,zz);
-                     printf("ex: %f ey: %f ez: %f l: %f\n",ex,ey,ez,l);   
-                     printf("curr: %f coef: %f bx: %f by: %f bz: %f\n",cur,coef,bx,by,bz);
-                  }
-
                   //End of segment k becomes beginning of segment k+1
                   xi = xf;
                   yi = yf;
@@ -224,8 +178,6 @@ void CalculateFieldAtPoint(double x, double y, double z, \
          byy += (bx * rot_sin + by * rot_cos); 
          bzz += bz;
 
-         if(ip==1){printf("After rotation, bxx: %f byy: %f bzz: %f\n",bxx,byy,bzz);}
-   
 			// Reset for next field period calculation
          bx = 0;
          by = 0;
@@ -240,32 +192,13 @@ void CalculateFieldAtPoint(double x, double y, double z, \
 	*Bx = bxx * factor;
    *By = byy * factor;
    *Bz = bzz * factor;
-   printf("After scaling, Bx: %f By: %f Bz: %f\n\n",*Bx,*By,*Bz);
 }
 
-// Driving code for GPU calculation 
-void CalculateFieldParallelGPU(void) {
-/*
-	// Set up timing events
-	cudaEvent_t start, stop;
-	cudaEventCreate(&start);
-	cudaEventCreate(&stop);
-	float ms;
-
-	// Time call to magnetic field function using CUDA events
-	cudaEventRecord(start, 0);
-*/
-	magnetic_field(mfilx, mfily, mfilz, xsurf, ysurf, zsurf,
+// Driving code for GPU calculations 
+// In the future, more kernels will be called after magnetic_field
+void CalculateFieldParallelGPU(int start, int end) {
+	
+   magnetic_field(mfilx, mfily, mfilz, xsurf, ysurf, zsurf,
                   currents, Ncoil * Nfils, Nfils, Nfp, Nseg+1, size_fp,
-                  nsurfx, nsurfy, nsurfz, Bmfilx, Bmfily, Bmfilz, Bmfil, Bmfiln);  
-                                                                     
-/*   cudaEventRecord(stop, 0);
-
-	cudaEventSynchronize(stop);
-	cudaEventElapsedTime(&ms, start, stop);
-
-	// Cleanup
-	cudaEventDestroy(start);
-	cudaEventDestroy(stop);		
-*/
+                  nsurfx, nsurfy, nsurfz, Bmfilx, Bmfily, Bmfilz, start, end);  
 }

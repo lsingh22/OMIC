@@ -22,11 +22,11 @@ void CalculateSingleField(double x, double y, double z, \
                           double* Bx, double* By, double* Bz); 
 
 void CalculateFieldAtPoint(double x, double y, double z, \
-                    double* Bx, double* By, double* Bz); 
+                           double* Bx, double* By, double* Bz); 
 
-void CalculateFieldSerial(void);
+void CalculateFieldSerial(int start, int end);
 
-void CalculateFieldParallelGPU(void);
+void CalculateFieldParallelGPU(int start, int end);
 
 double cosnfp(int ip);  
 double sinnfp(int ip); 
