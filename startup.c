@@ -42,16 +42,6 @@ void OMICStartup(char *ext){
    char *ext_sfil_out= malloc(strlen(ext) + 1);
    strcpy(ext_sfil_out, ext);
 
-//   char *prefix = "omic_";
-//   char *suffix = ".nc";
-   
-//   char *omic_temp_out = malloc(strlen(prefix) + strlen(suffix) + strlen(ext_omic_out) + 1);
-//   omic_temp_out = strcat(strcat(prefix,ext_omic_out),suffix);// = malloc(strlen(prefix) + strlen(suffix) + strlen(ext_omic_out) + 1);
-
-//   strcpy(omic_temp_out,prefix);
-//   strcpy(omic_temp_out,ext_omic_out);
-//   strcpy(omic_temp_out,suffix);
-//   printf("The string I got is %s \n", omic_temp_out); 
    char *focus_temp    = "focus.output";
    char *omic_temp_in  = strcat(ext_omic_in,  ".input" );
    char *omic_temp_out = strcat(ext_omic_out, ".nc"    );
@@ -62,23 +52,20 @@ void OMICStartup(char *ext){
    exist_focus    = CFileExists(focus_temp);
    exist_omic_in  = CFileExists(omic_temp_in);
 
-   //TODO: in case where we read in previous input   exist_omic_out = CFileExists(omic_temp_in);
-   //Would require fy_document scan prior to reading most inputs, which is probably fine
-
    if(!exist_focus)
    {
       printf("\n1 No file '%s' found. Exiting...\n\n ",focus_temp); 
       exit(0);
    }else
    {
-      printf("\nFOCUS output file '%s' loaded.",focus_temp);
+      //printf("\nFOCUS output file '%s' loaded.",focus_temp);
       if(!exist_omic_in)
       {
          printf("\n2 No file '%s' found. Exiting...\n\n ",omic_temp_in); 
          exit(0);
       }else
       {
-         printf("\nOMIC input file '%s' found.\n",omic_temp_in);    
+      //   printf("\nOMIC input file '%s' found.\n",omic_temp_in);    
       }     
    }
   
