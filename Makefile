@@ -11,6 +11,8 @@ FILES.o = ${FILES.c:.c=.o} bfield_gpu.o
 
 CC      = mpicc
 
+#CC		  = tau_cc
+
 NVCC	  = nvcc
 
 SFLAGS  = -std=c11
@@ -43,11 +45,15 @@ NETCDF_LIB = -L /usr/local/netcdf/x86_64/4.8.0/lib64 -lnetcdf
 
 #NETCDF = /usr/local/netcdf/x86_64/4.8.0 -L/lib -lnetcdf
 
-CFLAGS  = ${SFLAGS} ${GFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} ${NETCDF} -fopenmp 
+#DEBUG	  = -g
+
+#CUDADEBUG = -g -lineinfo
+
+CFLAGS  = ${DEBUG} ${SFLAGS} ${OFLAGS} ${WFLAGS} ${UFLAGS} ${NETCDF} -fopenmp 
 
 CUDAFLAGS = -lcudadevrt -lcudart
 
-LDFLAGS = ${CUDAFLAGS} ${NETCDF_LIB} -lgomp 
+LDFLAGS = ${CUDAFLAGS} ${NETCDF_LIB} -lgomp
 
 LDLIBS  =
 
@@ -59,7 +65,7 @@ all:    ${PROGRAM}
 
 ${PROGRAM}: ${FILES.o}
 
-	${CC} -o $@ ${LDFLAGS} $^ ${NETCDF} -lm
+	${CC} -o $@ ${LDFLAGS} $^ ${NETCDF} -lm 
 
 read_namelist.o: read_namelist.c globals.h read_namelist.h
 	${CC} ${CFLAGS} -c $< -o $@
@@ -70,9 +76,9 @@ read_focus.o: read_focus.c read_focus.h globals.h
 single_fil.o: single_fil.c single_fil.h globals.h
 	${CC} ${CFLAGS} -c $< -o $@
 bfield_gpu.o: bfield_gpu.cu bfield_gpu.cuh globals.h 
-	${NVCC} -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -c $< -o $@
+	${NVCC} ${CUDADEBUG} -Xcompiler -O3 -Xcompiler -Wall -Xptxas -O3 -c $< -o $@
 bfield.o: bfield.c bfield.h bfield_gpu.cuh globals.h
-	${CC} ${CFLAGS} -c $< -o $@
+	${CC} ${CFLAGS} -c $< -o $@ 
 multi_fil.o: multi_fil.c multi_fil.h bfield_gpu.cuh globals.h
 	${CC} ${CFLAGS} -c $< -o $@
 alpha.o: alpha.c alpha.h globals.h
