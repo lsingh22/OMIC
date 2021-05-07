@@ -15,6 +15,9 @@ int NFalpha; double alp_const; int niter; double surface_area;
 int nproc; int* startind; int* endind;
 int isStellSym; int iCoil; int size_alpamp; int size_fp; int Nfils; int Ns;
 
+// For scaling analysis and toggling GPU/CPU implementations
+int isGPU;
+
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
  
 #define MAXCHAR 32
@@ -97,6 +100,10 @@ void ReadInputs(void){
       if(i==13)
       {
          sscanf(token, "%lf", &len_tor);         
+      }
+      if(i==14)
+      {
+         sscanf(token, "%d", &isGPU);         
       }
    }
    fclose(fp);

@@ -24,6 +24,8 @@ double* mfilx; double* mfily; double* mfilz; double* finx; double* finy; double*
 
 double* Bmfilx; double* Bmfily; double* Bmfilz; double* Bmfil; double* Bmfiln;
 
+int isGPU;
+
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
 void CalculateBuildDirections(void){
@@ -252,17 +254,18 @@ void MultifilamentField(void){
    int last  = endind[pn] + 1;
 
 	// Number of times to run integration for averaging (759)
-	nave = 5;
+	nave = 1;
 
 	for(j = 0; j < nave; j++) {   
-	   start = MPI_Wtime();	
-	
-   	// Calculate field using serial computation
-  		//CalculateFieldSerial(first, last);
-
-		// Calculate field using GPU
-		CalculateFieldParallelGPU(first, last);
-		
+      // Time the magnetic field calculation
+  	   start = MPI_Wtime();		
+      if(isGPU) {
+         // Calculate field using GPU
+         CalculateFieldParallelGPU(first, last);
+      } else {
+         // Calculate field using serial computation
+         CalculateFieldSerial(first, last);
+		}
 	   end = MPI_Wtime();
 		total += (end - start);
 	}
