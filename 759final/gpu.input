@@ -1,0 +1,14 @@
+niter: 0
+NFalpha: 5
+isStellSym: 0
+case_alpha: 0
+alp_const: 0.000
+weight_comp: 0.01
+case_objfun: 1
+nvals_scaling: 2
+Nseg: 2
+Nradfil: 1
+Ntorfil: 1
+len_rad: 0.120
+len_tor: 0.060
+isGPU: 1
