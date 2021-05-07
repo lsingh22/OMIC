@@ -254,7 +254,7 @@ void MultifilamentField(void){
    int last  = endind[pn] + 1;
 
 	// Number of times to run integration for averaging (759)
-	nave = 3;
+	nave = 1;
 
 	for(j = 0; j < nave; j++) {   
       // Time the magnetic field calculation
