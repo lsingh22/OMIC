@@ -84,7 +84,7 @@ void CalculateFieldSerial(int start, int end) {
    register int i;
 	
    // Set the number of threads to the max available
-   omp_set_num_threads(omp_get_max_threads());   
+   omp_set_num_threads(Nthreads);   
 
    // Parallel thread region to chunk boundary points
    #pragma omp parallel for

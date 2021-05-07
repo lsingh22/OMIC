@@ -254,7 +254,7 @@ void MultifilamentField(void){
    int last  = endind[pn] + 1;
 
 	// Number of times to run integration for averaging (759)
-	nave = 1;
+	nave = 3;
 
 	for(j = 0; j < nave; j++) {   
       // Time the magnetic field calculation
@@ -271,7 +271,7 @@ void MultifilamentField(void){
 	}
 
 	// Print the average time
-	if(pn==0){printf("%f\n", total / nave);}
+	if(pn==0){printf("%d\n%f\n", 12 * Nseg * Nfils,  total / nave);}
    
    //Calculate |B| and B*n on one field period
    if(nproc == 1) {

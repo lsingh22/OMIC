@@ -15,15 +15,18 @@
 #include "solvers.h"
 #include "startup.h"
 
-int pn, nproc;
+int pn, nproc, Nseg, Ntorfil, Nthreads;
 
 //----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----//----
 
-int main(int argc, char **argv){
+int main(int argc, char *argv[]){
 
    float tot_time;
    double multi_error_init, comp_penalty_init;
    float start, end;
+
+   // Suppress output for automation of scaling analyses
+   int VERBOSE = 0;
        
    //Initialize MPI, store node configuration and current node
    MPI_Init(&argc, &argv);   
@@ -31,26 +34,27 @@ int main(int argc, char **argv){
    MPI_Comm_size(MPI_COMM_WORLD, &nproc);   
    start = MPI_Wtime();
 
-   if(pn==0) {   
+   if(pn==0 && VERBOSE) {   
       printf("\n*********************************************************"); 
       printf("\n         This is the stellarator coil tool OMIC.\n          Authors: Luquant Singh, Thomas Kruger");
       printf("\n*********************************************************\n");  
    }
    if(argc==1){printf("\nERROR: File extension for 'prefix.input' not specified.\n\n"); exit(0);}
    char *ext = *(argv+1);
+   Nseg = atoi(*(argv+2));
+   Ntorfil = atoi(*(argv+3));
+   Nthreads = atoi(*(argv+4));
 
    OMICStartup(ext); 
   
- 
-//   SetInputs();
-
    ReadInputs();
 
    ReadFocusInts(focus_output);
    
    MPISetup();
 
-   if(pn==0)
+
+   if(pn==0 && VERBOSE)
    {
       printf("\n                      USER INPUTS               ");
       printf("\n*********************************************************\n\n"); 
@@ -82,7 +86,7 @@ int main(int argc, char **argv){
       
    multi_error_init = MultiFieldError();
 
-   if(pn==0)
+   if(pn==0 && VERBOSE)
    {
       printf("\n                      INITIAL VALUES             ");
       printf("\n*********************************************************\n\n"); 
@@ -119,7 +123,7 @@ int main(int argc, char **argv){
 
    end = MPI_Wtime();
    tot_time = end - start;
-   if(pn==0){printf("\nTotal time taken is: %f\n\n", tot_time);} 
+   if(pn==0 && VERBOSE){printf("\nTotal time taken is: %f\n\n", tot_time);} 
 
    MPI_Finalize();
 }

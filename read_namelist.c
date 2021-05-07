@@ -83,7 +83,7 @@ void ReadInputs(void){
       }
       if(i==9)
       {
-         sscanf(token, "%d", &Nseg);         
+      //   sscanf(token, "%d", &Nseg);         
       }
       if(i==10)
       {
@@ -91,7 +91,7 @@ void ReadInputs(void){
       }
       if(i==11)
       {
-         sscanf(token, "%d", &Ntorfil);         
+      //   sscanf(token, "%d", &Ntorfil);         
       }
       if(i==12)
       {
